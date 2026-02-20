@@ -43,3 +43,13 @@ export async function getLoggedInUser(): Promise<User> {
 
     return res.json();
 }
+
+export async function logout() {
+    const res = await fetch(`${BASE_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include"
+    });
+
+    if (!res.ok)
+        throw new Error("Failed to logout");
+}

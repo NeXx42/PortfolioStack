@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Portfolio.Api.Services;
 using Portfolio.Core.Models;
@@ -70,24 +71,34 @@ public class UserController : ControllerBase
     {
         if (User.Identity?.IsAuthenticated == true)
         {
-            string? userGuid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            UserModel? usr = await GetSessionUser();
 
-            if (Guid.TryParse(userGuid, out Guid id))
+            // invalidate token
+            if (usr == null)
             {
-                UserModel? usr = await _authService.GetLogin(id);
-
-                // invalidate token
-                if (usr == null)
-                {
-                    HttpContext.Response.Cookies.Delete(AuthenticationService.AUTH_COOKIE_NAME);
-                    return Results.Ok(null);
-                }
-
-                return Results.Ok(usr);
+                HttpContext.Response.Cookies.Delete(AuthenticationService.AUTH_COOKIE_NAME);
+                return Results.Ok(null);
             }
+
+            return Results.Ok(usr);
         }
 
         return Results.Ok(null); // user not logged in, return null
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IResult> Logout()
+    {
+        UserModel? usr = await GetSessionUser();
+
+        if (usr == null)
+            return Results.Unauthorized();
+
+        HttpContext.Response.Cookies.Delete(AuthenticationService.AUTH_COOKIE_NAME);
+        await _authService.ClearUserSession(usr);
+
+        return Results.Ok();
     }
 
     private void AddTokenCookie(UserModel usr)
@@ -101,5 +112,17 @@ public class UserController : ControllerBase
             SameSite = SameSiteMode.Strict,
             Expires = DateTimeOffset.UtcNow.AddHours(1)
         });
+    }
+
+    private async Task<UserModel?> GetSessionUser()
+    {
+        string? userGuid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (Guid.TryParse(userGuid, out Guid id))
+        {
+            return await _authService.GetLogin(id);
+        }
+
+        return null;
     }
 }

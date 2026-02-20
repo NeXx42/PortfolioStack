@@ -9,6 +9,7 @@ interface HookReturn {
     error: string | undefined,
     login: (email: string, password: string) => Promise<void>,
     signup: (email: string, displayName: string, password: string) => Promise<void>,
+    logout: () => Promise<void>,
 }
 
 export function useAuth(): HookReturn {
@@ -54,12 +55,27 @@ export function useAuth(): HookReturn {
         }
     }
 
+    async function logout() {
+        setLoading(true);
+
+        try {
+            await api.logout();
+        }
+        catch (err: any) {
+            setError(err);
+        }
+        finally {
+            setLoading(false);
+        }
+    }
+
 
     return {
         authenticatedUser: user,
         loading: loading,
         error: error,
         login,
-        signup
+        signup,
+        logout
     }
 }
