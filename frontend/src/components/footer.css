@@ -1,0 +1,9 @@
+.Footer {
+    margin-top: 20px;
+
+    padding: 2rem;
+    border-top: 1px solid rgba(74, 154, 184, 0.25);
+    text-align: center;
+
+    color: #2e5068;
+}

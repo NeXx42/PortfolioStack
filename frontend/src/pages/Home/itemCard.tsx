@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import type { Item } from "../../types"
 import "./itemCard.css"
 
@@ -10,8 +11,15 @@ export default function ItemCard({
     isWide = false,
     itemData = undefined
 }: Props) {
+    const navigate = useNavigate();
+
+    const navigateToPage = () => {
+        navigate(`${itemData?.id}/content`)
+    };
+
+
     return (
-        <div className={`Component_ItemCard ${isWide ? "Wide" : ""}`}>
+        <div onClick={navigateToPage} className={`Component_ItemCard ${isWide ? "Wide" : ""}`}>
             <div className="Component_ItemCard_Icon">
                 <img src={itemData?.icon} />
             </div>

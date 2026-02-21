@@ -11,7 +11,7 @@ interface HookReturn {
 
     content: Record<ProjectType, Item[]>,
     loadingContent: boolean,
-    fetchContent: (type: ProjectType) => Promise<void>
+    fetchContent: (type: ProjectType) => Promise<void>,
 }
 
 

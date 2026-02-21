@@ -4,13 +4,19 @@ import { useAuth } from "../hooks/useUser"
 import "./navbar.css"
 import AuthenticationModal from "./authenticationModal";
 import UserPopupModal from "./userPopupModal";
-import CommonButton from "./commonButton";
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
     const [authModal, setAuthModal] = useState(false);
     const popupRef = useRef<HTMLDivElement>(null);
 
-    const { authenticatedUser: user, loading: userLoading } = useAuth();
+    const navigate = useNavigate();
+
+    const { authenticatedUser: user } = useAuth();
+
+    const selectPage = (fragment: string | undefined = undefined) => {
+        navigate(fragment ? `/#${fragment}` : "/");
+    }
 
     useEffect(() => {
         function handleClickOutside(event: any) {
@@ -36,18 +42,18 @@ export default function Navbar() {
                 authModal && user === undefined && (<AuthenticationModal onExit={() => setAuthModal(false)} />)
             }
             <div className="Component_Navbar">
-                <div className="Component_Navbar_Login">
-                    <a>NEXX</a>
+                <div className="Component_Navbar_Alias">
+                    <a onClick={() => selectPage()}>NEXX</a>
                 </div>
 
                 <div className="Component_Navbar_Right">
                     <div className="Component_Navbar_Links">
-                        <a>Shop</a>
-                        <a>Links</a>
-                        <a>About</a>
+                        <a onClick={() => selectPage("projects")}>Shop</a>
+                        <a onClick={() => selectPage("links")}>Links</a>
+                        <a onClick={() => selectPage("about")}>About</a>
                     </div>
                     <div className="Component_Navbar_UserDetails">
-                        <CommonButton label={user?.displayName ?? "Login"} onClick={() => setAuthModal(!authModal)} />
+                        <button onClick={() => setAuthModal(!authModal)} >{user?.displayName ?? "Login"}</button>
                         {authModal && user !== undefined && (
                             <div ref={popupRef}>
                                 <UserPopupModal />

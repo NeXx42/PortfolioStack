@@ -87,3 +87,16 @@ export async function fetchFeaturedContent(): Promise<Item[]> {
 
     return res.json();
 }
+
+export async function fetchGame(gameId: string): Promise<Item> {
+    const res = await fetch(`${BASE_URL}/api/content/${gameId}`, {
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    if (!res.ok)
+        throw new Error("Failed to fetch game");
+
+    return res.json();
+}

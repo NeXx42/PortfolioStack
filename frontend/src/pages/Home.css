@@ -51,9 +51,9 @@
 
 .Home_Hero_Content {
     z-index: 10;
+    width: 90%;
 
     display: flex;
-    gap: 100px;
     justify-content: space-between;
 }
 
@@ -77,17 +77,17 @@
 
 
 .Home_hero_Content_Featured {
-    width: 700px;
+    width: 800px;
 
     display: grid;
     grid-template-rows: auto auto;
-    grid-template-columns: auto auto;
+    grid-template-columns: 2fr 1fr;
 
     gap: 1rem;
 }
 
 .Home_hero_Content_Featured div:nth-child(1) {
-    grid-column: span 2;
+    grid-Row: span 2;
 }
 
 

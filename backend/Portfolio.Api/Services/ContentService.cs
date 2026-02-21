@@ -41,6 +41,12 @@ public class ContentService
         return results;
     }
 
+    public async Task<ProjectModel?> GetGame(Guid id)
+    {
+        ProjectModel? game = await _portfolioContext.projects.FirstOrDefaultAsync(g => g.id == id);
+        return game;
+    }
+
     public async Task ClearCache()
     {
         foreach (ProjectType key in Enum.GetValues<ProjectType>())
