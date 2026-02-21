@@ -1,22 +1,25 @@
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import * as api from "../api/api";
 
 import type { User } from "../types";
 
-interface HookReturn {
+
+type AuthContextType = {
     authenticatedUser: User | undefined,
     loading: boolean,
-    error: string | undefined,
+    error: string,
     login: (email: string, password: string) => Promise<void>,
     signup: (email: string, displayName: string, password: string) => Promise<void>,
     logout: () => Promise<void>,
 }
 
-export function useAuth(): HookReturn {
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | undefined>(undefined);
 
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(undefined);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         api.getLoggedInUser()
@@ -26,6 +29,7 @@ export function useAuth(): HookReturn {
     }, []);
 
     async function login(email: string, password: string) {
+        setError("");
         setLoading(true);
 
         try {
@@ -41,6 +45,7 @@ export function useAuth(): HookReturn {
     }
 
     async function signup(email: string, displayName: string, password: string) {
+        setError("");
         setLoading(true);
 
         try {
@@ -56,26 +61,40 @@ export function useAuth(): HookReturn {
     }
 
     async function logout() {
+        setError("");
         setLoading(true);
 
         try {
             await api.logout();
         }
         catch (err: any) {
-            setError(err);
+            setError(err.Message);
         }
         finally {
             setLoading(false);
         }
     }
 
+    return (
+        <AuthContext.Provider
+            value={{
+                authenticatedUser: user,
+                loading,
+                error,
+                login,
+                signup,
+                logout,
+            }}>
+            {children}
+        </AuthContext.Provider>
+    )
+}
 
-    return {
-        authenticatedUser: user,
-        loading: loading,
-        error: error,
-        login,
-        signup,
-        logout
-    }
+export function useAuth(): AuthContextType {
+    const ctx = useContext(AuthContext);
+
+    if (!ctx)
+        throw new Error("useAuth must be inside AuthProvider");
+
+    return ctx;
 }

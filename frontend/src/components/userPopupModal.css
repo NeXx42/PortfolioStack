@@ -1,0 +1,13 @@
+.Component_UserPopup {
+    position: absolute;
+    z-index: 50000;
+
+    right: 0;
+    width: 200px;
+
+    background-color: #0b1218;
+    padding: 5px;
+
+    display: flex;
+    flex-direction: column;
+}
