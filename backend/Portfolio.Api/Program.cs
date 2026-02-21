@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Portfolio.Api.Services;
+using Portfolio.Api.Types;
 using Portfolio.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-string jwtKey = builder.Configuration["Jwt:Key"] ?? "this_is_a_super_secret_key_that_is_at_least_32_bytes_long!";
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -20,7 +21,7 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = false,
         ValidateLifetime = false,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(builder.Configuration["Encryption:JWTToken"]!))
     };
 
     options.Events = new JwtBearerEvents
@@ -55,6 +56,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<PortfolioContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("Encryption"));
+builder.Services.AddSingleton<EncryptionService>();
 
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddMemoryCache();

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Portfolio.Api.Services;
+using Portfolio.Core.DTOs;
 using Portfolio.Core.Models;
 using Portfolio.Data;
 
@@ -25,25 +26,13 @@ public class UserController : ControllerBase
         public string password { get; set; }
     }
 
-    public struct SimpleUser
-    {
-        public string email { get; set; }
-        public string displayName { get; set; }
-
-        public SimpleUser(UserModel usr)
-        {
-            email = usr.email;
-            displayName = usr.displayName;
-        }
-    }
-
     [HttpPost("signup")]
     public async Task<IResult> SignUp([FromBody] SignupRequest request)
     {
-        UserModel usr = await _authService.CreateUserEntry(request.email, request.displayName, request.password);
+        UserDto usr = await _authService.CreateUserEntry(request.email, request.displayName, request.password);
 
         AddTokenCookie(usr);
-        return Results.Json(new SimpleUser(usr));
+        return Results.Json(usr);
     }
 
     public struct LoginRequest
@@ -55,12 +44,12 @@ public class UserController : ControllerBase
     [HttpPost("login")]
     public async Task<IResult> Login([FromBody] LoginRequest login)
     {
-        UserModel? usr = await _authService.ConfirmLogin(login.email, login.password);
+        UserDto? usr = await _authService.ConfirmLogin(login.email, login.password);
 
         if (usr != null)
         {
             AddTokenCookie(usr);
-            return Results.Json(new SimpleUser(usr));
+            return Results.Json(usr);
         }
 
         return Results.BadRequest("Invalid login");
@@ -71,7 +60,7 @@ public class UserController : ControllerBase
     {
         if (User.Identity?.IsAuthenticated == true)
         {
-            UserModel? usr = await GetSessionUser();
+            UserDto? usr = await GetSessionUser();
 
             // invalidate token
             if (usr == null)
@@ -90,7 +79,7 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<IResult> Logout()
     {
-        UserModel? usr = await GetSessionUser();
+        UserDto? usr = await GetSessionUser();
 
         if (usr == null)
             return Results.Unauthorized();
@@ -101,7 +90,7 @@ public class UserController : ControllerBase
         return Results.Ok();
     }
 
-    private void AddTokenCookie(UserModel usr)
+    private void AddTokenCookie(UserDto usr)
     {
         string token = _authService.GenerateToken(usr);
 
@@ -114,7 +103,7 @@ public class UserController : ControllerBase
         });
     }
 
-    private async Task<UserModel?> GetSessionUser()
+    private async Task<UserDto?> GetSessionUser()
     {
         string? userGuid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 

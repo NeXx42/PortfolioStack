@@ -1,4 +1,5 @@
 # Visual Studio / .NET
+bin/**
 bin/
 obj/
 .vscode/
@@ -15,3 +16,6 @@ obj/
 node_modules/
 dist/
 .env
+
+# secrets
+appsettings.Development.json

@@ -1,10 +1,14 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal;
+using Portfolio.Core.DTOs;
 using Portfolio.Core.Models;
 using Portfolio.Data;
 
@@ -16,61 +20,71 @@ public class AuthenticationService
 
     private readonly PortfolioContext _context;
     private readonly IMemoryCache _cache;
-    private readonly byte[] _jwtKey;
+    private readonly EncryptionService _encryptionService;
 
-    public AuthenticationService(PortfolioContext context, IMemoryCache cache, IConfiguration config)
+    public AuthenticationService(PortfolioContext context, IMemoryCache cache, EncryptionService encryptionService)
     {
+        _encryptionService = encryptionService;
         _context = context;
         _cache = cache;
-
-        _jwtKey = Encoding.UTF8.GetBytes(config["Jwt:Key"] ?? "this_is_a_super_secret_key_that_is_at_least_32_bytes_long!");
     }
 
-    public async Task<UserModel> CreateUserEntry(string email, string displayName, string password)
+    public async Task<UserDto> CreateUserEntry(string email, string displayName, string password)
     {
-        if (await _context.Users.AnyAsync(x => x.email.Equals(email)))
+        string emailHash = _encryptionService.ComputeEmailHash(email);
+
+        if (await _context.Users.AnyAsync(x => x.emailHash.Equals(emailHash)))
         {
             throw new Exception("Email already exists");
         }
 
         UserModel usr = new UserModel()
         {
-            displayName = displayName,
-            email = email,
-            passwordHash = password
+            displayName = _encryptionService.EncryptData(displayName),
+            email = _encryptionService.EncryptData(email),
+
+            emailHash = _encryptionService.ComputeEmailHash(email),
+            passwordHash = _encryptionService.EncryptAndHashPassword(password)
         };
 
         await _context.Users.AddAsync(usr);
         await _context.SaveChangesAsync();
 
         _cache.Set(usr.userId, usr);
-        return usr;
+        return _encryptionService.DecryptUserModel(usr);
     }
 
-    public async Task<UserModel?> ConfirmLogin(string email, string passwordHash)
+    public async Task<UserDto?> ConfirmLogin(string email, string password)
     {
-        UserModel? usr = await _context.Users
-            .Where(x => x.email.Equals(email) && x.passwordHash.Equals(passwordHash))
+        string emailHash = _encryptionService.ComputeEmailHash(email);
+
+        UserModel? dbUser = await _context.Users
+            .Where(x => x.emailHash.Equals(emailHash))
             .FirstOrDefaultAsync();
+
+        if (dbUser == null)
+            throw new Exception("Email not found");
+
+        if (!_encryptionService.CheckPassword(dbUser, password))
+            throw new Exception("Invalid password");
+
+        UserDto? usr = await GetLogin(dbUser.userId);
 
         if (usr != null)
         {
-            UserModel? existingLogin = await GetLogin(usr.userId);
-
-            if (existingLogin != null)
-            {
-                throw new Exception("User is already logged in");
-            }
-
-            _cache.Set(usr.userId, usr);
+            //throw new Exception("User is already logged in");
+            return usr;
         }
+
+        usr = _encryptionService.DecryptUserModel(dbUser);
+        _cache.Set(usr.id, usr);
 
         return usr;
     }
 
-    public async Task<UserModel?> GetLogin(Guid userId)
+    public async Task<UserDto?> GetLogin(Guid userId)
     {
-        if (_cache.TryGetValue(userId, out UserModel? usr))
+        if (_cache.TryGetValue(userId, out UserDto? usr))
         {
             return usr;
         }
@@ -78,24 +92,24 @@ public class AuthenticationService
         return null;
     }
 
-    public async Task ClearUserSession(UserModel usr)
+    public async Task ClearUserSession(UserDto usr)
     {
-        _cache.Remove(usr.userId);
+        _cache.Remove(usr.id);
     }
 
-    public string GenerateToken(UserModel usr)
+    public string GenerateToken(UserDto usr)
     {
         JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
         SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, usr.userId.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, usr.id.ToString()),
                 new Claim(ClaimTypes.Email, usr.email),
                 new Claim(ClaimTypes.Name, usr.displayName)
             }),
             Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(_jwtKey), SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials = _encryptionService.GetJWTSingingCredentials()
         };
 
         SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
