@@ -1,5 +1,8 @@
-import type { User } from "../types";
+import type { Item, User } from "../types";
 import { BASE_URL } from "../config";
+import type { ProjectType } from "../enums";
+
+// -------------------- authentication
 
 export async function login(email: string, password: string): Promise<User> {
     const res = await fetch(`${BASE_URL}/api/auth/login`, {
@@ -52,4 +55,35 @@ export async function logout() {
 
     if (!res.ok)
         throw new Error("Failed to logout");
+}
+
+
+
+
+// -------------------- Content
+
+export async function fetchContent(type: ProjectType): Promise<Item[]> {
+    const res = await fetch(`${BASE_URL}/api/content?type=${type}`, {
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    if (!res.ok)
+        throw new Error("Failed to fetch content");
+
+    return res.json();
+}
+
+export async function fetchFeaturedContent(): Promise<Item[]> {
+    const res = await fetch(`${BASE_URL}/api/content/featured`, {
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    if (!res.ok)
+        throw new Error("Failed to fetch content");
+
+    return res.json();
 }

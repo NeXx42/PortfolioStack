@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import ItemCard from "./Home/itemCard";
 import Navbar from "../components/navbar";
@@ -6,7 +6,6 @@ import Navbar from "../components/navbar";
 import { useContent } from "../hooks/useContent";
 
 import { ProjectType } from "../enums";
-import type { Item } from "../types";
 
 import "./Home.css";
 import Footer from "../components/footer";
@@ -16,27 +15,16 @@ export default function Home() {
     const [selectedTabIndex, setSelectedTabIndex] = useState(ProjectType.Game);
 
     const {
-        loading,
+        featured,
+        loadingFeatured,
 
-        games,
-        software,
-        assets,
-        projects,
-
+        content,
+        loadingContent,
         fetchContent
     } = useContent();
 
 
-    const getContent = (): Item[] => {
-        switch (selectedTabIndex) {
-            case ProjectType.Game: return games ?? [];
-            case ProjectType.Software: return software ?? [];
-            case ProjectType.Asset: return assets ?? [];
-            case ProjectType.Project: return projects ?? [];
-        }
-
-        return [];
-    }
+    const items = content[selectedTabIndex] ?? [];
 
     useEffect(() => {
         fetchContent(selectedTabIndex)
@@ -58,9 +46,13 @@ export default function Home() {
                 </div>
 
                 <div className="Home_hero_Content_Featured">
-                    <ItemCard isWide={true} />
-                    <ItemCard />
-                    <ItemCard />
+                    {loadingFeatured ? (
+                        <a>Loading...</a>
+                    ) : (
+                        featured.map((item, key) =>
+                            (<ItemCard key={key} itemData={item} />)
+                        )
+                    )}
                 </div>
             </div>
 
@@ -110,12 +102,12 @@ export default function Home() {
 
                 <section id="projects" className="Home_Projects_Container">
                     {
-                        loading ? (
+                        loadingContent ? (
                             <a>LOADING</a>
                         ) :
                             (
 
-                                getContent().map((x, index) => {
+                                items.map((x, index) => {
                                     return (
                                         <ItemCard key={index} itemData={x} />
                                     )

@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Portfolio.Api.Services;
+using Portfolio.Api.Types;
 using Portfolio.Core.DTOs;
 using Portfolio.Core.Models;
 using Portfolio.Data;
@@ -13,10 +15,12 @@ namespace Portfolio.Api.Controllers;
 public class UserController : ControllerBase
 {
     private readonly AuthenticationService _authService;
+    private readonly GeneralSettings _options;
 
-    public UserController(AuthenticationService authService)
+    public UserController(AuthenticationService authService, IOptions<GeneralSettings> options)
     {
         _authService = authService;
+        _options = options.Value;
     }
 
     public struct SignupRequest
@@ -29,6 +33,11 @@ public class UserController : ControllerBase
     [HttpPost("signup")]
     public async Task<IResult> SignUp([FromBody] SignupRequest request)
     {
+        if (_options.disableAccountCreation)
+        {
+            return Results.InternalServerError("Account creation is disabled");
+        }
+
         UserDto usr = await _authService.CreateUserEntry(request.email, request.displayName, request.password);
 
         AddTokenCookie(usr);

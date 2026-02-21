@@ -4,8 +4,9 @@ export interface User {
 }
 
 export interface Item {
+    id: string,
     name: string,
-    iconUrl: string,
+    icon: string,
     description: string,
     price?: number,
     actionName: string

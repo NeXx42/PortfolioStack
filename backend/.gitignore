@@ -1,5 +1,4 @@
 # Visual Studio / .NET
-bin/**
 bin/
 obj/
 .vscode/

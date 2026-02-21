@@ -13,13 +13,13 @@ export default function ItemCard({
     return (
         <div className={`Component_ItemCard ${isWide ? "Wide" : ""}`}>
             <div className="Component_ItemCard_Icon">
-                <img src="https://nexx42.github.io/PortfolioSite/Content/8d41e4f3-961b-4497-86dd-768335c887dd/Icon.png" />
+                <img src={itemData?.icon} />
             </div>
 
             <div className="Component_ItemCard_Content">
                 <div className="Component_ItemCard_Info">
-                    <h2>Cool Game</h2>
-                    <p>description</p>
+                    <h2>{itemData?.name}</h2>
+                    <p>{itemData?.description}</p>
                 </div>
 
                 <div className="Component_ItemCard_Action">

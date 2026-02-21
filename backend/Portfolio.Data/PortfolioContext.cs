@@ -8,4 +8,5 @@ public class PortfolioContext : DbContext
     public PortfolioContext(DbContextOptions<PortfolioContext> options) : base(options) { }
 
     public DbSet<UserModel> Users { get; set; }
+    public DbSet<ProjectModel> projects { get; set; }
 }

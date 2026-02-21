@@ -1,62 +1,58 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import * as api from "../api/api"
+
 import type { Item } from "../types";
 import { ProjectType } from "../enums";
 
 interface HookReturn {
-    loading: boolean,
+    featured: Item[];
+    loadingFeatured: boolean,
 
-    games?: Item[],
-    software?: Item[],
-    assets?: Item[],
-    projects?: Item[]
-
+    content: Record<ProjectType, Item[]>,
+    loadingContent: boolean,
     fetchContent: (type: ProjectType) => Promise<void>
 }
 
 
 export function useContent(): HookReturn {
-    const [games, setGames] = useState<Item[] | undefined>(undefined);
-    const [software, setSoftware] = useState<Item[] | undefined>(undefined);
-    const [assets, setAssets] = useState<Item[] | undefined>(undefined);
-    const [projects, setProjects] = useState<Item[] | undefined>(undefined);
+    const [featured, setFeatured] = useState<Item[]>([]);
+    const [loadingFeatured, setLoadingFeatured] = useState(true);
 
-    const [loading, setLoading] = useState<boolean>(true);
+    useEffect(() => {
+        setLoadingFeatured(true);
+        api.fetchFeaturedContent()
+            .then((x: Item[]) => setFeatured(x))
+            .finally(() => setLoadingFeatured(false));
+    }, [])
+
+
+    const [content, setContent] = useState<Record<ProjectType, Item[]>>(
+        {} as Record<ProjectType, Item[]>
+    );
+    const [loadingContent, setLoadingContent] = useState<boolean>(true);
 
     const fetchContent = async (type: ProjectType) => {
-        setLoading(true);
+        if (content[type])
+            return
 
-        switch (type) {
-            case ProjectType.Game:
-                setGames([{ name: "yo", iconUrl: "test", price: 2, description: "test", actionName: "test2" }])
-                break;
+        setLoadingContent(true);
+        const items: Item[] = await api.fetchContent(type);
 
-            case ProjectType.Asset:
-                setAssets([
-                    { name: "yo", iconUrl: "test", price: 2, description: "test", actionName: "test2" },
-                    { name: "yo", iconUrl: "test", price: 2, description: "test", actionName: "test2" },
-                ])
-                break;
+        setContent(prev => ({
+            ...prev,
+            [type]: items
+        }));
 
-            case ProjectType.Project:
-                setProjects([{ name: "yo", iconUrl: "test", price: 2, description: "test", actionName: "test2" }])
-                break;
-
-            case ProjectType.Software:
-                setSoftware([{ name: "yo", iconUrl: "test", price: 2, description: "test", actionName: "test2" }])
-                break;
-        }
-
-        setLoading(false);
+        setLoadingContent(false);
     }
 
     return {
-        loading,
+        featured,
+        loadingFeatured,
 
-        games,
-        software,
-        assets,
-        projects,
-
+        content,
+        loadingContent,
         fetchContent
     }
 }
