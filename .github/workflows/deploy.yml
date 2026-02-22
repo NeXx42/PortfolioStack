@@ -22,17 +22,17 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/nexx42/backend:${{ github.sha }} ./backend
+          docker build --no-cache -t ghcr.io/nexx42/backend:${{ github.sha }} ./backend
 
       - name: Push Docker image
         run: |
           docker push ghcr.io/nexx42/backend:${{ github.sha }}
 
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            ~/apps/portfolio/deploy.sh ${{ github.sha }}
+      #- name: Deploy to server
+      #  uses: appleboy/ssh-action@v0.1.6
+      #  with:
+      #    host: ${{ secrets.SERVER_IP }}
+      #    username: ${{ secrets.SERVER_USER }}
+      #    key: ${{ secrets.SERVER_SSH_KEY }}
+      #    script: |
+      #      ~/apps/portfolio/deploy.sh ${{ github.sha }}
