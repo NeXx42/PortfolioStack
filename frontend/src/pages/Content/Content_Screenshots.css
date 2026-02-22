@@ -1,0 +1,40 @@
+.Content_Screenshot_Container div:nth-child(1) {
+    width: 100%;
+}
+
+
+.Content_Screenshots_SubImageContainer {
+    margin-top: 15px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 15px;
+}
+
+.Content_Screenshot_Icon {
+    position: relative;
+
+    aspect-ratio: 16/9;
+    border: 2px solid rgba(74, 154, 184, 0.25);
+    border-radius: 8px;
+    overflow: hidden;
+
+    transition: all .5s;
+}
+
+.Content_Screenshot_Icon::after {
+    content: "";
+    position: absolute;
+    box-shadow: 0 0 200px rgba(0, 0, 0, 0.5) inset;
+    inset: 0;
+}
+
+.Content_Screenshot_Icon:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .4), 0 0 14px rgba(126, 200, 227, .08);
+    border-color: #4a9ab8;
+}
+
+.Content_Screenshot_Icon img {
+    width: 100%;
+    border-radius: 8px;
+}

@@ -1,5 +1,9 @@
 /* Common */
 
+#StarContainer {
+    position: absolute;
+}
+
 .Home_SubTitleGroup {
     font-size: 20px;
 
@@ -77,18 +81,17 @@
 
 
 .Home_hero_Content_Featured {
-    width: 800px;
+    width: 1200px;
 
     display: grid;
-    grid-template-rows: auto auto;
-    grid-template-columns: 2fr 1fr;
+    grid-auto-rows: min-content;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    align-items: center;
 
     gap: 1rem;
 }
 
-.Home_hero_Content_Featured div:nth-child(1) {
-    grid-Row: span 2;
-}
+.Home_hero_Content_Featured div:nth-child(1) {}
 
 
 .Home_Hero_ScrollHint {

@@ -1,4 +1,5 @@
 .Component_ItemCard {
+    height: min-content;
     box-sizing: border-box;
 
     background-color: #0b1218;
@@ -8,6 +9,7 @@
 
     display: grid;
     grid-template-columns: 1fr;
+    grid-template-rows: 1.5fr auto;
 
     transition: transform .35s cubic-bezier(.16, 1, .3, 1), border-color .35s, box-shadow .35s;
 }
@@ -18,20 +20,12 @@
     border-color: rgba(126, 200, 227, .3);
 }
 
-.Component_ItemCard.Wide {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 200px;
-}
-
-.Component_ItemCard.Wide .Component_ItemCard_Icon {
-    width: 250px;
-}
-
 .Component_ItemCard_Icon {
-    height: 100%;
+    width: 100%;
 }
 
 .Component_ItemCard_Icon img {
+    aspect-ratio: 16/9;
     width: 100%;
     height: auto;
     display: block;
@@ -39,6 +33,7 @@
 
 
 .Component_ItemCard_Content {
+    min-height: 150px;
     display: flex;
 
     flex-direction: column;

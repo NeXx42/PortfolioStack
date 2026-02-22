@@ -10,9 +10,11 @@ import { ProjectType } from "../enums";
 import "./Home.css";
 import Footer from "../components/footer";
 import LinkCard from "./Home/linkCard";
+import ItemCardSkeleton from "./Home/itemCardSkeleton";
 
 export default function Home() {
     const [selectedTabIndex, setSelectedTabIndex] = useState(ProjectType.Game);
+    const [tags, setTags] = useState<string[]>([])
 
     const {
         featured,
@@ -30,6 +32,21 @@ export default function Home() {
         fetchContent(selectedTabIndex)
     }, [selectedTabIndex])
 
+    useEffect(() => {
+        if (loadingContent)
+            return;
+
+        const uniqueTags = new Set();
+        setTags(items.flatMap(item => item.tags || [])
+            .filter(tag => {
+                if (uniqueTags.has(tag.name))
+                    return false;
+
+                uniqueTags.add(tag.name);
+                return true;
+            }).map(t => t.name));
+
+    }, [items, loadingContent])
 
     return (<>
         <canvas id="StarContainer" />
@@ -47,7 +64,11 @@ export default function Home() {
 
                 <div className="Home_hero_Content_Featured">
                     {loadingFeatured ? (
-                        <a>Loading...</a>
+                        <>
+                            <ItemCardSkeleton isWide={true} />
+                            <ItemCardSkeleton isWide={false} />
+                            <ItemCardSkeleton isWide={false} />
+                        </>
                     ) : (
                         featured.map((item, key) =>
                             (<ItemCard key={key} itemData={item} />)
@@ -87,10 +108,9 @@ export default function Home() {
                         <p>Tags:</p>
 
                         <div>
-                            <a>All</a>
-                            <a>RPG</a>
-                            <a>Puzzle</a>
-                            <a>Action</a>
+                            {tags.map(t => (
+                                <a key={t}>{t}</a>
+                            ))}
                         </div>
                     </div>
 
@@ -102,9 +122,11 @@ export default function Home() {
 
                 <section id="projects" className="Home_Projects_Container">
                     {
-                        loadingContent ? (
-                            <a>LOADING</a>
-                        ) :
+                        loadingContent ? (<>
+                            <ItemCardSkeleton isWide={false} />
+                            <ItemCardSkeleton isWide={false} />
+                            <ItemCardSkeleton isWide={false} />
+                        </>) :
                             (
 
                                 items.map((x, index) => {

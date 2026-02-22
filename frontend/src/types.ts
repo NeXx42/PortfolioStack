@@ -1,13 +1,38 @@
+import type { ProjectContentType, UserRoles } from "./enums"
+
 export interface User {
     userId: string,
     displayName: string
+    role: UserRoles
 }
 
 export interface Item {
     id: string,
-    name: string,
+    gameName: string,
+    slug: string,
     icon: string,
-    description: string,
+    shortDescription: string,
     price?: number,
     actionName: string
+
+    elements?: ItemContent[],
+    tags?: ItemTag[]
+}
+
+export interface ItemContent {
+    type: ProjectContentType,
+    elements?: ItemContentParameter[]
+}
+
+export interface ItemContentParameter {
+    order: number,
+
+    value1: string,
+    value2: string,
+    value3: string,
+}
+
+export interface ItemTag {
+    name: string,
+    customColour: string,
 }

@@ -14,7 +14,7 @@ export default function ItemCard({
     const navigate = useNavigate();
 
     const navigateToPage = () => {
-        navigate(`${itemData?.id}/content`)
+        navigate(`${itemData?.slug}/content`)
     };
 
 
@@ -26,8 +26,8 @@ export default function ItemCard({
 
             <div className="Component_ItemCard_Content">
                 <div className="Component_ItemCard_Info">
-                    <h2>{itemData?.name}</h2>
-                    <p>{itemData?.description}</p>
+                    <h2>{itemData?.gameName}</h2>
+                    <p>{itemData?.shortDescription}</p>
                 </div>
 
                 <div className="Component_ItemCard_Action">

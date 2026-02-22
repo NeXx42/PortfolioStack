@@ -7,19 +7,34 @@ import NotFound from "./NotFound";
 import Navbar from "../components/navbar";
 import type { ReactNode } from "react";
 import Footer from "../components/footer";
+import type { ItemContent } from "../types";
+import { ProjectContentType, UserRoles } from "../enums";
+import Content_Screenshots from "./Content/Content_Screenshots";
+import { useAuth } from "../hooks/useUser";
 
 export default function Content() {
-    const { guid } = useParams();
+    const { slug } = useParams();
 
-    if (guid === undefined)
+    if (slug === undefined)
         return <NotFound />
 
-    const { content, loading, error } = useGame(guid ?? "");
+    const { content, loading, error } = useGame(slug ?? "");
+    const { authenticatedUser } = useAuth()
 
     const wrapSection = (sectionName: string, children: ReactNode) => {
+        console.log(children);
         return (
-            <section className="Content_Section">
-                <h2>{sectionName}</h2>
+            <section className="Content_Section" key={sectionName}>
+                <div className="Content_Section_Header">
+                    <h2>{sectionName}</h2>
+                    {authenticatedUser?.role === UserRoles.Admin && (
+                        <div>
+                            <button>Move Up</button>
+                            <button>Move Down</button>
+                            <button>Delete</button>
+                        </div>
+                    )}
+                </div>
                 {children}
             </section>
         )
@@ -38,65 +53,46 @@ export default function Content() {
         return (
             <section className="Content_Title">
                 <div className="Content_Title_Tags">
-
+                    {content?.tags?.map(t => (<a key={t.name}>{t.name}</a>))}
                 </div>
-                <h1>{content?.name}</h1>
-
+                <h1>{content?.gameName}</h1>
+                <div className="Content_Title_Tagline">
+                    <span>By Nexx42</span>
+                    <div />
+                    <span>Released {content?.gameName}</span>
+                    <div />
+                    <span>Updated {content?.gameName}</span>
+                </div>
             </section>
         )
     }
 
-    const drawScreenshots = () => {
-        return wrapSection("Screenshots", (
-            <></>
-        ));
+
+    const drawElement = (element: ItemContent, index: number) => {
+        const contentKey: string = `Content_${element.type}_${index}`;
+        let child: ReactNode | undefined;
+
+        switch (element.type) {
+            case ProjectContentType.Screenshots:
+                child = <Content_Screenshots key={contentKey} content={element} />;
+                break;
+        }
+
+        return wrapSection(element.type.toString(), child);
     }
-
-    const drawReleases = () => {
-        return (
-            <section>
-
-            </section>
-        )
-    }
-
-    const drawAbout = () => {
-        return wrapSection("About", (
-            <p> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur lobortis egestas magna ut lacinia. Donec quis scelerisque nibh. Fusce tincidunt ultricies turpis. Aliquam in dictum risus, vitae volutpat nibh. Curabitur sed eros eleifend, placerat justo vel, dignissim libero. Integer vestibulum sit amet dolor quis rutrum. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Suspendisse eget mauris et massa pellentesque hendrerit a a risus. Pellentesque dapibus ultrices sem ac fringilla. Suspendisse potenti. Praesent quis mi sit amet ante vehicula consequat. Nullam lacinia elit non feugiat congue. Nunc vehicula cursus quam a porta. Sed consequat ipsum eu commodo iaculis.
-                <br />
-                <br />
-                Morbi vitae placerat lacus. Nullam fringilla ante justo, ac bibendum nibh tincidunt sed. Donec ornare euismod diam, vitae maximus sapien malesuada quis. Sed eget magna suscipit, pulvinar massa nec, laoreet est. Interdum et malesuada fames ac ante ipsum primis in faucibus. Etiam volutpat leo odio, non facilisis arcu ornare a. Nulla accumsan sem in nisi lacinia laoreet. Vivamus vehicula dolor eget justo elementum, sed faucibus est mollis. Nam lacus quam, pharetra eget dignissim ut, semper sit amet sapien. Integer at ipsum in nulla placerat hendrerit vitae fringilla nisl.
-                <br />
-                <br />
-                Ut consequat turpis nulla, et auctor felis dapibus in. Donec non lacus ipsum. Vestibulum ullamcorper sed libero vel pulvinar. Sed pulvinar diam quis scelerisque vulputate. Aenean interdum a odio ac finibus. Vestibulum ex sapien, pellentesque rhoncus interdum sagittis, dignissim vel massa. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; In erat est, pretium quis porta eu, convallis sed nisl. Quisque erat arcu, eleifend sit amet risus a, consequat laoreet odio. In nec nibh ac lorem tincidunt auctor. In metus libero, ullamcorper convallis felis non, convallis tempus nisi. Maecenas vitae vulputate erat. Curabitur aliquam rutrum interdum. Fusce at sagittis metus. Pellentesque nec magna est. Vestibulum venenatis consectetur mauris, quis dictum lacus sodales in. </p>
-        ));
-    }
-
-    const drawFeatures = () => {
-        return wrapSection("Features", (
-            <></>
-        ));
-    }
-
-    const drawRequirements = () => {
-        return wrapSection("Requirements", (
-            <></>
-        ));
-    }
-
-
 
     const drawPage = () => {
         return (
             <div className="Content">
-                <ol className="Content_BreadCrumbs">
-                    <li><a>Home</a></li>
-                    <li><a>Projects</a></li>
-                    <li><a>Games</a></li>
-                    <li><a>{content?.name}</a></li>
-                </ol>
 
                 <div className="Content_ContentFitter">
+                    <ol className="Content_BreadCrumbs">
+                        <li><a>Home</a></li>
+                        <li><a>Projects</a></li>
+                        <li><a>Games</a></li>
+                        <li><a>{content?.gameName}</a></li>
+                    </ol>
+
                     <div className="Content_Hero">
                         <img src={content?.icon} />
 
@@ -108,11 +104,7 @@ export default function Content() {
                     <div className="Content_Main">
                         {drawGet()}
                         {drawTitle()}
-                        {drawScreenshots()}
-                        {drawReleases()}
-                        {drawAbout()}
-                        {drawRequirements()}
-                        {drawFeatures()}
+                        {content?.elements?.map(drawElement)}
                     </div>
                 </div>
             </div>

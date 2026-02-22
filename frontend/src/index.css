@@ -6,7 +6,7 @@
 
 #StarContainer {
     position: fixed;
-    z-index: 10;
+    z-index: 1;
     pointer-events: none;
 }
 
@@ -21,7 +21,47 @@ body {
     padding: 0px;
     margin: 0px;
 
-    background: #0a0a12;
+    background: #060a0d;
+}
+
+.orb {
+    z-index: 0;
+
+    position: fixed;
+    pointer-events: none;
+    border-radius: 50%;
+
+    filter: blur(90px);
+}
+
+.orb:nth-child(1) {
+    width: 400px;
+    height: 400px;
+
+    left: -80px;
+    top: -120px;
+
+    background-color: rgba(126, 200, 227, .05);
+}
+
+.orb:nth-child(2) {
+    width: 280px;
+    height: 280px;
+
+    right: 80px;
+    top: 800px;
+
+    background-color: rgba(80, 30, 130, .07);
+}
+
+.orb:nth-child(3) {
+    width: 800px;
+    height: 800px;
+
+    left: 700px;
+    top: 300px;
+
+    background-color: rgba(60, 20, 100, .02);
 }
 
 .ModalContainer {
