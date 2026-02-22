@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 
 import * as api from "../api/api"
 
-import type { Item } from "../types";
+import type { Item, ItemContent } from "../types";
 
 interface HookReturn {
     content?: Item,
     loading: boolean,
     error?: string,
+
+    updatePage: (newPages?: ItemContent[], updates?: ItemContent[]) => Promise<void>,
 }
 
 
@@ -27,9 +29,17 @@ export function useGame(gameId: string): HookReturn {
             .finally(() => setLoadingFeatured(false));
     }, [gameId])
 
+
+    const updatePage = async (newPages?: ItemContent[], updates?: ItemContent[]) => {
+        await api.updatePage(gameId, newPages, updates);
+    }
+
+
     return {
         content,
         loading,
-        error
+        error,
+
+        updatePage
     }
 }

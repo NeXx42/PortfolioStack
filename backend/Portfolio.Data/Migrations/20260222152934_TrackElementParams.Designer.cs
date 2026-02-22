@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Portfolio.Data;
@@ -11,9 +12,11 @@ using Portfolio.Data;
 namespace Portfolio.Data.Migrations
 {
     [DbContext(typeof(PortfolioContext))]
-    partial class PortfolioContextModelSnapshot : ModelSnapshot
+    [Migration("20260222152934_TrackElementParams")]
+    partial class TrackElementParams
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,7 +43,7 @@ namespace Portfolio.Data.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Elements");
+                    b.ToTable("elements");
                 });
 
             modelBuilder.Entity("Portfolio.Core.Models.ProjectElementParameterModel", b =>
@@ -70,7 +73,7 @@ namespace Portfolio.Data.Migrations
 
                     b.HasIndex("ProjectElementId");
 
-                    b.ToTable("ElementsParameters");
+                    b.ToTable("elementsParameters");
                 });
 
             modelBuilder.Entity("Portfolio.Core.Models.ProjectModel", b =>
@@ -98,7 +101,7 @@ namespace Portfolio.Data.Migrations
 
                     b.HasKey("id");
 
-                    b.ToTable("ProjectModel");
+                    b.ToTable("projects");
                 });
 
             modelBuilder.Entity("Portfolio.Core.Models.ProjectTagModel", b =>

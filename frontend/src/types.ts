@@ -20,7 +20,10 @@ export interface Item {
 }
 
 export interface ItemContent {
+    id: number,
     type: ProjectContentType,
+    order: number,
+
     elements?: ItemContentParameter[]
 }
 

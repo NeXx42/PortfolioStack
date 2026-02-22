@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 using Portfolio.Api.Services;
 using Portfolio.Core.Data;
+using Portfolio.Core.DTOs;
 using Portfolio.Core.Models;
 
 namespace Portfolio.Api.Controllers;
@@ -42,6 +44,23 @@ public class ContentController : ControllerBase
 
         return Results.Json(res);
     }
+
+
+
+    public class UpdateRequest
+    {
+        public ProjectDto.ElementGroup[]? newPages { get; set; }
+        public ProjectDto.ElementGroup[]? modifications { get; set; }
+    }
+
+    [HttpPost("{slug}")]
+    [Authorize(Roles = nameof(UserRoles.Admin))]
+    public async Task<IResult> UpdateGame(string slug, [FromBody] UpdateRequest req)
+    {
+        await _content.UpdateGame(slug, req.newPages ?? [], req.modifications ?? []);
+        return Results.Ok();
+    }
+
 
     [HttpGet("ClearCache")]
     //[Authorize]

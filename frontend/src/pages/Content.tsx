@@ -5,12 +5,13 @@ import "./Content.css"
 
 import NotFound from "./NotFound";
 import Navbar from "../components/navbar";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Footer from "../components/footer";
 import type { ItemContent } from "../types";
 import { ProjectContentType, UserRoles } from "../enums";
 import Content_Screenshots from "./Content/Content_Screenshots";
 import { useAuth } from "../hooks/useUser";
+import Content_About from "./Content/Content_About";
 
 export default function Content() {
     const { slug } = useParams();
@@ -18,15 +19,37 @@ export default function Content() {
     if (slug === undefined)
         return <NotFound />
 
-    const { content, loading, error } = useGame(slug ?? "");
+    const { content, loading, error, updatePage } = useGame(slug ?? "");
     const { authenticatedUser } = useAuth()
 
-    const wrapSection = (sectionName: string, children: ReactNode) => {
+    // Admin
+
+    const [addPageType, setAddPageType] = useState(ProjectContentType.Screenshots);
+    const [newPages, setNewPages] = useState<ItemContent[]>([])
+
+    const addPage = () => {
+        setNewPages(prev => [...prev, {
+            id: -1,
+            type: addPageType,
+            order: Math.max(...newPages.map(i => i.order), ...(content?.elements ?? []).map(i => (i.order ?? 0))) + 1
+        }]);
+        console.log(pageContent);
+    }
+
+    const saveModifications = () => {
+        updatePage(newPages, [])
+    }
+
+    // Content
+    const pageContent = [...newPages, ...(content?.elements ?? [])].sort(a => a.order);
+    const isAdmin = authenticatedUser?.role === UserRoles.Admin;
+
+    const wrapSection = (sectionName: string, key: string, children: ReactNode) => {
         return (
-            <section className="Content_Section" key={sectionName}>
+            <section className="Content_Section" key={key}>
                 <div className="Content_Section_Header">
                     <h2>{sectionName}</h2>
-                    {authenticatedUser?.role === UserRoles.Admin && (
+                    {isAdmin && (
                         <div>
                             <button>Move Up</button>
                             <button>Move Down</button>
@@ -70,14 +93,13 @@ export default function Content() {
     const drawElement = (element: ItemContent, index: number) => {
         const contentKey: string = `Content_${element.type}_${index}`;
         let child: ReactNode | undefined;
-        console.log(element);
+
         switch (element.type) {
-            case ProjectContentType.Screenshots:
-                child = <Content_Screenshots key={contentKey} content={element} />;
-                break;
+            case ProjectContentType.Screenshots: child = <Content_Screenshots key={contentKey} content={element} />; break;
+            case ProjectContentType.About: child = <Content_About key={contentKey} content={element} isAdmin={isAdmin} />; break;
         }
 
-        return wrapSection(element.type.toString(), child);
+        return wrapSection(ProjectContentType[element.type], contentKey, child);
     }
 
     const drawPage = () => {
@@ -103,7 +125,27 @@ export default function Content() {
                     <div className="Content_Main">
                         {drawGet()}
                         {drawTitle()}
-                        {content?.elements?.map(drawElement)}
+                        {pageContent?.map(drawElement)}
+
+                        {isAdmin && (
+                            <div>
+                                <select
+                                    value={addPageType}
+                                    onChange={(e) => setAddPageType(Number(e.target.value) as ProjectContentType)}
+                                >
+                                    {Object.entries(ProjectContentType)
+                                        .filter(([key, value]) => typeof value === "number") // only keep numeric values
+                                        .map(([key, value]) => (
+                                            <option key={value} value={value}>
+                                                {key}
+                                            </option>
+                                        ))}
+                                </select>
+
+                                <button onClick={addPage}>Add Content</button>
+                                <button onClick={saveModifications}>Save Page</button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

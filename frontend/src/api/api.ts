@@ -1,4 +1,4 @@
-import type { Item, User } from "../types";
+import type { Item, ItemContent, User } from "../types";
 import { BASE_URL } from "../config";
 import type { ProjectType } from "../enums";
 
@@ -99,4 +99,18 @@ export async function fetchGame(gameId: string): Promise<Item> {
         throw new Error("Failed to fetch game");
 
     return res.json();
+}
+
+export async function updatePage(slug: string, newPages?: ItemContent[], updates?: ItemContent[]) {
+    const res = await fetch(`${BASE_URL}/api/content/${slug}`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ newPages, updates }),
+    });
+
+    if (!res.ok)
+        throw new Error("Failed to update game");
 }

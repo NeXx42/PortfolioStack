@@ -1,3 +1,4 @@
+using System.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Portfolio.Core.Data;
@@ -25,7 +26,7 @@ public class ContentService
         if (_cache.TryGetValue(type, out ProjectDto[]? projects) && projects != null)
             return projects;
 
-        ProjectModel[] dbRes = await _portfolioContext.projects
+        ProjectModel[] dbRes = await _portfolioContext.Projects
             .Include(p => p.Tags)
             .ThenInclude(t => t.Tag)
             .Where(x => x.projectType == type)
@@ -42,7 +43,7 @@ public class ContentService
         if (_cache.TryGetValue(CACHE_FEATURED_CONTENT, out ProjectDto[]? projects) && projects != null)
             return projects;
 
-        ProjectModel[] dbRes = await _portfolioContext.projects
+        ProjectModel[] dbRes = await _portfolioContext.Projects
             .Include(p => p.Tags)
             .ThenInclude(t => t.Tag)
             .Take(3)
@@ -56,11 +57,11 @@ public class ContentService
 
     public async Task<ProjectDto?> GetGame(string slug)
     {
-        ProjectModel? game = await _portfolioContext.projects
+        ProjectModel? game = await _portfolioContext.Projects
             .Include(p => p.Elements)
-            .ThenInclude(p => p.Parameters)
+                .ThenInclude(p => p.Parameters)
             .Include(p => p.Tags)
-            .ThenInclude(t => t.Tag)
+                .ThenInclude(t => t.Tag)
             .FirstOrDefaultAsync(g => g.slug.Equals(slug));
 
         if (game != null)
@@ -73,6 +74,40 @@ public class ContentService
 
         return null;
     }
+
+    public async Task UpdateGame(string slug, ProjectDto.ElementGroup[] newElements, ProjectDto.ElementGroup[] modifications)
+    {
+        ProjectModel? dbEntry = await _portfolioContext.Projects.FirstOrDefaultAsync(p => p.slug.Equals(slug));
+
+        if (dbEntry == null)
+            throw new Exception("Project not found");
+
+        using (var trans = await _portfolioContext.Database.BeginTransactionAsync())
+        {
+            foreach (ProjectDto.ElementGroup newElement in newElements)
+            {
+                List<ProjectElementParameterModel> ps = new List<ProjectElementParameterModel>();
+
+                foreach (ProjectDto.ElementGroup.ElementParameter param in (newElement.elements ?? []))
+                {
+
+                }
+
+                await _portfolioContext.Elements.AddAsync(new ProjectElementModel()
+                {
+                    Parameters = ps,
+                    Type = newElement.type,
+                    ProjectId = dbEntry.id
+                });
+            }
+
+            await _portfolioContext.SaveChangesAsync();
+            await trans.CommitAsync();
+        }
+    }
+
+
+
 
     public async Task ClearCache()
     {

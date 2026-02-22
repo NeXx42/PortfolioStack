@@ -36,9 +36,12 @@ public class ProjectDto
 
             elements = model.Elements?.Select(x => new ElementGroup()
             {
+                id = x.Id,
                 type = x.Type,
+
                 elements = x.Parameters?.Select(p => new ElementGroup.ElementParameter()
                 {
+                    id = p.Id,
                     order = p.Order,
 
                     value1 = p.ParameterValue1,
@@ -53,12 +56,14 @@ public class ProjectDto
 
     public class ElementGroup
     {
+        public required int id { get; set; }
         public required ElementType type { get; set; }
         public ElementParameter[]? elements { get; set; }
 
         public class ElementParameter
         {
-            public int order { get; set; }
+            public required int id { get; set; }
+            public required int order { get; set; }
 
             public string? value1 { get; set; }
             public string? value2 { get; set; }

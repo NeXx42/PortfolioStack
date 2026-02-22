@@ -1,19 +1,20 @@
-export const enum ProjectType {
+export enum ProjectType {
     Game,
     Software,
     Asset,
     Project
 }
 
-export const enum ProjectContentType {
-    Screenshots,
-    About,
-    Features,
-    Requirements,
-    Releases,
+export enum ProjectContentType {
+    Screenshots = 0,
+    About = 1,
+    Features = 2,
+    Requirements = 3,
+    Releases = 4,
 }
 
-export const enum UserRoles {
+
+export enum UserRoles {
     None,
     Admin
 }
