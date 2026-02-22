@@ -9,7 +9,7 @@ interface HookReturn {
     loading: boolean,
     error?: string,
 
-    updatePage: (newPages?: ItemContent[], updates?: ItemContent[]) => Promise<void>,
+    updatePage: (newPages?: ItemContent[], updates?: ItemContent[], deletions?: number[]) => Promise<void>,
 }
 
 
@@ -30,8 +30,8 @@ export function useGame(gameId: string): HookReturn {
     }, [gameId])
 
 
-    const updatePage = async (newPages?: ItemContent[], updates?: ItemContent[]) => {
-        await api.updatePage(gameId, newPages, updates);
+    const updatePage = async (newPages?: ItemContent[], updates?: ItemContent[], deletions?: number[]) => {
+        await api.updatePage(gameId, newPages, updates, deletions);
     }
 
 

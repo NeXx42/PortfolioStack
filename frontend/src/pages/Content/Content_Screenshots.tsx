@@ -1,12 +1,10 @@
-import type { ItemContent, ItemContentParameter } from "../../types";
+import type { ItemContentParameter } from "../../types";
+import type { ContentElementProps } from "../Content";
 
 import "./Content_Screenshots.css"
 
-interface Props {
-    content: ItemContent
-}
 
-export default function (props: Props) {
+export default function (props: ContentElementProps) {
     if ((props.content.elements?.length ?? 0) === 0)
         return (<>Not Images</>);
 

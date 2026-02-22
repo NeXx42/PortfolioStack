@@ -101,14 +101,14 @@ export async function fetchGame(gameId: string): Promise<Item> {
     return res.json();
 }
 
-export async function updatePage(slug: string, newPages?: ItemContent[], updates?: ItemContent[]) {
+export async function updatePage(slug: string, newPages?: ItemContent[], updates?: ItemContent[], deletions?: number[]) {
     const res = await fetch(`${BASE_URL}/api/content/${slug}`, {
         method: "POST",
         credentials: "include",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ newPages, updates }),
+        body: JSON.stringify({ newPages, updates, deletions }),
     });
 
     if (!res.ok)

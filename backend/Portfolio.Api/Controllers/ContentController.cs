@@ -51,13 +51,14 @@ public class ContentController : ControllerBase
     {
         public ProjectDto.ElementGroup[]? newPages { get; set; }
         public ProjectDto.ElementGroup[]? updates { get; set; }
+        public int[]? deletions { get; set; }
     }
 
     [HttpPost("{slug}")]
     [Authorize(Roles = nameof(UserRoles.Admin))]
     public async Task<IResult> UpdateGame(string slug, [FromBody] UpdateRequest req)
     {
-        await _content.UpdateGame(slug, req.newPages ?? [], req.updates ?? []);
+        await _content.UpdateGame(slug, req.newPages ?? [], req.updates ?? [], req.deletions ?? []);
         return Results.Ok();
     }
 

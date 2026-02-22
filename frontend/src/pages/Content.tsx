@@ -5,13 +5,17 @@ import "./Content.css"
 
 import NotFound from "./NotFound";
 import Navbar from "../components/navbar";
-import { useState, type ReactNode } from "react";
+import { useState, type JSX, type ReactNode } from "react";
 import Footer from "../components/footer";
 import type { ItemContent, ItemContentParameter } from "../types";
 import { ProjectContentType, UserRoles } from "../enums";
 import Content_Screenshots from "./Content/Content_Screenshots";
 import { useAuth } from "../hooks/useUser";
 import Content_About from "./Content/Content_About";
+
+export interface ContentElementProps {
+    content: ItemContent
+}
 
 export default function Content() {
     const { slug } = useParams();
@@ -28,15 +32,20 @@ export default function Content() {
     const [editElement, setEditElement] = useState<ItemContent | undefined>(undefined);
 
     const [newPages, setNewPages] = useState<ItemContent[]>([])
+    const [deletedContent, setDeletedContent] = useState<number[]>([])
     const [elementModifications, setElementModifications] = useState<Record<number, ItemContent>>({})
 
 
     const addPage = () => {
-        setNewPages(prev => [...prev, {
-            id: -1,
-            type: addPageType,
-            order: Math.max(...newPages.map(i => i.order), ...(content?.elements ?? []).map(i => (i.order ?? 0))) + 1
-        }]);
+        setNewPages(prev => {
+            const newId: number = Math.min(Math.min(...(prev.map(e => e.id) ?? [0])), 0) - 1
+
+            return [...prev, {
+                id: newId,
+                type: addPageType,
+                order: Math.max(...newPages.map(i => i.order), ...(content?.elements ?? []).map(i => (i.order ?? 0))) + 1
+            }]
+        });
     }
 
     const startEdit = (content: ItemContent) => {
@@ -105,8 +114,35 @@ export default function Content() {
         setEditElement(undefined);
     }
 
-    const saveModifications = () => {
-        updatePage(newPages, Object.values(elementModifications))
+    const deleteElement = (element: ItemContent) => {
+        if (element.id >= 0) {
+            setDeletedContent(prev => [...prev, element.id]);
+        }
+        else {
+            setNewPages(prev => prev.filter(p => p.id !== element.id));
+        }
+
+        setElementModifications(prev => {
+            const copy = { ...prev };
+            delete copy[element.id];
+            return copy;
+        });
+    }
+
+    const saveModifications = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        const toCreate: ItemContent[] = newPages.map(p => {
+            return elementModifications[p.id] ?? p
+        });
+
+        try {
+            await updatePage(toCreate, Object.values(elementModifications).filter(p => p.id >= 0), deletedContent);
+            window.location.reload();
+        }
+        catch {
+            alert("Failed to save");
+        }
     }
 
     // Content
@@ -114,27 +150,9 @@ export default function Content() {
     const pageContent = [
         ...newPages,
         ...(content?.elements ?? [])
+            .filter(p => !deletedContent.includes(p.id))
             .map(e => elementModifications[e.id] ?? e)
     ].sort(a => a.order);
-
-    const wrapSection = (sectionName: string, key: string, children: ReactNode, onEdit: () => void) => {
-        return (
-            <section className="Content_Section" key={key}>
-                <div className="Content_Section_Header">
-                    <h2>{sectionName}</h2>
-                    {isAdmin && (
-                        <div>
-                            <button onClick={onEdit}>Edit</button>
-                            <button>Move Up</button>
-                            <button>Move Down</button>
-                            <button>Delete</button>
-                        </div>
-                    )}
-                </div>
-                {children}
-            </section>
-        )
-    }
 
 
     const drawGet = () => {
@@ -166,14 +184,32 @@ export default function Content() {
 
     const drawElement = (element: ItemContent, index: number) => {
         const contentKey: string = `Content_${element.type}_${index}`;
-        let child: ReactNode | undefined;
-
-        switch (element.type) {
-            case ProjectContentType.Screenshots: child = <Content_Screenshots key={contentKey} content={element} />; break;
-            case ProjectContentType.About: child = <Content_About key={contentKey} content={element} />; break;
+        const contentMap: Record<ProjectContentType, React.ComponentType<ContentElementProps>> = {
+            [ProjectContentType.Screenshots]: Content_Screenshots,
+            [ProjectContentType.About]: Content_About,
+            [ProjectContentType.Features]: Content_About,
+            [ProjectContentType.Releases]: Content_About,
+            [ProjectContentType.Requirements]: Content_About,
         }
 
-        return wrapSection(ProjectContentType[element.type], contentKey, child, () => startEdit(element));
+        const Component = contentMap[element.type];
+
+        return (
+            <section className="Content_Section" key={contentKey}>
+                <div className="Content_Section_Header">
+                    <h2>{ProjectContentType[element.type]}</h2>
+                    {isAdmin && (
+                        <div>
+                            <button onClick={() => startEdit(element)}>Edit</button>
+                            <button>Move Up</button>
+                            <button>Move Down</button>
+                            <button onClick={() => deleteElement(element)}>Delete</button>
+                        </div>
+                    )}
+                </div>
+                {<Component content={element} />}
+            </section>
+        )
     }
 
     const drawPage = () => {
@@ -208,7 +244,7 @@ export default function Content() {
                                     onChange={(e) => setAddPageType(Number(e.target.value) as ProjectContentType)}
                                 >
                                     {Object.entries(ProjectContentType)
-                                        .filter(([key, value]) => typeof value === "number") // only keep numeric values
+                                        .filter(([_, value]) => typeof value === "number")
                                         .map(([key, value]) => (
                                             <option key={value} value={value}>
                                                 {key}
@@ -217,7 +253,10 @@ export default function Content() {
                                 </select>
 
                                 <button onClick={addPage}>Add Content</button>
-                                <button onClick={saveModifications}>Save Page</button>
+
+                                <form onSubmit={saveModifications}>
+                                    <button type="submit">Save Page</button>
+                                </form>
                             </div>
                         )}
                     </div>
