@@ -14,7 +14,7 @@ export default function AuthenticationModal(props: Props) {
     const [password, setPassword] = useState<string>("");
 
     const [loginTab, setLoginTab] = useState(true);
-    const { login, signup, loading, error } = useAuth();
+    const { login, signup, error } = useAuth();
 
     const handleLogin = async () => {
         if (email === "" || password === "") {

@@ -20,14 +20,26 @@ jobs:
       - name: Login to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build Docker image
+      # build
+        
+      - name: Build Backend Docker image
         run: |
           docker build --no-cache -t ghcr.io/nexx42/backend:${{ github.sha }} ./backend
 
-      - name: Push Docker image
+      - name: Build Frontend Docker image
+        run: |
+          docker build --no-cache -t ghcr.io/nexx42/frontend:${{ github.sha }} ./frontend
+          
+      # push  
+        
+      - name: Push Backend Docker image
         run: |
           docker push ghcr.io/nexx42/backend:${{ github.sha }}
 
+      - name: Push Frontend Docker image
+        run: |
+          docker push ghcr.io/nexx42/frontend:${{ github.sha }}
+          
       #- name: Deploy to server
       #  uses: appleboy/ssh-action@v0.1.6
       #  with:

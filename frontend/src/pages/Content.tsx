@@ -5,7 +5,7 @@ import "./Content.css"
 
 import NotFound from "./NotFound";
 import Navbar from "../components/navbar";
-import { useState, type JSX, type ReactNode } from "react";
+import { useState } from "react";
 import Footer from "../components/footer";
 import type { ItemContent, ItemContentParameter } from "../types";
 import { ProjectContentType, UserRoles } from "../enums";
@@ -23,7 +23,7 @@ export default function Content() {
     if (slug === undefined)
         return <NotFound />
 
-    const { content, loading, error, updatePage } = useGame(slug ?? "");
+    const { content, error, updatePage } = useGame(slug ?? "");
     const { authenticatedUser } = useAuth()
 
     // Admin
