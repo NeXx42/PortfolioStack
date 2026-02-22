@@ -62,6 +62,12 @@ public class ContentController : ControllerBase
         return Results.Ok();
     }
 
+    [HttpGet("Links")]
+    public async Task<IResult> GetLinks()
+    {
+        var res = await _content.GetLinks();
+        return Results.Json(res);
+    }
 
     [HttpGet("ClearCache")]
     //[Authorize]

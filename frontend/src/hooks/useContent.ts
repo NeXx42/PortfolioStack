@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 
 import * as api from "../api/api"
 
-import type { Item } from "../types";
+import type { Item, Link } from "../types";
 import { ProjectType } from "../enums";
 
 interface HookReturn {
     featured: Item[];
     loadingFeatured: boolean,
+
+    links: Link[],
+    loadingLinks: boolean,
 
     content: Record<ProjectType, Item[]>,
     loadingContent: boolean,
@@ -19,11 +22,20 @@ export function useContent(): HookReturn {
     const [featured, setFeatured] = useState<Item[]>([]);
     const [loadingFeatured, setLoadingFeatured] = useState(true);
 
+    const [links, setLinks] = useState<Link[]>([]);
+    const [loadingLinks, setLoadingLinks] = useState(true);
+
     useEffect(() => {
         setLoadingFeatured(true);
+        setLoadingLinks(true);
+
         api.fetchFeaturedContent()
             .then((x: Item[]) => setFeatured(x))
             .finally(() => setLoadingFeatured(false));
+
+        api.fetchLinks()
+            .then((x: Link[]) => setLinks(x))
+            .finally(() => setLoadingLinks(false));
     }, [])
 
 
@@ -50,6 +62,9 @@ export function useContent(): HookReturn {
     return {
         featured,
         loadingFeatured,
+
+        links,
+        loadingLinks,
 
         content,
         loadingContent,

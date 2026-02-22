@@ -11,6 +11,7 @@ namespace Portfolio.Api.Services;
 public class ContentService
 {
     private const string CACHE_FEATURED_CONTENT = "Content_FeaturedContent";
+    private const string CACHE_LINKS = "Content_Links";
 
     private IMemoryCache _cache;
     private PortfolioContext _portfolioContext;
@@ -157,6 +158,17 @@ public class ContentService
     }
 
 
+
+    public async Task<LinkModel[]> GetLinks()
+    {
+        if (_cache.TryGetValue(CACHE_LINKS, out LinkModel[]? links) && links != null)
+            return links;
+
+        LinkModel[] dbRes = await _portfolioContext.Links.ToArrayAsync();
+
+        _cache.Set(CACHE_LINKS, dbRes);
+        return dbRes;
+    }
 
 
     public async Task ClearCache()

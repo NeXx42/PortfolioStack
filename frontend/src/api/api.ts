@@ -114,3 +114,16 @@ export async function updatePage(slug: string, newPages?: ItemContent[], updates
     if (!res.ok)
         throw new Error("Failed to update game");
 }
+
+export async function fetchLinks() {
+    const res = await fetch(`${BASE_URL}/api/content/links`, {
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    if (!res.ok)
+        throw new Error("Failed to fetch content");
+
+    return res.json();
+}

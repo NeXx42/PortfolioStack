@@ -46,3 +46,11 @@ export interface ItemTag {
     name: string,
     customColour: string,
 }
+
+export interface Link {
+    name: string,
+    url: string,
+
+    customColour?: string,
+    icon?: string
+}

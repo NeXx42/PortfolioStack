@@ -16,4 +16,6 @@ public class PortfolioContext : DbContext
 
     public DbSet<ProjectElementModel> Elements { get; set; }
     public DbSet<ProjectElementParameterModel> ElementsParameters { get; set; }
+
+    public DbSet<LinkModel> Links { get; set; }
 }

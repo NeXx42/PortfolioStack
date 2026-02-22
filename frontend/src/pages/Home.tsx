@@ -20,6 +20,9 @@ export default function Home() {
         featured,
         loadingFeatured,
 
+        links,
+        loadingLinks,
+
         content,
         loadingContent,
         fetchContent
@@ -155,11 +158,15 @@ export default function Home() {
                     </div>
 
                     <div className="Home_Links_Container">
-                        <LinkCard />
-                        <LinkCard />
-                        <LinkCard />
-                        <LinkCard />
-                        <LinkCard />
+                        {loadingLinks ? (
+                            <>
+                                <LinkCard />
+                                <LinkCard />
+                                <LinkCard />
+                            </>
+                        ) : (links.map((l, i) => (
+                            <LinkCard key={i} data={l} />
+                        )))}
                     </div>
                 </section>
 
