@@ -77,7 +77,10 @@ public class ContentService
 
     public async Task UpdateGame(string slug, ProjectDto.ElementGroup[] newElements, ProjectDto.ElementGroup[] modifications)
     {
-        ProjectModel? dbEntry = await _portfolioContext.Projects.FirstOrDefaultAsync(p => p.slug.Equals(slug));
+        ProjectModel? dbEntry = await _portfolioContext.Projects
+            .Include(p => p.Elements)
+                .ThenInclude(e => e.Parameters)
+            .FirstOrDefaultAsync(p => p.slug.Equals(slug));
 
         if (dbEntry == null)
             throw new Exception("Project not found");
@@ -88,7 +91,7 @@ public class ContentService
             {
                 List<ProjectElementParameterModel> ps = new List<ProjectElementParameterModel>();
 
-                foreach (ProjectDto.ElementGroup.ElementParameter param in (newElement.elements ?? []))
+                foreach (ProjectDto.ElementGroup.ElementParameter param in newElement.elements ?? [])
                 {
 
                 }
@@ -100,6 +103,45 @@ public class ContentService
                     ProjectId = dbEntry.id
                 });
             }
+
+
+            foreach (ProjectDto.ElementGroup modification in modifications)
+            {
+                List<ProjectElementParameterModel> newParameters = new List<ProjectElementParameterModel>();
+
+                foreach (var param in modification.elements ?? [])
+                {
+                    if (param.id < 0)
+                    {
+                        newParameters.Add(new ProjectElementParameterModel()
+                        {
+                            Order = param.id,
+                            ProjectElementId = modification.id,
+                            ParameterValue1 = param.value1,
+                            ParameterValue2 = param.value2,
+                            ParameterValue3 = param.value3,
+                        });
+                    }
+                    else
+                    {
+                        var existing = await _portfolioContext.ElementsParameters.SingleAsync(e => e.Id == param.id);
+
+                        existing.Order = param.order;
+                        existing.ParameterValue1 = param.value1;
+                        existing.ParameterValue2 = param.value2;
+                        existing.ParameterValue3 = param.value3;
+                    }
+                }
+
+                var unmatchedParameters = dbEntry.Elements.Single(x => x.Id == modification.id)
+                    .Parameters.Where(x => !(modification.elements?.Any(e => x.Id == e.id) ?? false))
+                    .ToList();
+
+                _portfolioContext.ElementsParameters.RemoveRange(unmatchedParameters);
+                await _portfolioContext.ElementsParameters.AddRangeAsync(newParameters);
+            }
+
+
 
             await _portfolioContext.SaveChangesAsync();
             await trans.CommitAsync();
