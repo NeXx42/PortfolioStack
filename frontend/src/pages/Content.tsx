@@ -268,7 +268,7 @@ export default function Content() {
                         <button onClick={() => saveEditElement()}>Save</button>
 
                         <ol>
-                            {editElement.elements?.sort(x => x.order ?? 0).map((x, i) => (
+                            {editElement.elements?.map((x, i) => (
                                 <li key={i}>
                                     <div>
                                         <label>{x.id}</label>
