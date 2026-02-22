@@ -28,3 +28,11 @@ jobs:
         run: |
           docker push ghcr.io/nexx42/backend:${{ github.sha }}
 
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            ~/apps/portfolio/deploy.sh ${{ github.sha }}
