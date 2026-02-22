@@ -22,7 +22,6 @@ export default function Content() {
     const { authenticatedUser } = useAuth()
 
     const wrapSection = (sectionName: string, children: ReactNode) => {
-        console.log(children);
         return (
             <section className="Content_Section" key={sectionName}>
                 <div className="Content_Section_Header">
@@ -71,7 +70,7 @@ export default function Content() {
     const drawElement = (element: ItemContent, index: number) => {
         const contentKey: string = `Content_${element.type}_${index}`;
         let child: ReactNode | undefined;
-
+        console.log(element);
         switch (element.type) {
             case ProjectContentType.Screenshots:
                 child = <Content_Screenshots key={contentKey} content={element} />;

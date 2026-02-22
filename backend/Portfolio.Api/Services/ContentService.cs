@@ -58,6 +58,7 @@ public class ContentService
     {
         ProjectModel? game = await _portfolioContext.projects
             .Include(p => p.Elements)
+            .ThenInclude(p => p.Parameters)
             .Include(p => p.Tags)
             .ThenInclude(t => t.Tag)
             .FirstOrDefaultAsync(g => g.slug.Equals(slug));
