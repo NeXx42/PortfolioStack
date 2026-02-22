@@ -9,4 +9,5 @@ public class PortfolioContext : DbContext
 
     public DbSet<UserModel> Users { get; set; }
     public DbSet<ProjectModel> projects { get; set; }
+    public DbSet<ProjectElementModel> elements { get; set; }
 }

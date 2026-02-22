@@ -32,20 +32,15 @@ public class ContentController : ControllerBase
         return Results.Json(res);
     }
 
-    [HttpGet("{id}")]
-    public async Task<IResult> GetGame(string id)
+    [HttpGet("{slug}")]
+    public async Task<IResult> GetGame(string slug)
     {
-        if (Guid.TryParse(id, out Guid guid))
-        {
-            var res = await _content.GetGame(guid);
+        var res = await _content.GetGame(slug);
 
-            if (res == null)
-                return Results.NotFound();
+        if (res == null)
+            return Results.NotFound();
 
-            return Results.Json(res);
-        }
-
-        return Results.BadRequest("Failed to parse id");
+        return Results.Json(res);
     }
 
     [HttpGet("ClearCache")]

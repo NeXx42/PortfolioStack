@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Portfolio.Core.Data;
+using Portfolio.Core.DTOs;
 using Portfolio.Core.Models;
 using Portfolio.Data;
 
@@ -19,32 +20,57 @@ public class ContentService
         _portfolioContext = portfolioContext;
     }
 
-    public async Task<ProjectModel[]> GetContentForType(ProjectType type)
+    public async Task<ProjectDto[]> GetContentForType(ProjectType type)
     {
-        if (_cache.TryGetValue(type, out ProjectModel[]? projects) && projects != null)
+        if (_cache.TryGetValue(type, out ProjectDto[]? projects) && projects != null)
             return projects;
 
-        ProjectModel[] results = await _portfolioContext.projects.Where(x => x.projectType == type).ToArrayAsync();
+        ProjectModel[] dbRes = await _portfolioContext.projects
+            .Include(p => p.Tags)
+            .ThenInclude(t => t.Tag)
+            .Where(x => x.projectType == type)
+            .ToArrayAsync();
+
+        ProjectDto[] results = dbRes.Select(ProjectDto.Map).ToArray();
+
         _cache.Set(type, results);
-
         return results;
     }
 
-    public async Task<ProjectModel[]> FeaturedContent()
+    public async Task<ProjectDto[]> FeaturedContent()
     {
-        if (_cache.TryGetValue(CACHE_FEATURED_CONTENT, out ProjectModel[]? projects) && projects != null)
+        if (_cache.TryGetValue(CACHE_FEATURED_CONTENT, out ProjectDto[]? projects) && projects != null)
             return projects;
 
-        ProjectModel[] results = await _portfolioContext.projects.Take(3).ToArrayAsync();
-        _cache.Set(CACHE_FEATURED_CONTENT, results);
+        ProjectModel[] dbRes = await _portfolioContext.projects
+            .Include(p => p.Tags)
+            .ThenInclude(t => t.Tag)
+            .Take(3)
+            .ToArrayAsync();
 
+        ProjectDto[] results = dbRes.Select(ProjectDto.Map).ToArray();
+
+        _cache.Set(CACHE_FEATURED_CONTENT, results);
         return results;
     }
 
-    public async Task<ProjectModel?> GetGame(Guid id)
+    public async Task<ProjectDto?> GetGame(string slug)
     {
-        ProjectModel? game = await _portfolioContext.projects.FirstOrDefaultAsync(g => g.id == id);
-        return game;
+        ProjectModel? game = await _portfolioContext.projects
+            .Include(p => p.Elements)
+            .Include(p => p.Tags)
+            .ThenInclude(t => t.Tag)
+            .FirstOrDefaultAsync(g => g.slug.Equals(slug));
+
+        if (game != null)
+        {
+            ProjectDto dto = ProjectDto.Map(game);
+            _cache.Set(slug, dto);
+
+            return dto;
+        }
+
+        return null;
     }
 
     public async Task ClearCache()

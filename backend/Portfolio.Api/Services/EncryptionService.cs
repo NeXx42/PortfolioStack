@@ -86,7 +86,8 @@ public class EncryptionService
         {
             id = usr.userId,
             email = DecryptData(usr.email),
-            displayName = DecryptData(usr.displayName)
+            displayName = DecryptData(usr.displayName),
+            role = usr.Role ?? Core.Data.UserRoles.None
         };
     }
 }

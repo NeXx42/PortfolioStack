@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Portfolio.Data;
@@ -11,9 +12,11 @@ using Portfolio.Data;
 namespace Portfolio.Data.Migrations
 {
     [DbContext(typeof(PortfolioContext))]
-    partial class PortfolioContextModelSnapshot : ModelSnapshot
+    [Migration("20260222112716_UpdateElementsLinkings")]
+    partial class UpdateElementsLinkings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -101,57 +104,11 @@ namespace Portfolio.Data.Migrations
                     b.ToTable("projects");
                 });
 
-            modelBuilder.Entity("Portfolio.Core.Models.ProjectTagModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProjectId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("ProjectTagModel");
-                });
-
-            modelBuilder.Entity("Portfolio.Core.Models.TagModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("customColour")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TagModel");
-                });
-
             modelBuilder.Entity("Portfolio.Core.Models.UserModel", b =>
                 {
                     b.Property<Guid>("userId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<int?>("Role")
-                        .HasColumnType("integer");
 
                     b.Property<string>("displayName")
                         .IsRequired()
@@ -196,25 +153,6 @@ namespace Portfolio.Data.Migrations
                     b.Navigation("ProjectElement");
                 });
 
-            modelBuilder.Entity("Portfolio.Core.Models.ProjectTagModel", b =>
-                {
-                    b.HasOne("Portfolio.Core.Models.ProjectModel", "project")
-                        .WithMany("Tags")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Portfolio.Core.Models.TagModel", "Tag")
-                        .WithMany()
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Tag");
-
-                    b.Navigation("project");
-                });
-
             modelBuilder.Entity("Portfolio.Core.Models.ProjectElementModel", b =>
                 {
                     b.Navigation("Parameters");
@@ -223,8 +161,6 @@ namespace Portfolio.Data.Migrations
             modelBuilder.Entity("Portfolio.Core.Models.ProjectModel", b =>
                 {
                     b.Navigation("Elements");
-
-                    b.Navigation("Tags");
                 });
 #pragma warning restore 612, 618
         }

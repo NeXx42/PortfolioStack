@@ -106,7 +106,8 @@ public class AuthenticationService
             {
                 new Claim(ClaimTypes.NameIdentifier, usr.id.ToString()),
                 new Claim(ClaimTypes.Email, usr.email),
-                new Claim(ClaimTypes.Name, usr.displayName)
+                new Claim(ClaimTypes.Name, usr.displayName),
+                new Claim( ClaimTypes.Role, usr.role.ToString())
             }),
             Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = _encryptionService.GetJWTSingingCredentials()
