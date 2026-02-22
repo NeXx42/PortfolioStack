@@ -162,3 +162,15 @@
     border-radius: 50%;
     background-color: rgba(126, 200, 227, 0.15);
 }
+
+/* Admin */
+
+
+.Content_Admin_Edit {
+    z-index: 999;
+
+    position: fixed;
+    inset: 0;
+
+    background-color: red;
+}

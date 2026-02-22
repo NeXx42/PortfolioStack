@@ -28,6 +28,7 @@ export interface ItemContent {
 }
 
 export interface ItemContentParameter {
+    id: number,
     order: number,
 
     value1: string,
