@@ -10,11 +10,19 @@ COPY public ./public
 COPY src ./src
 COPY index.html ./
 
+COPY entrypoint.sh /entrypoint.sh
+
 RUN npm ci
 RUN npm run build
 
+# server
 FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
+
 COPY --from=build /app/dist /usr/share/nginx/html
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/entrypoint.sh"]
