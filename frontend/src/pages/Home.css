@@ -260,6 +260,18 @@
     gap: 15px;
 }
 
+.Home_Projects_Container_Empty {
+    grid-column: span 3;
+    height: 150px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: gray;
+    font-size: 16px;
+}
+
 /* Links */
 
 .Home_Links_Title {

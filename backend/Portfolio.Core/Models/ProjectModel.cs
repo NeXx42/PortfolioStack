@@ -20,6 +20,11 @@ public class ProjectModel
     [Required]
     public required ProjectType projectType { get; set; }
 
+    public DateTime CreatedDate { get; set; }
+    public DateTime UpdatedDate { get; set; }
+    public string? Version { get; set; }
+    public decimal? Price { get; set; }
+
     public ICollection<ProjectElementModel> Elements { get; set; } = new List<ProjectElementModel>();
     public ICollection<ProjectTagModel> Tags { get; set; } = new List<ProjectTagModel>();
 }

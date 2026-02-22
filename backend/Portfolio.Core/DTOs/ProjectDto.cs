@@ -16,8 +16,13 @@ public class ProjectDto
     public DateTime? dateCreated { get; set; }
     public DateTime? dateUpdated { get; set; }
 
+    public string? version { get; set; }
+    public decimal? cost { get; set; }
+
     public ElementGroup[]? elements { get; set; }
     public Tag[]? tags { get; set; }
+
+    public ProjectType type { get; set; }
 
     public static ProjectDto Map(ProjectModel model)
     {
@@ -25,8 +30,17 @@ public class ProjectDto
         {
             id = model.id,
             gameName = model.name,
+
             icon = model.icon,
             slug = model.slug,
+
+            dateCreated = model.CreatedDate,
+            dateUpdated = model.CreatedDate,
+
+            version = model.Version,
+            cost = model.Price,
+
+            type = model.projectType,
 
             tags = model.Tags?.Select(t => new Tag()
             {

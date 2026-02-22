@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { Item } from "../../types"
 import "./itemCard.css"
+import { ProjectType } from "../../enums";
 
 interface Props {
     isWide?: boolean,
@@ -17,6 +18,24 @@ export default function ItemCard({
         navigate(`${itemData?.slug}/content`)
     };
 
+    const getCost = (): string => {
+        if (itemData?.type === ProjectType.Game)
+            return itemData.cost == null ? "Free" : itemData.cost!.toString();
+
+        return "";
+    }
+
+    const getAction = () => {
+        if (itemData?.cost !== null)
+            return "Purchase"
+
+        switch (itemData?.type) {
+            case ProjectType.Software:
+                return "Download";
+        }
+
+        return "View";
+    }
 
     return (
         <div onClick={navigateToPage} className={`Component_ItemCard ${isWide ? "Wide" : ""}`}>
@@ -31,8 +50,8 @@ export default function ItemCard({
                 </div>
 
                 <div className="Component_ItemCard_Action">
-                    <p>Free</p>
-                    <a>Download</a>
+                    <p>{getCost()}</p>
+                    <a>{getAction()}</a>
                 </div>
             </div>
         </div>

@@ -1,4 +1,4 @@
-import type { ProjectContentType, UserRoles } from "./enums"
+import type { ProjectContentType, ProjectType, UserRoles } from "./enums"
 
 export interface User {
     userId: string,
@@ -12,8 +12,14 @@ export interface Item {
     slug: string,
     icon: string,
     shortDescription: string,
-    price?: number,
-    actionName: string
+
+    cost?: number,
+    version?: string,
+
+    dateCreated?: Date,
+    dateUpdate?: Date,
+
+    type: ProjectType,
 
     elements?: ItemContent[],
     tags?: ItemTag[]

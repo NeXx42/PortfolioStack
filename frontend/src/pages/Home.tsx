@@ -128,12 +128,19 @@ export default function Home() {
                             <ItemCardSkeleton isWide={false} />
                         </>) :
                             (
+                                items.length === 0 ? (
+                                    <div className="Home_Projects_Container_Empty">
+                                        <label>No Content</label>
+                                    </div>
+                                ) : (
 
-                                items.map((x, index) => {
-                                    return (
-                                        <ItemCard key={index} itemData={x} />
-                                    )
-                                })
+                                    items.map((x, index) => {
+                                        return (
+                                            <ItemCard key={index} itemData={x} />
+                                        )
+                                    })
+                                )
+
                             )
 
                     }
