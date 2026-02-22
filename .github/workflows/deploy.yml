@@ -22,7 +22,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/nexx42/backend:${{ github.sha }} .
+          docker build -t ghcr.io/nexx42/backend:${{ github.sha }} ./backend
 
       - name: Push Docker image
         run: |
