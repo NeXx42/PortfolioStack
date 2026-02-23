@@ -129,3 +129,7 @@
     color: #e74c3c;
     font-family: 'JetBrains Mono', monospace;
 }
+
+.ig:invalid {
+    color: red;
+}

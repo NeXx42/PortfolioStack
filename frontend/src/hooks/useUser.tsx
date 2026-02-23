@@ -8,8 +8,8 @@ type AuthContextType = {
     authenticatedUser: User | undefined,
     loading: boolean,
     error: string,
-    login: (email: string, password: string) => Promise<void>,
-    signup: (email: string, displayName: string, password: string) => Promise<void>,
+    login: (email: string, password: string) => Promise<boolean>,
+    signup: (email: string, displayName: string, password: string) => Promise<boolean>,
     logout: () => Promise<void>,
 }
 
@@ -24,7 +24,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         api.getLoggedInUser()
             .then(u => setUser(u))
-            .catch(e => setError(e.message))
             .finally(() => setLoading(false));
     }, []);
 
@@ -35,12 +34,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const u = await api.login(email, password);
             setUser(u);
+
+            return true;
         }
         catch (err: any) {
             setError(err.message || "login failed");
         }
         finally {
             setLoading(false);
+            return false;
         }
     }
 
@@ -51,12 +53,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const u = await api.signup(email, displayName, password);
             setUser(u);
+
+            return true;
         }
         catch (err: any) {
             setError(err.message || "login failed");
         }
         finally {
             setLoading(false);
+            return false;
         }
     }
 

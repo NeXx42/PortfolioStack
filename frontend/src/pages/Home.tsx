@@ -68,19 +68,6 @@ export default function Home() {
         setShowContentSkeleton(false);
     }, [loadingContent])
 
-    const [showFeaturedSkeleton, setShowFeaturedSkeleton] = useState(false);
-    useEffect(() => {
-        if (loadingFeatured) {
-            const timeout = setTimeout(() => {
-                setShowFeaturedSkeleton(true);
-            }, skeletonDelay)
-
-            return () => clearTimeout(timeout);
-        }
-
-        setShowFeaturedSkeleton(false);
-    }, [loadingFeatured])
-
     return (<>
         <canvas id="StarContainer" />
 
@@ -89,14 +76,13 @@ export default function Home() {
             <div className="Home_Hero_Grid" />
             <div className="Home_Hero_Content">
                 <div className="Home_Hero_Content_Person">
-                    <div className="Home_Hero_Content_Crown">✦</div>
                     <h1 className="Home_Hero_Content_Name">NeXx42</h1>
                     <div className="Home_Hero_Content_Divider" />
-                    <p className="Home_Hero_Content_Description">Game Dev · Software Crafter · Digital Artisan</p>
+                    <p className="Home_Hero_Content_Description">Game Developer · Software Developer</p>
                 </div>
 
                 <div className="Home_hero_Content_Featured">
-                    {showFeaturedSkeleton ? (
+                    {(loadingFeatured || featured.length == 0) ? (
                         <>
                             <ItemCardSkeleton isWide={true} />
                             <ItemCardSkeleton isWide={false} />
@@ -203,7 +189,24 @@ export default function Home() {
                 <div className="Home_SectionDivision" />
 
                 <section id="details" className="Home_Details">
-                    <div>
+                    <div className="Home_Details_Profile">
+                        <div className="Home_Details_Profile_Icon">
+                            <img src="/Profile.png" />
+                        </div>
+
+                        <a>@NeXx42</a>
+                    </div>
+
+                    <div className="Home_Details_Text">
+                        <p>
+                            Software developer specializing in game development, with experience creating gameplay systems and modular tools for both single-player and multiplayer projects. Focused on building flexible and reusable systems that can support a variety of game mechanics.
+                        </p>
+                        <p>
+                            Skilled in game networking, AI systems, and gameplay frameworks, with experience implementing features that interact with backend services and handle dynamic in-game data.
+                        </p>
+                        <p>
+                            In addition to game development, experienced in full-stack software development and automation, creating components and workflows that improve maintainability and streamline development across projects.
+                        </p>
 
                     </div>
                 </section>

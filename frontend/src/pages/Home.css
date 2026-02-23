@@ -54,11 +54,20 @@
 }
 
 .Home_Hero_Content {
+    position: absolute;
     z-index: 10;
-    width: 90%;
+    width: 100%;
+    height: 100%;
 
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    justify-items: center;
+}
+
+.Home_Hero_Content_Person {
+    position: absolute;
+    left: 5%;
+    top: 20%;
 }
 
 .Home_Hero_Content_Person h1 {
@@ -81,7 +90,10 @@
 
 
 .Home_hero_Content_Featured {
+    position: absolute;
     width: 1200px;
+
+    right: 5%;
 
     display: grid;
     grid-auto-rows: min-content;
@@ -90,8 +102,6 @@
 
     gap: 1rem;
 }
-
-.Home_hero_Content_Featured div:nth-child(1) {}
 
 
 .Home_Hero_ScrollHint {
@@ -286,11 +296,56 @@
 
 /* Links */
 
-.Home_Details div {
+.Home_Details {
     width: 100%;
-    height: 500px;
+
+    box-sizing: border-box;
 
     background: linear-gradient(135deg, rgba(74, 154, 184, .08), rgba(126, 200, 227, .05));
     border: 1px solid rgba(74, 154, 184, 0.25);
     border-radius: 20px;
+
+    padding: 50px;
+
+    display: grid;
+    grid-template-columns: 300px auto;
+}
+
+.Home_Details_Profile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    gap: 25px;
+    color: #4a9ab8;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+}
+
+.Home_Details_Text {
+    font-family: 'IM Fell English', Georgia, serif;
+    color: rgba(221, 238, 227, .75);
+    font-size: .97rem;
+}
+
+.Home_Details_Profile_Icon {
+    width: 200px;
+
+    border-radius: 50%;
+    overflow: hidden;
+
+    box-sizing: border-box;
+    padding: 0;
+
+    background: conic-gradient(#4a9ab8, #5bb8d8, #a8ddf0, #4a9ab8);
+    padding: 5px;
+}
+
+.Home_Details_Profile_Icon img {
+    aspect-ratio: 1/1;
+    width: 100%;
+    height: 100%;
+
+    border-radius: 50%;
 }

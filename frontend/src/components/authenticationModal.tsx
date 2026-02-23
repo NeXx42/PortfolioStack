@@ -1,4 +1,4 @@
-import { useState } from "react"
+import React, { useState } from "react"
 import "./authenticationModal.css"
 import { useAuth } from "../hooks/useUser";
 import { createPortal } from "react-dom";
@@ -16,21 +16,18 @@ export default function AuthenticationModal(props: Props) {
     const [loginTab, setLoginTab] = useState(true);
     const { login, signup, error } = useAuth();
 
-    const handleLogin = async () => {
-        if (email === "" || password === "") {
-            return;
-        }
+    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
 
-        await login(email, password);
-        props.onExit();
+        if (await login(email, password))
+            props.onExit();
     };
 
-    const handleSignup = async () => {
-        if (email === "" || password === "" || displayName == "") {
-            return;
-        }
+    const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
 
-        await signup(email, displayName, password);
+        if (await signup(email, displayName, password))
+            props.onExit();
     };
 
     return createPortal(
@@ -48,37 +45,37 @@ export default function AuthenticationModal(props: Props) {
 
                 {
                     loginTab ? (
-                        <div id="Component_AuthenticationModal_signin" className="Component_AuthenticationModal_Form">
+                        <form onSubmit={handleLogin} id="Component_AuthenticationModal_signin" className="Component_AuthenticationModal_Form">
                             <div className="ig">
                                 <label>Email</label>
-                                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+                                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
                             </div>
                             <div className="ig">
                                 <label>Password</label>
-                                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+                                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
                             </div>
 
                             <label>{error}</label>
-                            <CommonButton label="Login" onClick={handleLogin} />
-                        </div>
+                            <CommonButton label="Login" />
+                        </form>
                     ) : (
-                        <div id="Component_AuthenticationModal_signup" className="Component_AuthenticationModal_Form">
+                        <form onSubmit={handleSignup} id="Component_AuthenticationModal_signup" className="Component_AuthenticationModal_Form">
                             <div className="ig">
                                 <label>Name</label>
-                                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" />
+                                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" required />
                             </div>
                             <div className="ig">
                                 <label>Email</label>
-                                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+                                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
                             </div>
                             <div className="ig">
                                 <label>Password</label>
-                                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Choose a password" />
+                                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Choose a password" required />
                             </div>
 
                             <label>{error}</label>
-                            <CommonButton label="Login" onClick={handleSignup} />
-                        </div>
+                            <CommonButton label="Signup" />
+                        </form>
                     )
                 }
             </div>

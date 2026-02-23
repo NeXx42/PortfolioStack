@@ -2,7 +2,7 @@ import type { MouseEventHandler } from "react";
 import "./commonButton.css"
 
 interface Props {
-    onClick: MouseEventHandler<HTMLElement>,
+    onClick?: MouseEventHandler<HTMLElement>,
     label: string
 }
 

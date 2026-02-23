@@ -28,6 +28,11 @@ public class UserController : ControllerBase
         public string email { get; set; }
         public string displayName { get; set; }
         public string password { get; set; }
+
+        public bool Validate()
+        {
+            return email.Contains("@") && !string.IsNullOrEmpty(displayName) && !string.IsNullOrEmpty(password);
+        }
     }
 
     [HttpPost("signup")]
@@ -37,6 +42,9 @@ public class UserController : ControllerBase
         {
             return Results.InternalServerError("Account creation is disabled");
         }
+
+        if (!request.Validate())
+            return Results.BadRequest("Invalid signup request");
 
         UserDto usr = await _authService.CreateUserEntry(request.email, request.displayName, request.password);
 
@@ -53,15 +61,22 @@ public class UserController : ControllerBase
     [HttpPost("login")]
     public async Task<IResult> Login([FromBody] LoginRequest login)
     {
-        UserDto? usr = await _authService.ConfirmLogin(login.email, login.password);
-
-        if (usr != null)
+        try
         {
-            AddTokenCookie(usr);
-            return Results.Json(usr);
-        }
+            UserDto? usr = await _authService.ConfirmLogin(login.email, login.password);
 
-        return Results.BadRequest("Invalid login");
+            if (usr != null)
+            {
+                AddTokenCookie(usr);
+                return Results.Json(usr);
+            }
+
+            return Results.BadRequest("Invalid login");
+        }
+        catch (Exception e)
+        {
+            return Results.BadRequest(e.Message);
+        }
     }
 
     [HttpGet("profile")]
