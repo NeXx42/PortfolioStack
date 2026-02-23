@@ -5,13 +5,14 @@ import "./Content.css"
 
 import NotFound from "./NotFound";
 import Navbar from "../components/navbar";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Footer from "../components/footer";
 import type { ItemContent, ItemContentParameter } from "../types";
 import { ProjectContentType, UserRoles } from "../enums";
 import Content_Screenshots from "./Content/Content_Screenshots";
 import { useAuth } from "../hooks/useUser";
 import Content_About from "./Content/Content_About";
+import CommonButton from "../components/commonButton";
 
 export interface ContentElementProps {
     content: ItemContent
@@ -145,8 +146,11 @@ export default function Content() {
         }
     }
 
-    // Content
+    // end of admin
+
+
     const isAdmin = authenticatedUser?.role === UserRoles.Admin;
+
     const pageContent = [
         ...newPages,
         ...(content?.elements ?? [])
@@ -154,11 +158,34 @@ export default function Content() {
             .map(e => elementModifications[e.id] ?? e)
     ].sort(a => a.order);
 
+    const [isGetSticky, setGetSticky] = useState(false);
+    const stickyPointRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (stickyPointRef.current) {
+                const stickyPoint = stickyPointRef.current.offsetTop + 65; // header bar 55 pxs?
+                setGetSticky(window.scrollY > stickyPoint);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [])
+
 
     const drawGet = () => {
         return (
-            <div className="Content_Get stuck">
+            <div className={`Content_Get ${isGetSticky ? "Stuck" : ""}`}>
+                <div className="Content_Get_Details">
+                    <span>VERSION <b>{content?.version ?? "0.0.0"}</b></span>
+                    <span>SIZE <b>Unavailable</b></span>
+                </div>
 
+                <div className="Content_Get_Actions">
+                    <label>{content?.cost}</label>
+                    <CommonButton label={(content?.cost ?? 0) >= 0 ? "Download" : "Purchase"} onClick={() => { }} />
+                </div>
             </div>
         )
     }
@@ -232,8 +259,11 @@ export default function Content() {
                         <div className="Content_Hero_Vignette" />
                     </div>
 
-                    <div className="Content_Main">
+                    <div ref={stickyPointRef} className="Content_GetDivider">
                         {drawGet()}
+                    </div>
+
+                    <div className="Content_Main">
                         {drawTitle()}
                         {pageContent?.map(drawElement)}
 

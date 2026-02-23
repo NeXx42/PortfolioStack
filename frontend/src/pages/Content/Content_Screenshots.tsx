@@ -12,6 +12,7 @@ export default function (props: ContentElementProps) {
 
     const drawImage = (icon: ItemContentParameter, key: number) => {
         return (<div className={`Content_Screenshot_Icon ${icon.value2}`} key={key}>
+            <a>⤢ expand</a>
             <img src={icon.value1} />
         </div>)
     }

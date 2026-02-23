@@ -70,7 +70,7 @@ public class ContentController : ControllerBase
     }
 
     [HttpGet("ClearCache")]
-    //[Authorize]
+    [Authorize(Roles = nameof(UserRoles.Admin))]
     public async Task<IResult> ClearCache()
     {
         await _content.ClearCache();
