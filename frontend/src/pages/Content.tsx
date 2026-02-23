@@ -7,10 +7,9 @@ import NotFound from "./NotFound";
 import Navbar from "../components/navbar";
 import { useEffect, useRef, useState } from "react";
 import Footer from "../components/footer";
-import type { ItemContent, ItemContentParameter } from "../types";
-import { ProjectContentType, UserRoles } from "../enums";
+import type { ItemContent } from "../types";
+import { ProjectContentType } from "../enums";
 import Content_Screenshots from "./Content/Content_Screenshots";
-import { useAuth } from "../hooks/useUser";
 import Content_About from "./Content/Content_About";
 import CommonButton from "../components/commonButton";
 
@@ -24,139 +23,7 @@ export default function Content() {
     if (slug === undefined)
         return <NotFound />
 
-    const { content, error, updatePage } = useGame(slug ?? "");
-    const { authenticatedUser } = useAuth()
-
-    // Admin
-
-    const [addPageType, setAddPageType] = useState(ProjectContentType.Screenshots);
-    const [editElement, setEditElement] = useState<ItemContent | undefined>(undefined);
-
-    const [newPages, setNewPages] = useState<ItemContent[]>([])
-    const [deletedContent, setDeletedContent] = useState<number[]>([])
-    const [elementModifications, setElementModifications] = useState<Record<number, ItemContent>>({})
-
-
-    const addPage = () => {
-        setNewPages(prev => {
-            const newId: number = Math.min(Math.min(...(prev.map(e => e.id) ?? [0])), 0) - 1
-
-            return [...prev, {
-                id: newId,
-                type: addPageType,
-                order: Math.max(...newPages.map(i => i.order), ...(content?.elements ?? []).map(i => (i.order ?? 0))) + 1
-            }]
-        });
-    }
-
-    const startEdit = (content: ItemContent) => {
-        setEditElement(elementModifications[content.id] ?? content);
-    }
-
-    const editElementParam = (id: number, field: keyof ItemContentParameter, value: any) => {
-        setEditElement(prev => {
-            if (prev === undefined)
-                return;
-
-            return {
-                ...prev, elements: [...(prev.elements ?? [])].map(x => {
-                    if (x.id != id)
-                        return x;
-
-                    return {
-                        ...x,
-                        [field]: value
-                    }
-                })
-            }
-        })
-    }
-
-    const removeElementParam = (id: number) => {
-        setEditElement(prev => {
-            if (prev === undefined)
-                return;
-            return { ...prev, elements: prev.elements?.filter(x => x.id !== id) }
-        })
-    }
-
-    const addElementParam = () => {
-        setEditElement(prev => {
-            if (prev === undefined)
-                return;
-
-            const min: number = Math.min(Math.min(...(prev.elements?.map(e => e.id) ?? [0])), 0) - 1
-            const maxOrder: number = Math.max(...(prev.elements?.map(e => e.order) ?? [0])) + 1;
-
-            return {
-                ...prev,
-                elements: [...(prev.elements ?? []), {
-                    id: min,
-                    order: maxOrder,
-                    value1: "",
-                    value2: "",
-                    value3: "",
-                }]
-            }
-        })
-    }
-
-    const saveEditElement = () => {
-        if (editElement === undefined)
-            return;
-
-        setElementModifications(prev => {
-            return {
-                ...prev,
-                [editElement.id]: editElement
-            }
-        });
-
-        setEditElement(undefined);
-    }
-
-    const deleteElement = (element: ItemContent) => {
-        if (element.id >= 0) {
-            setDeletedContent(prev => [...prev, element.id]);
-        }
-        else {
-            setNewPages(prev => prev.filter(p => p.id !== element.id));
-        }
-
-        setElementModifications(prev => {
-            const copy = { ...prev };
-            delete copy[element.id];
-            return copy;
-        });
-    }
-
-    const saveModifications = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-
-        const toCreate: ItemContent[] = newPages.map(p => {
-            return elementModifications[p.id] ?? p
-        });
-
-        try {
-            await updatePage(toCreate, Object.values(elementModifications).filter(p => p.id >= 0), deletedContent);
-            window.location.reload();
-        }
-        catch {
-            alert("Failed to save");
-        }
-    }
-
-    // end of admin
-
-
-    const isAdmin = authenticatedUser?.role === UserRoles.Admin;
-
-    const pageContent = [
-        ...newPages,
-        ...(content?.elements ?? [])
-            .filter(p => !deletedContent.includes(p.id))
-            .map(e => elementModifications[e.id] ?? e)
-    ].sort(a => a.order);
+    const { content, error } = useGame(slug ?? "");
 
     const [isGetSticky, setGetSticky] = useState(false);
     const stickyPointRef = useRef<HTMLDivElement>(null);
@@ -172,6 +39,10 @@ export default function Content() {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, [])
+
+    useEffect(() => {
+        document.title = `NeXx - ${content?.gameName ?? slug}`;
+    }, [content])
 
 
     const drawGet = () => {
@@ -225,14 +96,6 @@ export default function Content() {
             <section className="Content_Section" key={contentKey}>
                 <div className="Content_Section_Header">
                     <h2>{ProjectContentType[element.type]}</h2>
-                    {isAdmin && (
-                        <div>
-                            <button onClick={() => startEdit(element)}>Edit</button>
-                            <button>Move Up</button>
-                            <button>Move Down</button>
-                            <button onClick={() => deleteElement(element)}>Delete</button>
-                        </div>
-                    )}
                 </div>
                 {<Component content={element} />}
             </section>
@@ -265,56 +128,9 @@ export default function Content() {
 
                     <div className="Content_Main">
                         {drawTitle()}
-                        {pageContent?.map(drawElement)}
-
-                        {isAdmin && (
-                            <div>
-                                <select
-                                    value={addPageType}
-                                    onChange={(e) => setAddPageType(Number(e.target.value) as ProjectContentType)}
-                                >
-                                    {Object.entries(ProjectContentType)
-                                        .filter(([_, value]) => typeof value === "number")
-                                        .map(([key, value]) => (
-                                            <option key={value} value={value}>
-                                                {key}
-                                            </option>
-                                        ))}
-                                </select>
-
-                                <button onClick={addPage}>Add Content</button>
-
-                                <form onSubmit={saveModifications}>
-                                    <button type="submit">Save Page</button>
-                                </form>
-                            </div>
-                        )}
+                        {content?.elements?.sort(a => a.order)?.map(drawElement)}
                     </div>
                 </div>
-
-                {editElement && (
-                    <div className="Content_Admin_Edit">
-                        <button onClick={() => setEditElement(undefined)}>Close</button>
-                        <button onClick={() => saveEditElement()}>Save</button>
-
-                        <ol>
-                            {editElement.elements?.map((x, i) => (
-                                <li key={i}>
-                                    <div>
-                                        <label>{x.id}</label>
-                                        <input type="number" onChange={e => editElementParam(x.id, "order", Number.parseInt(e.target.value))} value={x.order} />
-                                        <input onChange={e => editElementParam(x.id, "value1", e.target.value)} value={x.value1} />
-                                        <input onChange={e => editElementParam(x.id, "value2", e.target.value)} value={x.value2} />
-                                        <input onChange={e => editElementParam(x.id, "value3", e.target.value)} value={x.value3} />
-                                        <button onClick={() => removeElementParam(x.id)}>Remove</button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ol>
-
-                        <button onClick={addElementParam}>Add</button>
-                    </div>
-                )}
             </div>
         )
     }

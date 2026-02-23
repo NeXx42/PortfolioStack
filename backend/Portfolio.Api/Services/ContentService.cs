@@ -76,88 +76,109 @@ public class ContentService
         return null;
     }
 
-    public async Task UpdateGame(string slug, ProjectDto.ElementGroup[] newElements, ProjectDto.ElementGroup[] modifications, int[] deletions)
+    public async Task Save(ProjectDto project)
     {
-        ProjectModel? dbEntry = await _portfolioContext.Projects
-            .Include(p => p.Elements)
-                .ThenInclude(e => e.Parameters)
-            .FirstOrDefaultAsync(p => p.slug.Equals(slug));
-
-        if (dbEntry == null)
-            throw new Exception("Project not found");
-
-        using (var trans = await _portfolioContext.Database.BeginTransactionAsync())
+        if (project.id == Guid.Empty)
         {
-            List<ProjectElementParameterModel> newParameters = new List<ProjectElementParameterModel>();
-            List<ProjectElementParameterModel> oldParameters = new List<ProjectElementParameterModel>();
-
-            foreach (ProjectDto.ElementGroup newElement in newElements)
+            ProjectModel dbEntry = new ProjectModel()
             {
-                await _portfolioContext.Elements.AddAsync(new ProjectElementModel()
+                id = Guid.NewGuid(),
+                name = project.gameName,
+                Price = project.cost,
+                projectType = project.type,
+                icon = project.icon,
+                CreatedDate = project.dateCreated ?? DateTime.UtcNow,
+                UpdatedDate = project.dateUpdated ?? DateTime.UtcNow,
+                description = project.shortDescription,
+                slug = ProjectDto.ConvertNameToSlug(project.gameName),
+                Version = project.version,
+                Elements = project.elements?.Select(e => new ProjectElementModel()
                 {
-                    Type = newElement.type,
-                    ProjectId = dbEntry.id,
+                    Type = e.type,
+                    Parameters = e.elements?.Select(x => new ProjectElementParameterModel()
+                    {
+                        Order = x.order,
+                        ParameterValue1 = x.value1,
+                        ParameterValue2 = x.value2,
+                        ParameterValue3 = x.value3
+                    }).ToArray() ?? []
+                }).ToArray() ?? []
+            };
 
-                    Parameters = newElement.elements?.Select(x =>
-                        new ProjectElementParameterModel()
-                        {
-                            Order = x.id,
+            await _portfolioContext.AddAsync(dbEntry);
+            await _portfolioContext.SaveChangesAsync();
+        }
+        else
+        {
+            ProjectModel dbEntry = await _portfolioContext.Projects
+                .Include(p => p.Elements)
+                    .ThenInclude(e => e.Parameters)
+                .SingleAsync(p => p.id == project.id);
 
-                            ParameterValue1 = x.value1,
-                            ParameterValue2 = x.value2,
-                            ParameterValue3 = x.value3,
-                        }
-                    ).ToList() ?? []
-                });
-            }
+            dbEntry.name = project.gameName;
+            dbEntry.Price = project.cost;
+            dbEntry.projectType = project.type;
+            dbEntry.icon = project.icon;
+            dbEntry.UpdatedDate = DateTime.UtcNow;
+            dbEntry.description = project.shortDescription;
+            dbEntry.slug = ProjectDto.ConvertNameToSlug(project.gameName);
+            dbEntry.Version = project.version;
 
-            foreach (ProjectDto.ElementGroup modification in modifications)
+            var elementContainer = dbEntry.Elements.Where(x => !(project.elements?.Any(e => e.id == x.Id) ?? false)).ToArray();
+            _portfolioContext.RemoveRange(elementContainer);
+
+            elementContainer = project.elements?.Where(x => x.id < 0).Select(x => new ProjectElementModel()
             {
+                ProjectId = dbEntry.id,
+                Type = x.type,
 
-                foreach (var param in modification.elements ?? [])
+                Parameters = x.elements?.Select(p => new ProjectElementParameterModel
+                {
+                    Order = p.order,
+                    ParameterValue1 = p.value1,
+                    ParameterValue2 = p.value2,
+                    ParameterValue3 = p.value3
+                }).ToArray() ?? []
+            }).ToArray() ?? [];
+            await _portfolioContext.AddRangeAsync(elementContainer);
+
+            foreach (var element in project.elements ?? [])
+            {
+                if (element.id < 0)
+                    continue;
+
+                var dbElement = dbEntry.Elements!.Single(x => x.Id == element.id);
+                dbElement.Type = element.type;
+
+                var paramContainer = dbElement.Parameters.Where(x => !(element.elements?.Any(e => e.id == x.Id) ?? false)).ToArray();
+                _portfolioContext.RemoveRange(paramContainer);
+
+                paramContainer = element.elements?.Where(x => x.id < 0).Select(p => new ProjectElementParameterModel()
+                {
+                    ProjectElementId = dbElement.Id,
+                    Order = p.order,
+                    ParameterValue1 = p.value1,
+                    ParameterValue2 = p.value2,
+                    ParameterValue3 = p.value3
+                }).ToArray() ?? [];
+                await _portfolioContext.AddRangeAsync(paramContainer);
+
+                foreach (var param in element.elements ?? [])
                 {
                     if (param.id < 0)
-                    {
-                        newParameters.Add(new ProjectElementParameterModel()
-                        {
-                            Order = param.id,
-                            ProjectElementId = modification.id,
+                        continue;
 
-                            ParameterValue1 = param.value1,
-                            ParameterValue2 = param.value2,
-                            ParameterValue3 = param.value3,
-                        });
-                    }
-                    else
-                    {
-                        var existing = await _portfolioContext.ElementsParameters.SingleAsync(e => e.Id == param.id);
-
-                        existing.Order = param.order;
-                        existing.ParameterValue1 = param.value1;
-                        existing.ParameterValue2 = param.value2;
-                        existing.ParameterValue3 = param.value3;
-                    }
+                    var dbParam = dbElement.Parameters.Single(x => x.Id == param.id);
+                    dbParam.Order = param.order;
+                    dbParam.ParameterValue1 = param.value1;
+                    dbParam.ParameterValue2 = param.value2;
+                    dbParam.ParameterValue3 = param.value3;
                 }
-
-                oldParameters.AddRange(dbEntry.Elements.Single(x => x.Id == modification.id)
-                    .Parameters.Where(x => !(modification.elements?.Any(e => x.Id == e.id) ?? false)));
             }
-
-            if (deletions.Length > 0)
-            {
-                var elementsToRemove = _portfolioContext.Elements.Where(x => deletions.Any(d => d == x.Id));
-                _portfolioContext.Elements.RemoveRange(elementsToRemove);
-            }
-
-            _portfolioContext.ElementsParameters.RemoveRange(oldParameters);
-            await _portfolioContext.ElementsParameters.AddRangeAsync(newParameters);
 
             await _portfolioContext.SaveChangesAsync();
-            await trans.CommitAsync();
         }
     }
-
-
 
     public async Task<LinkModel[]> GetLinks()
     {
@@ -171,8 +192,6 @@ public class ContentService
     }
 
 
-    public async Task ClearCache()
-    {
-        _cache.Clear();
-    }
+    public async Task<string[]> GetSlugs()
+        => await _portfolioContext.Projects.Select(x => x.slug).ToArrayAsync();
 }

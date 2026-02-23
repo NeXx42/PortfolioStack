@@ -51,6 +51,10 @@ export default function Home() {
 
     }, [items, loadingContent])
 
+    useEffect(() => {
+        document.title = "NeXx";
+    })
+
     return (<>
         <canvas id="StarContainer" />
 

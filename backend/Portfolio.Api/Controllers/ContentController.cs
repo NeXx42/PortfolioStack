@@ -54,26 +54,10 @@ public class ContentController : ControllerBase
         public int[]? deletions { get; set; }
     }
 
-    [HttpPost("{slug}")]
-    [Authorize(Roles = nameof(UserRoles.Admin))]
-    public async Task<IResult> UpdateGame(string slug, [FromBody] UpdateRequest req)
-    {
-        await _content.UpdateGame(slug, req.newPages ?? [], req.updates ?? [], req.deletions ?? []);
-        return Results.Ok();
-    }
-
     [HttpGet("Links")]
     public async Task<IResult> GetLinks()
     {
         var res = await _content.GetLinks();
         return Results.Json(res);
-    }
-
-    [HttpGet("ClearCache")]
-    [Authorize(Roles = nameof(UserRoles.Admin))]
-    public async Task<IResult> ClearCache()
-    {
-        await _content.ClearCache();
-        return Results.Ok();
     }
 }

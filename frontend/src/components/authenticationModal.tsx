@@ -22,6 +22,7 @@ export default function AuthenticationModal(props: Props) {
         }
 
         await login(email, password);
+        props.onExit();
     };
 
     const handleSignup = async () => {
