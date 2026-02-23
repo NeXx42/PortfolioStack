@@ -54,8 +54,8 @@ export default function Content() {
                 </div>
 
                 <div className="Content_Get_Actions">
-                    <label>{content?.cost}</label>
-                    <CommonButton label={(content?.cost ?? 0) >= 0 ? "Download" : "Purchase"} onClick={() => { }} />
+                    <label>{(content?.cost ?? 0) > 0 ? `£${content!.cost}` : ""}</label>
+                    <CommonButton label={(content?.cost ?? 0) > 0 ? "Purchase" : "Download"} onClick={() => { }} />
                 </div>
             </div>
         )

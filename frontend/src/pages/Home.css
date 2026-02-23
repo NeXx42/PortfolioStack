@@ -254,6 +254,7 @@
 
 .Home_Projects_Container {
     margin-top: 40px;
+    min-height: 320px;
 
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -262,7 +263,6 @@
 
 .Home_Projects_Container_Empty {
     grid-column: span 3;
-    height: 150px;
 
     display: flex;
     justify-content: center;

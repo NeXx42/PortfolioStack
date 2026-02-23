@@ -28,7 +28,6 @@ export default function Home() {
         fetchContent
     } = useContent();
 
-
     const items = content[selectedTabIndex] ?? [];
 
     useEffect(() => {
@@ -55,6 +54,33 @@ export default function Home() {
         document.title = "NeXx";
     })
 
+    const skeletonDelay = 500;
+    const [showContentSkeleton, setShowContentSkeleton] = useState(false);
+    useEffect(() => {
+        if (loadingContent) {
+            const timeout = setTimeout(() => {
+                setShowContentSkeleton(true);
+            }, skeletonDelay)
+
+            return () => clearTimeout(timeout);
+        }
+
+        setShowContentSkeleton(false);
+    }, [loadingContent])
+
+    const [showFeaturedSkeleton, setShowFeaturedSkeleton] = useState(false);
+    useEffect(() => {
+        if (loadingFeatured) {
+            const timeout = setTimeout(() => {
+                setShowFeaturedSkeleton(true);
+            }, skeletonDelay)
+
+            return () => clearTimeout(timeout);
+        }
+
+        setShowFeaturedSkeleton(false);
+    }, [loadingFeatured])
+
     return (<>
         <canvas id="StarContainer" />
 
@@ -70,7 +96,7 @@ export default function Home() {
                 </div>
 
                 <div className="Home_hero_Content_Featured">
-                    {loadingFeatured ? (
+                    {showFeaturedSkeleton ? (
                         <>
                             <ItemCardSkeleton isWide={true} />
                             <ItemCardSkeleton isWide={false} />
@@ -129,7 +155,7 @@ export default function Home() {
 
                 <section id="projects" className="Home_Projects_Container">
                     {
-                        loadingContent ? (<>
+                        showContentSkeleton ? (<>
                             <ItemCardSkeleton isWide={false} />
                             <ItemCardSkeleton isWide={false} />
                             <ItemCardSkeleton isWide={false} />
@@ -141,9 +167,9 @@ export default function Home() {
                                     </div>
                                 ) : (
 
-                                    items.map((x, index) => {
+                                    items.map(x => {
                                         return (
-                                            <ItemCard key={index} itemData={x} />
+                                            <ItemCard key={x.slug} itemData={x} />
                                         )
                                     })
                                 )

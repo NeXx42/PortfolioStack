@@ -1,5 +1,5 @@
-import type { Item, ItemContent, User } from "../types";
-import { BASE_URL } from "../config";
+import type { Item, Link, User } from "../types";
+import { BASE_URL, DEBUG_SLOW_API } from "../config";
 import type { ProjectType } from "../enums";
 
 // -------------------- shared
@@ -12,6 +12,9 @@ async function get<T>(uri: string): Promise<T> {
             "Content-Type": "application/json"
         },
     });
+
+    if (DEBUG_SLOW_API)
+        await new Promise(res => setTimeout(res, 5000));
 
     if (!res.ok)
         throw new Error("err");
@@ -69,22 +72,7 @@ export async function fetchGame(gameId: string): Promise<Item> {
     return await get(`content/${gameId}`);
 }
 
-// remove me
-export async function updatePage(slug: string, newPages?: ItemContent[], updates?: ItemContent[], deletions?: number[]) {
-    const res = await fetch(`${BASE_URL}/api/content/${slug}`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ newPages, updates, deletions }),
-    });
-
-    if (!res.ok)
-        throw new Error("Failed to update game");
-}
-
-export async function fetchLinks() {
+export async function fetchLinks(): Promise<Link[]> {
     return await get("content/links");
 }
 

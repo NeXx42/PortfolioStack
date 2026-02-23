@@ -1,0 +1,29 @@
+.Component_ItemCard_Action {
+    height: 25px;
+}
+
+.Component_ItemCard {
+    overflow: hidden;
+}
+
+.Component_ItemCard.Skeleton {
+    pointer-events: none;
+
+    background: linear-gradient(90deg,
+            rgba(23, 27, 46, 0.82) 25%,
+            rgba(27, 31, 49, 0.82) 50%,
+            rgba(23, 27, 46, 0.82) 75%);
+
+    background-size: 200% 100%;
+    animation: SkeletonLoad 5s infinite linear;
+}
+
+@keyframes SkeletonLoad {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}

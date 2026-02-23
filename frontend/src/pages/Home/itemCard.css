@@ -42,13 +42,15 @@
 
 .Component_ItemCard_Icon {
     width: 100%;
+    aspect-ratio: 16/9;
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .Component_ItemCard_Icon img {
     aspect-ratio: 16/9;
     width: 100%;
-    height: auto;
-    display: block;
 }
 
 

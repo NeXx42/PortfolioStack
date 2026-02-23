@@ -30,11 +30,11 @@ export function useContent(): HookReturn {
         setLoadingLinks(true);
 
         api.fetchFeaturedContent()
-            .then((x: Item[]) => setFeatured(x))
+            .then(setFeatured)
             .finally(() => setLoadingFeatured(false));
 
         api.fetchLinks()
-            .then((x: Link[]) => setLinks(x))
+            .then(setLinks)
             .finally(() => setLoadingLinks(false));
     }, [])
 
