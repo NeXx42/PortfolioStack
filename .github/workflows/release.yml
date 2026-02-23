@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Get commit SHA for branch
+        run: |
+          SHA=$(git ls-remote origin ${{ github.event.inputs.git_ref }} | cut -f1)
+          echo "COMMIT_SHA=$SHA" >> $GITHUB_ENV
+      
       - name: Release via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -21,4 +26,4 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /home/matthew/apps/portfolio
-            ./deploy.sh ${{ github.event.inputs.git_ref }}
+            ./deploy.sh ${{ env.COMMIT_SHA }}
