@@ -1,15 +1,19 @@
-name: Deploy
+name: Release
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: "Branch, tag, or SHA to deploy"
+        required: true
+        default: "main"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
+      - name: Release via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -17,4 +21,4 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /home/apps/portfolio
-            ./deploy.sh ${{ github.event.release.target_commitish }}
+            ./deploy.sh ${{ github.event.inputs.git_ref }}
