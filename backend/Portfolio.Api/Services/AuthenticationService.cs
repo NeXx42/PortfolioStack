@@ -109,7 +109,9 @@ public class AuthenticationService
                 new Claim(ClaimTypes.Name, usr.displayName),
                 new Claim( ClaimTypes.Role, usr.role.ToString())
             }),
-            Expires = DateTime.UtcNow.AddHours(1),
+            Audience = "portfolio",
+            Issuer = "portfolio",
+            Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = _encryptionService.GetJWTSingingCredentials()
         };
 
