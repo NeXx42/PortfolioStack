@@ -8,7 +8,7 @@ using Portfolio.Api.Types;
 using Portfolio.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-
+Console.WriteLine($"Current environment: {builder.Environment.EnvironmentName}");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -63,6 +63,7 @@ builder.Services.Configure<GeneralSettings>(builder.Configuration.GetSection("Se
 builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("Encryption"));
 
 builder.Services.AddSingleton<EncryptionService>();
+builder.Services.AddSingleton<CacheService>();
 
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<ContentService>();

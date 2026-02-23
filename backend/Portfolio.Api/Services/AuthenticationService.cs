@@ -19,10 +19,10 @@ public class AuthenticationService
     public const string AUTH_COOKIE_NAME = "auth_token";
 
     private readonly PortfolioContext _context;
-    private readonly IMemoryCache _cache;
+    private readonly CacheService _cache;
     private readonly EncryptionService _encryptionService;
 
-    public AuthenticationService(PortfolioContext context, IMemoryCache cache, EncryptionService encryptionService)
+    public AuthenticationService(PortfolioContext context, CacheService cache, EncryptionService encryptionService)
     {
         _encryptionService = encryptionService;
         _context = context;
@@ -50,7 +50,7 @@ public class AuthenticationService
         await _context.Users.AddAsync(usr);
         await _context.SaveChangesAsync();
 
-        _cache.Set(usr.userId, usr);
+        _cache.Set(usr.userId.ToString(), usr);
         return _encryptionService.DecryptUserModel(usr);
     }
 
@@ -77,14 +77,14 @@ public class AuthenticationService
         }
 
         usr = _encryptionService.DecryptUserModel(dbUser);
-        _cache.Set(usr.id, usr);
+        _cache.Set(usr.id.ToString(), usr);
 
         return usr;
     }
 
     public async Task<UserDto?> GetLogin(Guid userId)
     {
-        if (_cache.TryGetValue(userId, out UserDto? usr))
+        if (_cache.TryGetValue(userId.ToString(), out UserDto? usr))
         {
             return usr;
         }
@@ -94,7 +94,7 @@ public class AuthenticationService
 
     public async Task ClearUserSession(UserDto usr)
     {
-        _cache.Remove(usr.id);
+        _cache.Remove(usr.id.ToString());
     }
 
     public string GenerateToken(UserDto usr)

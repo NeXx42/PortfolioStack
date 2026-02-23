@@ -13,10 +13,10 @@ public class ContentService
     private const string CACHE_FEATURED_CONTENT = "Content_FeaturedContent";
     private const string CACHE_LINKS = "Content_Links";
 
-    private IMemoryCache _cache;
+    private CacheService _cache;
     private PortfolioContext _portfolioContext;
 
-    public ContentService(IMemoryCache cache, PortfolioContext portfolioContext)
+    public ContentService(CacheService cache, PortfolioContext portfolioContext)
     {
         _cache = cache;
         _portfolioContext = portfolioContext;
@@ -24,7 +24,7 @@ public class ContentService
 
     public async Task<ProjectDto[]> GetContentForType(ProjectType type)
     {
-        if (_cache.TryGetValue(type, out ProjectDto[]? projects) && projects != null)
+        if (_cache.TryGetValue(type.ToString(), out ProjectDto[]? projects) && projects != null)
             return projects;
 
         ProjectModel[] dbRes = await _portfolioContext.Projects
@@ -35,7 +35,7 @@ public class ContentService
 
         ProjectDto[] results = dbRes.Select(ProjectDto.Map).ToArray();
 
-        _cache.Set(type, results);
+        _cache.Set(type.ToString(), results);
         return results;
     }
 
@@ -173,7 +173,6 @@ public class ContentService
 
     public async Task ClearCache()
     {
-        foreach (ProjectType key in Enum.GetValues<ProjectType>())
-            _cache.Remove(key);
+        _cache.Clear();
     }
 }
