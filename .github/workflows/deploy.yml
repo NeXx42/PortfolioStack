@@ -1,12 +1,9 @@
-name: Build and Deploy
+name: Build
 
 on:
-  workflow_dispatch:
-    inputs:
-      env:
-        description: 'Environment'
-        required: false
-        default: 'production'
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:

@@ -9,7 +9,7 @@ on:
         default: "main"
 
 jobs:
-  deploy:
+  release:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,5 +20,5 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /home/apps/portfolio
+            cd /home/matthew/apps/portfolio
             ./deploy.sh ${{ github.event.inputs.git_ref }}
