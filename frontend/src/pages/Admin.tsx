@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CommonButton from "../components/commonButton";
 import Navbar from "../components/navbar";
 import { UserRoles } from "../enums";
@@ -17,7 +17,7 @@ export default function Admin() {
             Unauthorised
         </div>)
 
-    const { slugs, clearCache, saveItem } = useAdmin()
+    const { slugs, clearCache, saveItem, images, uploadImage } = useAdmin()
 
     const [selectedSlug, setSelectedSlug] = useState<string | undefined>(undefined)
     const [editingContent, setEditingContent] = useState<Item | undefined>(undefined)
@@ -33,10 +33,30 @@ export default function Admin() {
         setEditingContent(content);
     }, [selectedSlug, content]);
 
+
+    const fileRef = useRef<HTMLInputElement>(null);
+    const upload = () => {
+        const formData = new FormData();
+        formData.append("file", fileRef.current!.files![0]);
+
+        uploadImage(formData);
+    }
+
+
     return (
         <div>
             <Navbar />
 
+            <ol>
+                {images?.map(x => (
+                    <li>
+                        <a key={x}>{x}</a>
+                    </li>
+                ))}
+            </ol>
+
+            <input ref={fileRef} type="file" id="imageInput" />
+            <button onClick={upload}>Upload</button>
 
             <div className="Admin_Controls">
                 <CommonButton label="Clear Cache" onClick={() => clearCache()} />

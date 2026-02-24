@@ -23,15 +23,29 @@ public class ContentController : ControllerBase
     [HttpGet]
     public async Task<IResult> GetContent(ProjectType type)
     {
-        var res = await _content.GetContentForType(type);
-        return Results.Json(res);
+        try
+        {
+            var res = await _content.GetContentForType(type);
+            return Results.Json(res);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e.Message);
+        }
     }
 
     [HttpGet("featured")]
     public async Task<IResult> GetFeaturedContent()
     {
-        var res = await _content.FeaturedContent();
-        return Results.Json(res);
+        try
+        {
+            var res = await _content.FeaturedContent();
+            return Results.Json(res);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e.Message);
+        }
     }
 
     [HttpGet("{slug}")]
@@ -57,7 +71,14 @@ public class ContentController : ControllerBase
     [HttpGet("Links")]
     public async Task<IResult> GetLinks()
     {
-        var res = await _content.GetLinks();
-        return Results.Json(res);
+        try
+        {
+            var res = await _content.GetLinks();
+            return Results.Json(res);
+        }
+        catch (Exception e)
+        {
+            return Results.Json(e.Message);
+        }
     }
 }

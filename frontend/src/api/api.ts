@@ -102,3 +102,21 @@ export async function admin_ClearCache(): Promise<void> {
 export async function admin_SaveItem(item: Item): Promise<void> {
     await post("admin/save", item)
 }
+
+export async function admin_UploadImage(img: FormData): Promise<string> {
+    const res = await fetch(`${BASE_URL}/api/admin/upload`, {
+        method: "POST",
+        body: img,
+        credentials: "include",
+    });
+
+    if (!res.ok) {
+        throw await handleException(res);
+    }
+
+    return await res.json();
+}
+
+export async function admin_GetImages(): Promise<string[]> {
+    return await get("admin/images");
+}

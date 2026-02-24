@@ -1,6 +1,9 @@
 using System.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.Options;
+using Portfolio.Api.Types;
 using Portfolio.Core.Data;
 using Portfolio.Core.DTOs;
 using Portfolio.Core.Models;
@@ -16,10 +19,14 @@ public class ContentService
     private CacheService _cache;
     private PortfolioContext _portfolioContext;
 
-    public ContentService(CacheService cache, PortfolioContext portfolioContext)
+    private GeneralSettings _settings;
+
+    public ContentService(CacheService cache, PortfolioContext portfolioContext, IOptions<GeneralSettings> settings)
     {
         _cache = cache;
         _portfolioContext = portfolioContext;
+
+        _settings = settings.Value;
     }
 
     public async Task<ProjectDto[]> GetContentForType(ProjectType type)
@@ -194,4 +201,34 @@ public class ContentService
 
     public async Task<string[]> GetSlugs()
         => await _portfolioContext.Projects.Select(x => x.slug).ToArrayAsync();
+
+    public async Task<string> SaveImage(IFormFile file)
+    {
+        if (string.IsNullOrEmpty(_settings.ContentStorageFolder))
+            throw new Exception("ContentStorageFolder not set");
+
+        if (!Directory.Exists(_settings.ContentStorageFolder))
+            Directory.CreateDirectory(_settings.ContentStorageFolder);
+
+        string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+        string path = Path.Combine(_settings.ContentStorageFolder, fileName);
+
+        using (var stream = new FileStream(path, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        return fileName;
+    }
+
+    public async Task<string[]> GetImages()
+    {
+        if (string.IsNullOrEmpty(_settings.ContentStorageFolder))
+            throw new Exception("ContentStorageFolder not set");
+
+        if (!Directory.Exists(_settings.ContentStorageFolder))
+            return [];
+
+        return Directory.GetFiles(_settings.ContentStorageFolder);
+    }
 }

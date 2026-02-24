@@ -41,4 +41,35 @@ public class AdminController : ControllerBase
         await _content.Save(project);
         return Results.Ok();
     }
+
+    [HttpPost("upload")]
+    public async Task<IResult> SaveImage(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return Results.BadRequest("No file provided");
+
+        try
+        {
+            var res = await _content.SaveImage(file);
+            return Results.Json(res);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
+
+    [HttpGet("images")]
+    public async Task<IResult> GetImages()
+    {
+        try
+        {
+            var res = await _content.GetImages();
+            return Results.Json(res);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
 }
