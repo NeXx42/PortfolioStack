@@ -62,7 +62,7 @@ export default function Admin() {
                     ))}
                 </ol>
 
-                <img src={`/assets/${selectedImageUrl}`} />
+                <img src={`/images/${selectedImageUrl}`} />
             </div>
 
             <input ref={fileRef} type="file" id="imageInput" multiple />

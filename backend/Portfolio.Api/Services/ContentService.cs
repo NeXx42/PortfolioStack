@@ -229,6 +229,6 @@ public class ContentService
         if (!Directory.Exists(_settings.ContentStorageFolder))
             return [];
 
-        return Directory.GetFiles(_settings.ContentStorageFolder);
+        return Directory.GetFiles(_settings.ContentStorageFolder).Select(x => Path.GetFileName(x)).ToArray();
     }
 }
