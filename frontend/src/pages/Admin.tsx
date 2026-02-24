@@ -34,28 +34,38 @@ export default function Admin() {
     }, [selectedSlug, content]);
 
 
-    const fileRef = useRef<HTMLInputElement>(null);
-    const upload = () => {
-        const formData = new FormData();
-        formData.append("file", fileRef.current!.files![0]);
+    const [selectedImageUrl, setSelectedImageUrl] = useState<string | undefined>(undefined);
+    const [uploadedImages, setUploadedImages] = useState<string[]>([])
 
-        uploadImage(formData);
+    const fileRef = useRef<HTMLInputElement>(null);
+    const upload = async () => {
+        for (let i = 0; i < fileRef.current!.files!.length; i++) {
+            const formData = new FormData();
+            formData.append("file", fileRef.current!.files![i]);
+
+            const res = await uploadImage(formData);
+            setUploadedImages(prev => [...prev, res])
+        }
     }
 
 
     return (
-        <div>
+        <div style={{ fontFamily: "sans-serif" }}>
             <Navbar />
 
-            <ol>
-                {images?.map(x => (
-                    <li>
-                        <a key={x}>{x}</a>
-                    </li>
-                ))}
-            </ol>
+            <div className="images" style={{ display: "flex", justifyContent: "space-between" }}>
+                <ol>
+                    {[...images ?? [], ...uploadedImages]?.map(x => (
+                        <li>
+                            <a key={x} onClick={() => setSelectedImageUrl(x)}>{x}</a>
+                        </li>
+                    ))}
+                </ol>
 
-            <input ref={fileRef} type="file" id="imageInput" />
+                <img src={`/assets/${selectedImageUrl}`} />
+            </div>
+
+            <input ref={fileRef} type="file" id="imageInput" multiple />
             <button onClick={upload}>Upload</button>
 
             <div className="Admin_Controls">

@@ -168,11 +168,11 @@ export default function ContentEdit(props: Props) {
                 </div>
                 <h3>Args</h3>
                 <ol>
-                    {element.elements?.map(x => (<li>
-                        <input type="number" onChange={e => editContentParam(element.id, x.id, "order", Number.parseInt(e.target.value))} value={x.order} />
-                        <input onChange={e => editContentParam(element.id, x.id, "value1", e.target.value)} value={x.value1} />
-                        <input onChange={e => editContentParam(element.id, x.id, "value2", e.target.value)} value={x.value2} />
-                        <input onChange={e => editContentParam(element.id, x.id, "value3", e.target.value)} value={x.value3} />
+                    {element.elements?.map(x => (<li style={{ display: "flex", width: "100%", }}>
+                        <input style={{ width: "50px" }} type="number" onChange={e => editContentParam(element.id, x.id, "order", Number.parseInt(e.target.value))} value={x.order} />
+                        <input style={{ flex: "3" }} onChange={e => editContentParam(element.id, x.id, "value1", e.target.value)} value={x.value1} />
+                        <input style={{ flex: "1" }} onChange={e => editContentParam(element.id, x.id, "value2", e.target.value)} value={x.value2} />
+                        <input style={{ flex: "1" }} onChange={e => editContentParam(element.id, x.id, "value3", e.target.value)} value={x.value3} />
                         <button type="button" onClick={() => removeContentParam(element.id, x.id)}>Remove</button>
                     </li>))}
                     <li><button type="button" onClick={() => addContentParam(element.id)}>Create</button></li>
@@ -181,33 +181,37 @@ export default function ContentEdit(props: Props) {
         )
     }
 
-    return (<div>
+    return (<div style={{ margin: "25px" }}>
         {item && (<form onSubmit={saveChanges}>
             <h1>Details</h1>
-            <ol>
-                <li>
-                    <label>GameName</label>
-                    <input onChange={e => editItemProperty("gameName", e.target.value)} value={item.gameName} />
+            <ol >
+                <li style={{ display: "flex" }}>
+                    <label style={{ width: "200px" }}>GameName</label>
+                    <input style={{ flex: "3" }} onChange={e => editItemProperty("gameName", e.target.value)} value={item.gameName} />
                 </li>
-                <li>
-                    <label>Short Description</label>
-                    <textarea onChange={e => editItemProperty("shortDescription", e.target.value)} value={item.shortDescription} />
+                <li style={{ display: "flex" }}>
+                    <label style={{ width: "200px" }}>Short Description</label>
+                    <textarea style={{ flex: "3" }} onChange={e => editItemProperty("shortDescription", e.target.value)} value={item.shortDescription} />
                 </li>
-                <li>
-                    <label>Price</label>
-                    <input onChange={e => editItemProperty("cost", e.target.value)} value={item.cost} />
+                <li style={{ display: "flex" }}>
+                    <label style={{ width: "200px" }}>Icon</label>
+                    <input style={{ flex: "3" }} onChange={e => editItemProperty("icon", e.target.value)} value={item.icon} />
                 </li>
-                <li>
-                    <label>Version</label>
-                    <input onChange={e => editItemProperty("version", e.target.value)} value={item.version} />
+                <li style={{ display: "flex" }}>
+                    <label style={{ width: "200px" }}>Price</label>
+                    <input style={{ flex: "3" }} onChange={e => editItemProperty("cost", e.target.value)} value={item.cost} />
                 </li>
-                <li>
-                    <label>Created Date</label>
-                    <input onChange={e => editItemProperty("dateCreated", e.target.value)} type="date" value={item.dateCreated?.toString()} />
+                <li style={{ display: "flex" }}>
+                    <label style={{ width: "200px" }}>Version</label>
+                    <input style={{ flex: "3" }} onChange={e => editItemProperty("version", e.target.value)} value={item.version} />
                 </li>
-                <li>
-                    <label>Update date</label>
-                    <input onChange={e => editItemProperty("dateUpdate", e.target.value)} type="date" value={item.dateUpdate?.toString()} />
+                <li style={{ display: "flex" }}>
+                    <label style={{ width: "200px" }}>Created Date</label>
+                    <input style={{ flex: "3" }} onChange={e => editItemProperty("dateCreated", e.target.value)} type="date" value={item.dateCreated?.toString()} />
+                </li>
+                <li style={{ display: "flex" }}>
+                    <label style={{ width: "200px" }}>Update date</label>
+                    <input style={{ flex: "3" }} onChange={e => editItemProperty("dateUpdate", e.target.value)} type="date" value={item.dateUpdate?.toString()} />
                 </li>
             </ol>
             <h1>Elements</h1>
