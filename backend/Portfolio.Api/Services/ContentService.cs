@@ -65,11 +65,16 @@ public class ContentService
 
     public async Task<ProjectDto?> GetGame(string slug)
     {
+        if (_cache.TryGetValue(slug, out ProjectDto? proj) && proj != null)
+            return proj;
+
         ProjectModel? game = await _portfolioContext.Projects
             .Include(p => p.Elements)
                 .ThenInclude(p => p.Parameters)
             .Include(p => p.Tags)
                 .ThenInclude(t => t.Tag)
+            .Include(p => p.Releases)
+                .ThenInclude(r => r.Downloads)
             .FirstOrDefaultAsync(g => g.slug.Equals(slug));
 
         if (game != null)

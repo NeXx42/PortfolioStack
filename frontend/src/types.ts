@@ -23,6 +23,7 @@ export interface Item {
 
     elements?: ItemContent[],
     tags?: ItemTag[]
+    releases: ItemRelease[]
 }
 
 export interface ItemContent {
@@ -45,6 +46,20 @@ export interface ItemContentParameter {
 export interface ItemTag {
     name: string,
     customColour: string,
+}
+
+export interface ItemRelease {
+    id: number,
+    version: string,
+    size: string,
+    date: Date,
+
+    downloads: ItemReleaseDownload[]
+}
+
+export interface ItemReleaseDownload {
+    id: number,
+    link: string
 }
 
 export interface Link {

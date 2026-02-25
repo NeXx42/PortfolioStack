@@ -7,11 +7,12 @@ import NotFound from "./NotFound";
 import Navbar from "../components/navbar";
 import { useEffect, useRef, useState } from "react";
 import Footer from "../components/footer";
-import type { ItemContent } from "../types";
+import type { ItemContent, ItemRelease } from "../types";
 import { ProjectContentType } from "../enums";
 import Content_Screenshots from "./Content/Content_Screenshots";
 import Content_About from "./Content/Content_About";
 import CommonButton from "../components/commonButton";
+import Content_Releases from "./Content/Content_Releases";
 
 export interface ContentElementProps {
     content: ItemContent
@@ -24,6 +25,7 @@ export default function Content() {
         return <NotFound />
 
     const { content, error } = useGame(slug ?? "");
+    const [latestRelease, setLatestRelease] = useState<ItemRelease | null>(null)
 
     const [isGetSticky, setGetSticky] = useState(false);
     const stickyPointRef = useRef<HTMLDivElement>(null);
@@ -42,20 +44,32 @@ export default function Content() {
 
     useEffect(() => {
         document.title = `NeXx - ${content?.gameName ?? slug}`;
+
+        console.log(content?.releases?.sort(r => r.date.getDate()))
+        setLatestRelease(content?.releases?.sort(r => r.date.getDate())[0] ?? null)
     }, [content])
 
+
+    const tryToDownloadLatestRelease = () => {
+        const link = document.createElement("a");
+        link.href = latestRelease?.downloads[0].link ?? "";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 
     const drawGet = () => {
         return (
             <div className={`Content_Get ${isGetSticky ? "Stuck" : ""}`}>
                 <div className="Content_Get_Details">
-                    <span>VERSION <b>{content?.version ?? "0.0.0"}</b></span>
-                    <span>SIZE <b>Unavailable</b></span>
+                    <span>VERSION <b>{latestRelease?.version ?? "-"}</b></span>
+                    <span>SIZE <b>{latestRelease?.size ?? "-"} MB</b></span>
                 </div>
 
                 <div className="Content_Get_Actions">
                     <label>{(content?.cost ?? 0) > 0 ? `£${content!.cost}` : ""}</label>
-                    <CommonButton label={(content?.cost ?? 0) > 0 ? "Purchase" : "Download"} onClick={() => { }} />
+                    <CommonButton label={latestRelease !== null ? ((content?.cost ?? 0) > 0 ? "Purchase" : "Download") : "Unavailable"} onClick={tryToDownloadLatestRelease} />
                 </div>
             </div>
         )
@@ -86,7 +100,7 @@ export default function Content() {
             [ProjectContentType.Screenshots]: Content_Screenshots,
             [ProjectContentType.About]: Content_About,
             [ProjectContentType.Features]: Content_About,
-            [ProjectContentType.Releases]: Content_About,
+            [ProjectContentType.Releases]: Content_Releases,
             [ProjectContentType.Requirements]: Content_About,
         }
 

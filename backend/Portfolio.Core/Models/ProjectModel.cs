@@ -27,4 +27,5 @@ public class ProjectModel
 
     public ICollection<ProjectElementModel> Elements { get; set; } = new List<ProjectElementModel>();
     public ICollection<ProjectTagModel> Tags { get; set; } = new List<ProjectTagModel>();
+    public ICollection<ReleaseModel> Releases { get; set; } = new List<ReleaseModel>();
 }
