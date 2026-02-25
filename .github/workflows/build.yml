@@ -30,7 +30,10 @@ jobs:
 
       - name: Build Frontend Docker image
         run: |
-          docker build -t ghcr.io/nexx42/frontend:${{ github.sha }} ./frontend
+          docker build \
+            --build-arg ENVIRONMENT=production \
+            -t ghcr.io/nexx42/frontend:${{ github.sha }} \
+            ./frontend
           
       # push  
         

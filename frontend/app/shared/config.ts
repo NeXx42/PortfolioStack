@@ -1,0 +1,5 @@
+export const BASE_URL =
+    process.env.NEXT_PUBLIC_BASE_URL ?? "INVALID";
+
+export const DEBUG_SLOW_API =
+    process.env.NEXT_PUBLIC_DEBUG_SLOW_API === "true";

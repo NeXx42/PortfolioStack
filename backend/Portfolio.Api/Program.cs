@@ -52,7 +52,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("localhost", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -82,7 +82,10 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
-app.UseCors("localhost");
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("localhost");
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

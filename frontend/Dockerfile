@@ -1,29 +1,31 @@
-# Stage 1: build
-FROM node:20-alpine AS build
+# ---------- Stage 1: Build ----------
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-COPY tsconfig*.json ./
-COPY vite.config.ts ./
-COPY public ./public
-COPY src ./src
-COPY index.html ./
-
-COPY entrypoint.sh /entrypoint.sh
-
 RUN npm ci
+
+# Copy source
+COPY app/ ./app/
+COPY public/ ./public/
+COPY next.config.ts ./
+COPY tsconfig.json ./
+
+ARG ENVIRONMENT=docker
+COPY .env.$ENVIRONMENT .env
+
+# Build the app
 RUN npm run build
 
-# server
-FROM nginx:alpine
-WORKDIR /usr/share/nginx/html
+# ---------- Stage 2: Production ----------
+FROM node:20-alpine AS runner
+WORKDIR /app
 
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/.next/standalone ./
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
-EXPOSE 80
-ENTRYPOINT ["/entrypoint.sh"]
+EXPOSE 3000
+CMD ["node", "server.js"]
