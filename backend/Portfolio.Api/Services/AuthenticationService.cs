@@ -99,7 +99,7 @@ public class AuthenticationService
         if (dbUsr != null)
         {
             usr = _encryptionService.DecryptUserModel(dbUsr);
-            _cache.SetIfNotExists(userId.ToString(), dbUsr);
+            _cache.SetIfNotExists(userId.ToString(), usr);
 
             return usr;
         }
