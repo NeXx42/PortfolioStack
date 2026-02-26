@@ -1,7 +1,11 @@
-import { DEBUG_SLOW_API } from "@shared/config";
+import { SERVER_URL, BASE_URL, DEBUG_SLOW_API } from "@shared/config";
 
-export async function get<T>(base_url: string, uri: string): Promise<T | undefined> {
-    const res = await fetch(`${base_url}/api/${uri}`, {
+const URL = typeof window === "undefined"
+    ? SERVER_URL
+    : BASE_URL;
+
+export async function get<T>(uri: string): Promise<T | undefined> {
+    const res = await fetch(`${URL}/api/${uri}`, {
         method: "GET",
         credentials: "include",
         headers: {
@@ -23,8 +27,8 @@ export async function get<T>(base_url: string, uri: string): Promise<T | undefin
     return res.json();
 }
 
-export async function post<T>(base_url: string, uri: string, obj?: any): Promise<T | undefined> {
-    const res = await fetch(`${base_url}/api/${uri}`, {
+export async function post<T>(uri: string, obj?: any): Promise<T | undefined> {
+    const res = await fetch(`${URL}/api/${uri}`, {
         method: "POST",
         credentials: "include",
         headers: {

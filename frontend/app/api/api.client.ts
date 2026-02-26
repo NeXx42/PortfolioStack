@@ -3,20 +3,7 @@
 import type { Item, Link, User } from "@shared/types";
 import type { ProjectType } from "@shared/enums";
 
-import * as api from "./api.shared";
-import { BASE_URL } from "@shared/config";
-
-// -------------------- shared
-
-
-async function get<T>(uri: string): Promise<T> {
-    return (await api.get<T>(BASE_URL, uri))!;
-}
-
-async function post<T>(uri: string, obj?: any): Promise<T> {
-    return (await api.post<T>(BASE_URL, uri, obj))!;
-}
-
+import { post, get } from "./api.shared";
 
 // -------------------- authentication
 
