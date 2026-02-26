@@ -74,17 +74,7 @@ public class AuthenticationService
         if (!_encryptionService.CheckPassword(dbUser, password))
             throw new Exception("Invalid password");
 
-        UserDto? usr = await GetLogin(dbUser.userId);
-
-        if (usr != null)
-        {
-            throw new Exception("User is already logged in");
-        }
-
-        usr = _encryptionService.DecryptUserModel(dbUser);
-        _cache.SetIfNotExists(usr.id.ToString(), usr);
-
-        return usr;
+        return await GetLogin(dbUser.userId);
     }
 
     public async Task<UserDto?> GetLogin(Guid userId)
