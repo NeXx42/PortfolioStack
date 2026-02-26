@@ -9,9 +9,9 @@ import type { User } from "@shared/types";
 type AuthContextType = {
     authenticatedUser: User | undefined,
     loading: boolean,
-    error: string,
+    error: string | undefined,
     login: (email: string, password: string) => Promise<boolean>,
-    signup: (email: string, displayName: string, password: string) => Promise<boolean>,
+    signup: (email: string, displayName: string, password: string, emailCode: number) => Promise<boolean>,
     logout: () => Promise<void>,
 }
 
@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | undefined>(undefined);
 
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [error, setError] = useState(undefined);
 
     useEffect(() => {
         api.getLoggedInUser()
@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     async function login(email: string, password: string) {
-        setError("");
+        setError(undefined);
         setLoading(true);
 
         try {
@@ -48,12 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }
 
-    async function signup(email: string, displayName: string, password: string) {
-        setError("");
+    async function signup(email: string, displayName: string, password: string, emailCode: number) {
+        setError(undefined);
         setLoading(true);
 
         try {
-            const u = await api.signup(email, displayName, password);
+            const u = await api.signup(email, displayName, password, emailCode);
             setUser(u);
 
             return true;
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     async function logout() {
-        setError("");
+        setError(undefined);
         setLoading(true);
 
         try {

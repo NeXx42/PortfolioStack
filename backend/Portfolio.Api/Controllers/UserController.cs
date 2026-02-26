@@ -5,8 +5,6 @@ using Microsoft.Extensions.Options;
 using Portfolio.Api.Services;
 using Portfolio.Api.Types;
 using Portfolio.Core.DTOs;
-using Portfolio.Core.Models;
-using Portfolio.Data;
 
 namespace Portfolio.Api.Controllers;
 
@@ -14,12 +12,16 @@ namespace Portfolio.Api.Controllers;
 [Route("api/auth")]
 public class UserController : ControllerBase
 {
+    private readonly MailService _mail;
     private readonly AuthenticationService _authService;
+
     private readonly GeneralSettings _options;
 
-    public UserController(AuthenticationService authService, IOptions<GeneralSettings> options)
+    public UserController(AuthenticationService authService, MailService mail, IOptions<GeneralSettings> options)
     {
+        _mail = mail;
         _authService = authService;
+
         _options = options.Value;
     }
 
@@ -28,6 +30,7 @@ public class UserController : ControllerBase
         public string email { get; set; }
         public string displayName { get; set; }
         public string password { get; set; }
+        public long emailVerification { get; set; }
 
         public bool Validate()
         {
@@ -43,13 +46,18 @@ public class UserController : ControllerBase
             return Results.InternalServerError("Account creation is disabled");
         }
 
-        if (!request.Validate())
-            return Results.BadRequest("Invalid signup request");
+        try
+        {
+            _authService.ValidateCreation(request.email, request.displayName, request.password, request.emailVerification);
+            UserDto usr = await _authService.CreateUserEntry(request.email, request.displayName, request.password);
 
-        UserDto usr = await _authService.CreateUserEntry(request.email, request.displayName, request.password);
-
-        AddTokenCookie(usr);
-        return Results.Json(usr);
+            AddTokenCookie(usr);
+            return Results.Json(usr);
+        }
+        catch (Exception e)
+        {
+            return Results.BadRequest(e.Message);
+        }
     }
 
     public struct LoginRequest
@@ -112,6 +120,53 @@ public class UserController : ControllerBase
         await _authService.ClearUserSession(usr);
 
         return Results.Ok();
+    }
+
+
+    public struct EmailVerification
+    {
+        public string address { get; set; }
+        public long? code { get; set; }
+    }
+
+    [HttpPost("email/verification")]
+    public async Task<IResult> RequestEmailVerification([FromBody] EmailVerification req)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(req.address) || !req.address.Contains("@"))
+                return Results.BadRequest("Invalid email");
+
+            await _mail.SentEmailVerification(req.address);
+            return Results.Ok();
+        }
+        catch (Exception e)
+        {
+            return Results.BadRequest(e.Message);
+        }
+    }
+
+    [HttpPost("email/confirm")]
+    public async Task<IResult> ConfirmEmailVerification([FromBody] EmailVerification req)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(req.address) || !req.address.Contains("@"))
+                return Results.BadRequest("Invalid email");
+
+            if (_mail.ConfirmCode(req.address, req.code))
+            {
+                return Results.Ok();
+            }
+            else
+            {
+                return Results.BadRequest();
+            }
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e.Message);
+        }
     }
 
     private void AddTokenCookie(UserDto usr)

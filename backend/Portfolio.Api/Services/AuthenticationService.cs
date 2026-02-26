@@ -19,18 +19,24 @@ public class AuthenticationService
     public const string AUTH_COOKIE_NAME = "auth_token";
 
     private readonly PortfolioContext _context;
+
+    private readonly MailService _mail;
     private readonly CacheService _cache;
     private readonly EncryptionService _encryptionService;
 
-    public AuthenticationService(PortfolioContext context, CacheService cache, EncryptionService encryptionService)
+    public AuthenticationService(PortfolioContext context, CacheService cache, MailService mail, EncryptionService encryptionService)
     {
         _encryptionService = encryptionService;
-        _context = context;
+
+        _mail = mail;
         _cache = cache;
+        _context = context;
     }
 
     public async Task<UserDto> CreateUserEntry(string email, string displayName, string password)
     {
+        _cache.Remove(email);
+
         string emailHash = _encryptionService.ComputeEmailHash(email);
 
         if (await _context.Users.AnyAsync(x => x.emailHash.Equals(emailHash)))
@@ -50,7 +56,7 @@ public class AuthenticationService
         await _context.Users.AddAsync(usr);
         await _context.SaveChangesAsync();
 
-        _cache.Set(usr.userId.ToString(), usr);
+        _cache.SetIfNotExists(usr.userId.ToString(), usr);
         return _encryptionService.DecryptUserModel(usr);
     }
 
@@ -72,12 +78,11 @@ public class AuthenticationService
 
         if (usr != null)
         {
-            //throw new Exception("User is already logged in");
-            return usr;
+            throw new Exception("User is already logged in");
         }
 
         usr = _encryptionService.DecryptUserModel(dbUser);
-        _cache.Set(usr.id.ToString(), usr);
+        _cache.SetIfNotExists(usr.id.ToString(), usr);
 
         return usr;
     }
@@ -89,7 +94,17 @@ public class AuthenticationService
             return usr;
         }
 
-        return null;
+        var dbUsr = await _context.Users.FirstOrDefaultAsync(u => u.userId == userId);
+
+        if (dbUsr != null)
+        {
+            usr = _encryptionService.DecryptUserModel(dbUsr);
+            _cache.SetIfNotExists(userId.ToString(), dbUsr);
+
+            return usr;
+        }
+
+        return usr;
     }
 
     public async Task ClearUserSession(UserDto usr)
@@ -117,5 +132,20 @@ public class AuthenticationService
 
         SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
+    }
+
+    public void ValidateCreation(string email, string displayName, string password, long verification)
+    {
+        if (string.IsNullOrEmpty(email) || !email.Contains("@"))
+            throw new Exception("Invalid email");
+
+        if (string.IsNullOrEmpty(password))
+            throw new Exception("Invalid password");
+
+        if (string.IsNullOrEmpty(displayName))
+            throw new Exception("Invalid name");
+
+        if (!_mail.ConfirmCode(email, verification))
+            throw new Exception("Email not verified");
     }
 }

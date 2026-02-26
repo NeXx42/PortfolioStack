@@ -62,13 +62,12 @@ export default function () {
             };
         }
 
-        function init() {
-            W = canvas.current!.width = window.innerWidth;
-            H = canvas.current!.height = window.innerHeight;
-            particles = [];
-            const count = Math.floor((W * H) / 9000);  // density proportional to screen
-            for (let i = 0; i < count; i++) particles.push(mkParticle());
-        }
+        W = canvas.current!.width = 1920;
+        H = canvas.current!.height = 1080;
+        particles = [];
+
+        for (let i = 0; i < 250; i++)
+            particles.push(mkParticle());
 
         function tick(t: number) {
             ctx.clearRect(0, 0, W, H);
@@ -169,8 +168,7 @@ export default function () {
             raf = requestAnimationFrame(tick);
         }
 
-        window.addEventListener('resize', () => { init(); });
-        window.addEventListener('load', () => { init(); tick(0); });
+        window.addEventListener('load', () => { tick(0); });
     }, [])
 
     return (<canvas ref={canvas} id="StarContainer" />)

@@ -1,22 +1,30 @@
 "use client"
 
 import React, { useState } from "react"
-import "./authenticationModal.css"
-import { useAuth } from "@hooks/useUser";
 import { createPortal } from "react-dom";
-import CommonButton from "./commonButton";
+
+import { useAuth } from "@hooks/useUser";
+import { useEmail } from "@hooks/useEmail";
+import CommonButton from "@shared/components/commonButton";
+
+import "./authenticationModal.css"
 
 interface Props {
     onExit: () => void
 }
 
 export default function AuthenticationModal(props: Props) {
+
     const [email, setEmail] = useState<string>("");
+    const [emailCode, setEmailCode] = useState<number | undefined>(undefined);
+
     const [displayName, setDisplayName] = useState<string>("");
     const [password, setPassword] = useState<string>("");
 
     const [loginTab, setLoginTab] = useState(true);
     const { login, signup, error } = useAuth();
+
+    const { sendValidation, error: emailVerificationError, loading: emailVerificationLoading, sentCode } = useEmail();
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -28,7 +36,7 @@ export default function AuthenticationModal(props: Props) {
     const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (await signup(email, displayName, password))
+        if (await signup(email, displayName, password, emailCode ?? 0))
             props.onExit();
     };
 
@@ -71,11 +79,18 @@ export default function AuthenticationModal(props: Props) {
                                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
                             </div>
                             <div className="ig">
+                                <label>Verify Email</label>
+                                <div>
+                                    <input type="number" value={emailCode} onChange={(e) => setEmailCode(Number.parseInt(e.target.value))} placeholder="00000" required />
+                                    <button type="button" className="Common_Button" onClick={() => sendValidation(email)}>{emailVerificationLoading ? "Sending" : sentCode ? "sent" : "verify"}</button>
+                                </div>
+                            </div>
+                            <div className="ig">
                                 <label>Password</label>
                                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Choose a password" required />
                             </div>
 
-                            <label>{error}</label>
+                            <label>{error ?? emailVerificationError}</label>
                             <CommonButton label="Signup" />
                         </form>
                     )

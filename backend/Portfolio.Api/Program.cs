@@ -63,6 +63,7 @@ builder.Services.AddDbContext<PortfolioContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<GeneralSettings>(builder.Configuration.GetSection("Settings"));
 builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("Encryption"));
 
@@ -71,6 +72,7 @@ builder.Services.AddSingleton<CacheService>();
 
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<ContentService>();
+builder.Services.AddScoped<MailService>();
 
 builder.Services.AddMemoryCache();
 

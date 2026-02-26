@@ -42,7 +42,7 @@ public class ContentService
 
         ProjectDto[] results = dbRes.Select(ProjectDto.Map).ToArray();
 
-        _cache.Set(type.ToString(), results);
+        _cache.SetIfNotExists(type.ToString(), results);
         return results;
     }
 
@@ -59,7 +59,7 @@ public class ContentService
 
         ProjectDto[] results = dbRes.Select(ProjectDto.Map).ToArray();
 
-        _cache.Set(CACHE_FEATURED_CONTENT, results);
+        _cache.SetIfNotExists(CACHE_FEATURED_CONTENT, results);
         return results;
     }
 
@@ -80,7 +80,7 @@ public class ContentService
         if (game != null)
         {
             ProjectDto dto = ProjectDto.Map(game);
-            _cache.Set(slug, dto);
+            _cache.SetIfNotExists(slug, dto);
 
             return dto;
         }
@@ -199,7 +199,7 @@ public class ContentService
 
         LinkModel[] dbRes = await _portfolioContext.Links.ToArrayAsync();
 
-        _cache.Set(CACHE_LINKS, dbRes);
+        _cache.SetIfNotExists(CACHE_LINKS, dbRes);
         return dbRes;
     }
 
