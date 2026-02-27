@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 
 import * as api from "@api/api.client"
 
-import type { Item, Link } from "@shared/types";
+import type { Project, Link } from "@shared/types";
 import { ProjectType } from "@shared/enums";
 
 interface HookReturn {
-    content: Record<ProjectType, Item[]>,
+    content: Record<ProjectType, Project[]>,
     loadingContent: boolean,
     fetchContent: (type: ProjectType) => Promise<void>,
 }
@@ -14,8 +14,8 @@ interface HookReturn {
 
 export function useContent(): HookReturn {
 
-    const [content, setContent] = useState<Record<ProjectType, Item[]>>(
-        {} as Record<ProjectType, Item[]>
+    const [content, setContent] = useState<Record<ProjectType, Project[]>>(
+        {} as Record<ProjectType, Project[]>
     );
     const [loadingContent, setLoadingContent] = useState<boolean>(true);
 
@@ -24,7 +24,7 @@ export function useContent(): HookReturn {
             return
 
         setLoadingContent(true);
-        const items: Item[] = await api.fetchContent(type);
+        const items: Project[] = await api.fetchContent(type);
 
         setContent(prev => ({
             ...prev,

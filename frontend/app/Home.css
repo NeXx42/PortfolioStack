@@ -94,8 +94,7 @@
 
 .Home_hero_Content_Featured {
     position: absolute;
-    width: 1200px;
-
+    width: 65%;
     right: 5%;
 
     display: grid;
@@ -104,6 +103,32 @@
     align-items: center;
 
     gap: 1rem;
+}
+
+@media (max-width: 1300px) {
+    .Home_Hero_Content_Person {
+        display: none;
+    }
+
+    .Home_hero_Content_Featured {
+        position: relative;
+        margin: auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .Home_Hero_Content_Person {
+        display: none;
+    }
+
+    .Home_hero_Content_Featured {
+        width: 300px;
+
+        right: calc(50% - 150px);
+
+        grid-template-columns: 200px;
+        margin: auto;
+    }
 }
 
 
@@ -271,6 +296,7 @@
 
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 500px;
     gap: 15px;
 }
 

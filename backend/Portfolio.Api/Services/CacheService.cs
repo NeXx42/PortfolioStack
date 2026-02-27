@@ -8,7 +8,7 @@ public class CacheService
 
     public bool SetIfNotExists<T>(string set, T dat, TimeSpan? expire = null)
     {
-        if (cache.ContainsKey(set))
+        if (TryGetValue<T>(set, out _))
             return false;
 
         return cache.TryAdd(set, new CacheObject(dat, expire));

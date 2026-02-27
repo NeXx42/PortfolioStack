@@ -1,6 +1,6 @@
 "use client"
 
-import type { Item, Link, User } from "@shared/types";
+import type { Project, User, ProjectTag } from "@shared/types";
 import type { ProjectType } from "@shared/enums";
 
 import { post, get } from "./api.shared";
@@ -33,11 +33,11 @@ export async function auth_Email_Confirm(emailAddress: string, code: number): Pr
 
 // -------------------- Content
 
-export async function fetchContent(type: ProjectType): Promise<Item[]> {
+export async function fetchContent(type: ProjectType): Promise<Project[]> {
     return (await get(`content?type=${type}`))!;
 }
 
-export async function fetchGame(gameId: string): Promise<Item> {
+export async function fetchGame(gameId: string): Promise<Project> {
     return (await get(`content/${gameId}`))!;
 }
 
@@ -53,7 +53,7 @@ export async function admin_ClearCache(): Promise<void> {
     await get("admin/clearCache");
 }
 
-export async function admin_SaveItem(item: Item): Promise<void> {
+export async function admin_SaveItem(item: Project): Promise<void> {
     await post("admin/save", item)
 }
 
@@ -63,4 +63,12 @@ export async function admin_UploadImage(img: FormData): Promise<string> {
 
 export async function admin_GetImages(): Promise<string[]> {
     return (await get("admin/images"))!;
+}
+
+export async function admin_GetTags(): Promise<ProjectTag[]> {
+    return (await get("admin/tags"))!;
+}
+
+export async function admin_SaveTags(tags: ProjectTag[]) {
+    await post("admin/tags", tags);
 }

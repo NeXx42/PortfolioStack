@@ -14,8 +14,8 @@ public class PortfolioContext : DbContext
     public DbSet<ReleaseModel> Releases { get; set; }
     public DbSet<ReleaseDownloadModel> ReleaseDownloads { get; set; }
 
-    public DbSet<ProjectModel> Tags { get; set; }
-    public DbSet<ProjectModel> ProjectTags { get; set; }
+    public DbSet<TagModel> Tags { get; set; }
+    public DbSet<ProjectTagModel> ProjectTags { get; set; }
 
     public DbSet<ProjectElementModel> Elements { get; set; }
     public DbSet<ProjectElementParameterModel> ElementsParameters { get; set; }

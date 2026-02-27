@@ -1,19 +1,22 @@
-import { useEffect, useState } from "react";
+import { useDebugValue, useEffect, useState } from "react";
 
 import { ProjectContentType } from "@shared/enums"
-import type { Item, ItemContent, ItemContentParameter } from "@shared/types"
+import type { Project, ProjectContent, ProjectContentParam, ProjectTag } from "@shared/types"
 
 interface Props {
-    item: Item,
-    onSave: (item: Item) => Promise<void>
+    item: Project,
+    tags: ProjectTag[] | undefined,
+
+    onSave: (item: Project) => Promise<void>
 }
 
-export default function ContentEdit(props: Props) {
+export default function (props: Props) {
 
-    const [item, setItem] = useState<Item | undefined>();
+    const [item, setItem] = useState<Project | undefined>();
+
     const [newContentId, setNewContentId] = useState(1);
     const [newParamId, setNewParamId] = useState(1);
-
+    const [newTagId, setNewTagId] = useState(1);
 
     useEffect(() => {
         setItem(props.item);
@@ -21,8 +24,8 @@ export default function ContentEdit(props: Props) {
 
     // item
 
-    const editItemProperty = (field: keyof Item, value: any) => {
-        setItem((prev?: Item) => {
+    const editItemProperty = (field: keyof Project, value: any) => {
+        setItem((prev?: Project) => {
             if (prev === undefined) return;
             return {
                 ...prev,
@@ -51,7 +54,7 @@ export default function ContentEdit(props: Props) {
         })
     }
 
-    const editItemContent = (contentId: number, field: keyof Item, value: any) => {
+    const editItemContent = (contentId: number, field: keyof Project, value: any) => {
         setItem(prev => {
             if (prev === undefined) return;
             return {
@@ -105,7 +108,7 @@ export default function ContentEdit(props: Props) {
         });
     }
 
-    const editContentParam = (contentId: number, paramId: number, field: keyof ItemContentParameter, value: any) => {
+    const editContentParam = (contentId: number, paramId: number, field: keyof ProjectContentParam, value: any) => {
         setItem(prev => {
             if (prev === undefined) return;
             return {
@@ -143,6 +146,49 @@ export default function ContentEdit(props: Props) {
         });
     }
 
+    // tags
+
+    const addProjectTag = () => {
+        setNewTagId(prev => prev + 1);
+
+        setItem(prev => {
+            if (prev === undefined) return;
+            return {
+                ...prev,
+                tags: [...(prev.tags ?? []), {
+                    id: 1,
+                    name: "",
+                    customColour: ""
+                }]
+            }
+        })
+    }
+
+    const removeProjectTag = (index: number) => {
+        setItem(prev => {
+            if (prev === undefined) return;
+            return {
+                ...prev,
+                tags: prev.tags?.filter((_, i) => i !== index)
+            }
+        })
+    }
+
+    const updateProjectTag = (value: number, i: number) => {
+        setItem(prev => {
+            if (prev === undefined) return;
+            return {
+                ...prev,
+                tags: prev.tags?.map((t, index) => {
+                    if (index !== i) return t;
+                    return {
+                        ...t,
+                        id: value
+                    }
+                })
+            }
+        })
+    }
 
     // draw
 
@@ -152,7 +198,7 @@ export default function ContentEdit(props: Props) {
     }
 
 
-    const drawElement = (element: ItemContent) => {
+    const drawElement = (element: ProjectContent) => {
         return (
             <div style={{ marginTop: "55px" }} key={element.id}>
                 <div>
@@ -213,6 +259,25 @@ export default function ContentEdit(props: Props) {
                 <li style={{ display: "flex" }}>
                     <label style={{ width: "200px" }}>Update date</label>
                     <input style={{ flex: "3" }} onChange={e => editItemProperty("dateUpdate", e.target.value)} type="date" value={item.dateUpdate?.toString()} />
+                </li>
+
+                <li style={{ display: "flex" }}>
+                    <label style={{ width: "200px" }}>Tags</label>
+                    <ol style={{ flex: "3" }}>
+                        {item.tags?.map((t, tagIndex) => (
+                            <li key={tagIndex}>
+
+                                <select value={t.id} onChange={(e) => updateProjectTag(Number.parseInt(e.target.value), tagIndex)}>
+                                    {props.tags?.map(t => (
+                                        <option key={t.id} value={t.id}>{t.name}</option>
+                                    ))}
+                                </select>
+
+                                <button onClick={() => removeProjectTag(t.id)}>Remove</button>
+                            </li>
+                        ))}
+                        <li><button onClick={addProjectTag}>Add</button></li>
+                    </ol>
                 </li>
             </ol>
             <h1>Elements</h1>

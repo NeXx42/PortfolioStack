@@ -1,14 +1,14 @@
 "use client"
 import { useRouter } from "next/navigation";
 
-import type { Item } from "@shared/types"
+import type { Project } from "@shared/types"
 import { ProjectType } from "@shared/enums";
 
 import "./itemCard.css"
 
 interface Props {
     isWide?: boolean,
-    itemData?: Item,
+    itemData?: Project,
 }
 
 
@@ -49,6 +49,12 @@ export default function ItemCard({
 
             <div className="Component_ItemCard_Content">
                 <div className="Component_ItemCard_Info">
+                    <div>
+                        {[0, 1, 2].map(t => {
+                            if (t >= (itemData?.tags?.length ?? 0)) return (<></>)
+                            return (<span className="Component_ItemCard_Tag_Info">{itemData!.tags![t].name}</span>)
+                        })}
+                    </div>
                     <h2>{itemData?.gameName}</h2>
                     <p>{itemData?.shortDescription}</p>
                 </div>

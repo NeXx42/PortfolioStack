@@ -10,13 +10,13 @@ import Footer from "@shared/components/footer";
 import LinkCard from "./components//linkCard";
 import ItemCardSkeleton from "./components/itemCardSkeleton";
 import CardList from "./components/cardList";
-import { Item, Link } from "./shared/types";
+import { Project, Link } from "./shared/types";
 import StarContainer from "./shared/components/starContainer";
 
 export default async function () {
 
   var links: Link[] | null = null;
-  var content: Item[] | null = null;
+  var content: Project[] | null = null;
 
   try {
     links = await fetchLinks();
@@ -40,9 +40,9 @@ export default async function () {
         </div>
 
         <div className="Home_hero_Content_Featured">
-          {content?.map((item, key) =>
-            (<ItemCard key={key} itemData={item} />)
-          )}
+          {content !== undefined && ([1, 0, 2].map(x =>
+            (<ItemCard key={x} itemData={content![x]} />)
+          ))}
         </div>
       </div>
 

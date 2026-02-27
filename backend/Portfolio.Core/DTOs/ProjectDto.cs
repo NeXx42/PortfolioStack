@@ -43,11 +43,7 @@ public class ProjectDto
 
             type = model.projectType,
 
-            tags = model.Tags?.Select(t => new Tag()
-            {
-                name = t.Tag!.Name,
-                customColour = t.Tag.customColour
-            }).ToArray() ?? [],
+            tags = model.Tags?.Select(Tag.Map).ToArray(),
 
             elements = model.Elements?.Select(x => new ElementGroup()
             {
@@ -104,8 +100,29 @@ public class ProjectDto
 
     public class Tag
     {
+        public int id { get; set; }
         public required string name { get; set; }
         public string? customColour { get; set; }
+
+        public static Tag Map(ProjectTagModel model)
+        {
+            return new Tag()
+            {
+                id = model.Tag!.Id,
+                name = model.Tag!.Name,
+                customColour = model.Tag!.customColour
+            };
+        }
+
+        public static Tag Map(TagModel model)
+        {
+            return new Tag()
+            {
+                id = model.Id,
+                name = model.Name,
+                customColour = model.customColour
+            };
+        }
     }
 
     public class Release

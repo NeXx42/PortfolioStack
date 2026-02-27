@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import * as api from "@api/api.client"
-import type { Item } from "@shared/types";
+import type { Project, ProjectTag } from "@shared/types";
 
 
 interface HookReturn {
@@ -9,16 +9,22 @@ interface HookReturn {
 
     slugs?: string[],
 
-    saveItem: (item: Item) => Promise<void>,
+    saveItem: (item: Project) => Promise<void>,
     clearCache: () => Promise<void>
 
     images?: string[],
-    uploadImage: (img: FormData) => Promise<string>
+    uploadImage: (img: FormData) => Promise<string>,
+
+    tags?: ProjectTag[]
+    saveTags: (tags: ProjectTag[]) => Promise<void>
 }
 
 
 export function useAdmin(): HookReturn {
     const [images, setImages] = useState<string[] | undefined>(undefined);
+    const [tags, setTags] = useState<ProjectTag[] | undefined>(undefined);
+
+
     const [slugs, setSlugs] = useState<string[] | undefined>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -32,6 +38,9 @@ export function useAdmin(): HookReturn {
 
         api.admin_GetImages()
             .then(setImages);
+
+        api.admin_GetTags()
+            .then(setTags);
     }, [])
 
     const functionWrapper = async (inp: Promise<void>) => {
@@ -48,5 +57,8 @@ export function useAdmin(): HookReturn {
 
         images,
         uploadImage: async (img: FormData) => await api.admin_UploadImage(img),
+
+        tags,
+        saveTags: async (tags: ProjectTag[]) => await api.admin_SaveTags(tags)
     }
 }

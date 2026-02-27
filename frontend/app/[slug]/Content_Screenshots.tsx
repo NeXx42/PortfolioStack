@@ -1,4 +1,4 @@
-import type { ItemContentParameter } from "@shared/types";
+import type { ProjectContentParam } from "@shared/types";
 import type { ContentElementProps } from "./page";
 
 import "./Content_Screenshots.css"
@@ -10,7 +10,7 @@ export default function (props: ContentElementProps) {
 
     const elementsOrdered = props.content.elements!.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-    const drawImage = (icon: ItemContentParameter, key: number) => {
+    const drawImage = (icon: ProjectContentParam, key: number) => {
         return (<div className={`Content_Screenshot_Icon ${icon.value2}`} key={key}>
             <a>⤢ expand</a>
             <img src={icon.value1} />

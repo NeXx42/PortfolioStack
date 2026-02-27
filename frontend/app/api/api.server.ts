@@ -1,14 +1,14 @@
 "use server"
 
-import type { Item, Link } from "@shared/types";
+import type { Project, Link } from "@shared/types";
 
 import { get } from "./api.shared";
 
-export async function fetchFeaturedContent(): Promise<Item[]> {
+export async function fetchFeaturedContent(): Promise<Project[]> {
     return (await get("content/featured"))!;
 }
 
-export async function fetchGame(gameId: string): Promise<Item> {
+export async function fetchGame(gameId: string): Promise<Project> {
     return (await get(`content/${gameId}`))!;
 }
 

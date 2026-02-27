@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Portfolio.Api.Services;
 using Portfolio.Core.Data;
 using Portfolio.Core.DTOs;
+using Portfolio.Core.Models;
 
 namespace Portfolio.Api.Controllers;
 
@@ -55,7 +56,7 @@ public class AdminController : ControllerBase
         }
         catch (Exception e)
         {
-            return Results.InternalServerError(e);
+            return Results.InternalServerError(e.Message);
         }
     }
 
@@ -69,7 +70,28 @@ public class AdminController : ControllerBase
         }
         catch (Exception e)
         {
-            return Results.InternalServerError(e);
+            return Results.InternalServerError(e.Message);
         }
+    }
+
+    [HttpGet("tags")]
+    public async Task<IResult> GetTags()
+    {
+        try
+        {
+            var res = await _content.GetTags();
+            return Results.Json(res);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e.Message);
+        }
+    }
+
+    [HttpPost("tags")]
+    public async Task<IResult> AddTags(ProjectDto.Tag[] tags)
+    {
+        await _content.SaveTags(tags);
+        return Results.Ok();
     }
 }

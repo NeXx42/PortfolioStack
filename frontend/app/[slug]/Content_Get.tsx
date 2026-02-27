@@ -1,12 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react";
-import { ItemRelease } from "../shared/types";
+import { ProjectRelease } from "../shared/types";
 import Link from "next/link";
 import CommonButton from "@shared/components/commonButton";
 
 interface Props {
-    release: ItemRelease,
+    release: ProjectRelease,
     cost?: number
 }
 

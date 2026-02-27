@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { createPortal } from "react-dom";
 
 import { useAuth } from "@hooks/useUser";
@@ -14,9 +14,9 @@ interface Props {
 }
 
 export default function AuthenticationModal(props: Props) {
-
     const [email, setEmail] = useState<string>("");
     const [emailCode, setEmailCode] = useState<number | undefined>(undefined);
+    const [emailVerificationDelay, setEmailVerificationDelay] = useState<number | undefined>(undefined)
 
     const [displayName, setDisplayName] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -25,6 +25,22 @@ export default function AuthenticationModal(props: Props) {
     const { login, signup, error } = useAuth();
 
     const { sendValidation, error: emailVerificationError, loading: emailVerificationLoading, sentCode } = useEmail();
+
+    useEffect(() => {
+        if (emailVerificationDelay === undefined)
+            return;
+
+        const timer = setTimeout(() => {
+            setEmailVerificationDelay(prev => {
+                const newValue = (prev ?? 0) <= 0 ? undefined : (prev ?? 0) - 1;
+                console.log(newValue);
+                return newValue;
+            });
+        }, 100);
+
+        return clearTimeout(timer);
+
+    }, [emailVerificationDelay])
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -39,6 +55,28 @@ export default function AuthenticationModal(props: Props) {
         if (await signup(email, displayName, password, emailCode ?? 0))
             props.onExit();
     };
+
+    const sendEmailVerification = () => {
+        sendValidation(email);
+        setEmailVerificationDelay(60 * 5);
+    }
+
+    const getEmailVerifyMessage = (): string => {
+        if (emailVerificationLoading)
+            return "Sending";
+
+        if (emailVerificationDelay !== undefined) {
+            const mins = Math.round(emailVerificationDelay / 60);
+            const secs = emailVerificationDelay - (mins * 60);
+
+            return `${mins > 0 ? `${mins}:` : ""}${secs}`;
+        }
+
+        if (sentCode)
+            return "Resend";
+
+        return "Send";
+    }
 
     return createPortal(
         <div className="ModalContainer" onClick={() => props.onExit()}>
@@ -82,7 +120,7 @@ export default function AuthenticationModal(props: Props) {
                                 <label>Verify Email</label>
                                 <div>
                                     <input type="number" value={emailCode} onChange={(e) => setEmailCode(Number.parseInt(e.target.value))} placeholder="00000" required />
-                                    <button type="button" className="Common_Button" onClick={() => sendValidation(email)}>{emailVerificationLoading ? "Sending" : sentCode ? "sent" : "verify"}</button>
+                                    <button type="button" className="Common_Button" onClick={sendEmailVerification}>{getEmailVerifyMessage()}</button>
                                 </div>
                             </div>
                             <div className="ig">

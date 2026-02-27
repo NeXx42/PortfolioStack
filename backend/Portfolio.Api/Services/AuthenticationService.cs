@@ -44,7 +44,7 @@ public class AuthenticationService
             throw new Exception("Email already exists");
         }
 
-        UserModel usr = new UserModel()
+        UserModel dbEntry = new UserModel()
         {
             displayName = _encryptionService.EncryptData(displayName),
             email = _encryptionService.EncryptData(email),
@@ -53,11 +53,13 @@ public class AuthenticationService
             passwordHash = _encryptionService.EncryptAndHashPassword(password)
         };
 
-        await _context.Users.AddAsync(usr);
+        await _context.Users.AddAsync(dbEntry);
         await _context.SaveChangesAsync();
 
-        _cache.SetIfNotExists(usr.userId.ToString(), usr);
-        return _encryptionService.DecryptUserModel(usr);
+        UserDto usr = _encryptionService.DecryptUserModel(dbEntry);
+
+        _cache.SetIfNotExists(usr.id.ToString(), usr);
+        return usr;
     }
 
     public async Task<UserDto?> ConfirmLogin(string email, string password)

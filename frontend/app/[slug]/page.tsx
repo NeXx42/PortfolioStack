@@ -6,9 +6,9 @@ import Navbar from "@shared/components/navbar";
 import Footer from "@shared/components/footer";
 import CommonButton from "@shared/components/commonButton";
 
-import { Item } from "@shared/types";
+import { Project } from "@shared/types";
 import { ProjectContentType } from "@shared/enums";
-import type { ItemContent, ItemRelease } from "@shared/types";
+import type { ProjectContent, ProjectRelease } from "@shared/types";
 
 import Content_About from "./Content_About";
 import Content_Releases from "./Content_Releases";
@@ -17,7 +17,7 @@ import Link from "next/link";
 import Content_Get from "./Content_Get";
 
 export interface ContentElementProps {
-    content: ItemContent
+    content: ProjectContent
 }
 
 export default async function ({ params }: { params: { slug: string } }) {
@@ -26,8 +26,8 @@ export default async function ({ params }: { params: { slug: string } }) {
     //if (slug === undefined)
     //    return <NotFound />
 
-    const content: Item = await fetchGame(slug);
-    const latestRelease: ItemRelease = content?.releases?.sort(r => r.date.getDate())[0] ?? null;
+    const content: Project = await fetchGame(slug);
+    const latestRelease: ProjectRelease = content?.releases?.sort(r => r.date.getDate())[0] ?? null;
 
     //const [isGetSticky, setGetSticky] = useState(false);
     //const stickyPointRef = useRef<HTMLDivElement>(null);
@@ -68,7 +68,7 @@ export default async function ({ params }: { params: { slug: string } }) {
     }
 
 
-    const drawElement = (element: ItemContent, index: number) => {
+    const drawElement = (element: ProjectContent, index: number) => {
         const contentKey: string = `Content_${element.type}_${index}`;
         const contentMap: Record<ProjectContentType, React.ComponentType<ContentElementProps>> = {
             [ProjectContentType.Screenshots]: Content_Screenshots,

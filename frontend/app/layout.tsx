@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "NeXx",
   description: "Portfolio site for NeXx",
+  icons: {
+    icon: "./Profile.png"
+  }
 };
 
 export default function RootLayout({

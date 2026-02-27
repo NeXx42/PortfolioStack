@@ -2,17 +2,17 @@ import { useEffect, useState } from "react";
 
 import * as api from "@api/api.client"
 
-import type { Item } from "@shared/types";
+import type { Project } from "@shared/types";
 
 interface HookReturn {
-    content?: Item,
+    content?: Project,
     loading: boolean,
     error?: string,
 }
 
 
 export function useGame(gameId?: string): HookReturn {
-    const [content, setContent] = useState<Item | undefined>(undefined);
+    const [content, setContent] = useState<Project | undefined>(undefined);
     const [error, setError] = useState<string | undefined>(undefined);
 
     const [loading, setLoadingFeatured] = useState(true);
@@ -25,7 +25,7 @@ export function useGame(gameId?: string): HookReturn {
         setError(undefined);
 
         api.fetchGame(gameId)
-            .then((x: Item) => setContent(x))
+            .then((x: Project) => setContent(x))
             .catch((err: any) => setError(err.Message))
             .finally(() => setLoadingFeatured(false));
     }, [gameId])

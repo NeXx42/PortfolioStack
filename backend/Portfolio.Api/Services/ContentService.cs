@@ -93,9 +93,11 @@ public class ContentService
     {
         if (project.id == Guid.Empty)
         {
+            Guid newId = Guid.NewGuid();
+
             ProjectModel dbEntry = new ProjectModel()
             {
-                id = Guid.NewGuid(),
+                id = newId,
                 name = project.gameName,
                 Price = project.cost,
                 projectType = project.type,
@@ -105,6 +107,7 @@ public class ContentService
                 description = project.shortDescription,
                 slug = ProjectDto.ConvertNameToSlug(project.gameName),
                 Version = project.version,
+
                 Elements = project.elements?.Select(e => new ProjectElementModel()
                 {
                     Type = e.type,
@@ -115,6 +118,12 @@ public class ContentService
                         ParameterValue2 = x.value2,
                         ParameterValue3 = x.value3
                     }).ToArray() ?? []
+                }).ToArray() ?? [],
+
+                Tags = project.tags?.Select(x => new ProjectTagModel()
+                {
+                    ProjectId = newId,
+                    TagId = x.id,
                 }).ToArray() ?? []
             };
 
@@ -126,6 +135,7 @@ public class ContentService
             ProjectModel dbEntry = await _portfolioContext.Projects
                 .Include(p => p.Elements)
                     .ThenInclude(e => e.Parameters)
+                .Include(t => t.Tags)
                 .SingleAsync(p => p.id == project.id);
 
             dbEntry.name = project.gameName;
@@ -189,6 +199,13 @@ public class ContentService
                 }
             }
 
+            _portfolioContext.RemoveRange(dbEntry.Tags);
+            await _portfolioContext.AddRangeAsync(project.tags?.Select(x => new ProjectTagModel()
+            {
+                ProjectId = project.id,
+                TagId = x.id,
+            }) ?? []);
+
             await _portfolioContext.SaveChangesAsync();
         }
     }
@@ -236,5 +253,41 @@ public class ContentService
             return [];
 
         return Directory.GetFiles(_settings.ContentStorageFolder).Select(x => Path.GetFileName(x)).ToArray();
+    }
+
+    public async Task<ProjectDto.Tag[]> GetTags()
+    {
+        return (await _portfolioContext.Tags.ToArrayAsync()).Select(ProjectDto.Tag.Map).ToArray();
+    }
+
+    public async Task SaveTags(ProjectDto.Tag[] tags)
+    {
+        HashSet<int> tagIds = tags.Select(x => x.id).ToHashSet();
+
+        TagModel[] tagsToRemove = await _portfolioContext.Tags.Where(x => !tagIds.Contains(x.Id)).ToArrayAsync();
+        ProjectTagModel[] oldProjectTags = await _portfolioContext.ProjectTags.Where(x => !tagIds.Contains(x.Id)).ToArrayAsync();
+
+        foreach (var tag in tags)
+        {
+            if (tag.id < 0)
+            {
+                await _portfolioContext.Tags.AddAsync(new TagModel()
+                {
+                    Name = tag.name,
+                    customColour = tag.customColour
+                });
+            }
+            else
+            {
+                var existingDb = await _portfolioContext.Tags.SingleOrDefaultAsync(t => t.Id == tag.id);
+                existingDb!.Name = tag.name;
+                existingDb!.customColour = tag.customColour;
+            }
+        }
+
+        _portfolioContext.RemoveRange(tagsToRemove);
+        _portfolioContext.RemoveRange(oldProjectTags);
+
+        await _portfolioContext.SaveChangesAsync();
     }
 }

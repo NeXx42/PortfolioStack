@@ -137,7 +137,7 @@ public class UserController : ControllerBase
             if (string.IsNullOrEmpty(req.address) || !req.address.Contains("@"))
                 return Results.BadRequest("Invalid email");
 
-            await _mail.SentEmailVerification(req.address);
+            await _mail.SendEmailVerification(req.address);
             return Results.Ok();
         }
         catch (Exception e)

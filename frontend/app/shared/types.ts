@@ -6,7 +6,7 @@ export interface User {
     role: UserRoles
 }
 
-export interface Item {
+export interface Project {
     id: string,
     gameName: string,
     slug: string,
@@ -21,20 +21,20 @@ export interface Item {
 
     type: ProjectType,
 
-    elements?: ItemContent[],
-    tags?: ItemTag[]
-    releases: ItemRelease[]
+    elements?: ProjectContent[],
+    tags?: ProjectTag[]
+    releases: ProjectRelease[]
 }
 
-export interface ItemContent {
+export interface ProjectContent {
     id: number,
     type: ProjectContentType,
     order: number,
 
-    elements?: ItemContentParameter[]
+    elements?: ProjectContentParam[]
 }
 
-export interface ItemContentParameter {
+export interface ProjectContentParam {
     id: number,
     order: number,
 
@@ -43,24 +43,28 @@ export interface ItemContentParameter {
     value3: string,
 }
 
-export interface ItemTag {
+export interface ProjectTag {
+    id: number,
     name: string,
     customColour: string,
 }
 
-export interface ItemRelease {
+export interface ProjectRelease {
     id: number,
     version: string,
     size: string,
     date: Date,
 
-    downloads: ItemReleaseDownload[]
+    downloads: ProjectReleaseDownload[]
 }
 
-export interface ItemReleaseDownload {
+export interface ProjectReleaseDownload {
     id: number,
     link: string
 }
+
+
+
 
 export interface Link {
     name: string,
