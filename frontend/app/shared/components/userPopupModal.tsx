@@ -5,13 +5,14 @@ import { UserRoles } from "@shared/enums";
 import CommonButton from "@shared/components/commonButton";
 
 import "./userPopupModal.css"
+import { useRouter } from "next/navigation";
 
 export default function UserPopupModal() {
     const { authenticatedUser, logout } = useAuth();
-    //const navigate = useNavigate();
+    const navigate = useRouter();
 
     const goToControlPanel = () => {
-        //navigate("/admin");
+        navigate.push("/admin");
     }
 
     const onLogout = async () => {

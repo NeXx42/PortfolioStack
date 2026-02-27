@@ -61,7 +61,7 @@ export default function () {
             <div className="images" style={{ display: "flex", justifyContent: "space-between" }}>
                 <ol>
                     {[...images ?? [], ...uploadedImages]?.map(x => (
-                        <li>
+                        <li key={x}>
                             <a key={x} onClick={() => setSelectedImageUrl(x)}>{x}</a>
                         </li>
                     ))}

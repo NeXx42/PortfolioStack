@@ -53,7 +53,8 @@ public class ContentService
 
         ProjectModel[] dbRes = await _portfolioContext.Projects
             .Include(p => p.Tags)
-            .ThenInclude(t => t.Tag)
+                .ThenInclude(t => t.Tag)
+            .OrderByDescending(p => p.UpdatedDate)
             .Take(3)
             .ToArrayAsync();
 
