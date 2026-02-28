@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "NeXx",
   description: "Portfolio site for NeXx",
   icons: {
-    icon: "./Profile.png"
+    icon: "/Profile.png"
   }
 };
 

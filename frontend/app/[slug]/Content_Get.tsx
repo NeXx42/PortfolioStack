@@ -6,7 +6,7 @@ import Link from "next/link";
 import CommonButton from "@shared/components/commonButton";
 
 interface Props {
-    release: ProjectRelease,
+    release: ProjectRelease | undefined,
     cost?: number
 }
 

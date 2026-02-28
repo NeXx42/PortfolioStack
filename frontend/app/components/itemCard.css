@@ -95,18 +95,13 @@
     margin: 0;
 }
 
-Component_ItemCard_Info p {
-    margin: 0;
-}
-
-
-
 .Component_ItemCard_Tag_Info {
-    box-sizing: border-box;
     background: rgba(74, 154, 184, .18);
     border: 1px solid rgba(74, 154, 184, .4);
 
     color: #7ec8e3;
     border-radius: 3px;
     padding: 2px 5px;
+
+    margin-right: 5px;
 }

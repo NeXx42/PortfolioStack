@@ -51,8 +51,8 @@ export default function ItemCard({
                 <div className="Component_ItemCard_Info">
                     <div>
                         {[0, 1, 2].map(t => {
-                            if (t >= (itemData?.tags?.length ?? 0)) return (<></>)
-                            return (<span className="Component_ItemCard_Tag_Info">{itemData!.tags![t].name}</span>)
+                            if (t >= (itemData?.tags?.length ?? 0)) return;
+                            return (<span className="Component_ItemCard_Tag_Info" key={t}>{itemData!.tags![t].name}</span>)
                         })}
                     </div>
                     <h2>{itemData?.gameName}</h2>

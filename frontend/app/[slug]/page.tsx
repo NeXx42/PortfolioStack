@@ -13,41 +13,44 @@ import type { ProjectContent, ProjectRelease } from "@shared/types";
 import Content_About from "./Content_About";
 import Content_Releases from "./Content_Releases";
 import Content_Screenshots from "./Content_Screenshots";
-import Link from "next/link";
 import Content_Get from "./Content_Get";
+
+import { Metadata } from "next";
+import { cache } from "react";
 
 export interface ContentElementProps {
     content: ProjectContent
 }
 
+const getProject = cache(async (slug: string) => {
+    return fetchGame(slug);
+})
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+    const { slug } = await params;
+
+    try {
+        const content = await getProject(slug);
+
+        return {
+            title: `${content?.gameName ?? ""} - NeXx`
+        };
+    } catch {
+        return { title: "Project" };
+    }
+}
+
 export default async function ({ params }: { params: { slug: string } }) {
     const { slug } = await params;
 
-    //if (slug === undefined)
-    //    return <NotFound />
+    var content: Project | undefined;
 
-    const content: Project = await fetchGame(slug);
-    const latestRelease: ProjectRelease = content?.releases?.sort(r => r.date.getDate())[0] ?? null;
-
-    //const [isGetSticky, setGetSticky] = useState(false);
-    //const stickyPointRef = useRef<HTMLDivElement>(null);
-
-    //useEffect(() => {
-    //    const handleScroll = () => {
-    //        if (stickyPointRef.current) {
-    //            const stickyPoint = stickyPointRef.current.offsetTop + 65; // header bar 55 pxs?
-    //            setGetSticky(window.scrollY > stickyPoint);
-    //        }
-    //    };
-    //
-    //    window.addEventListener("scroll", handleScroll);
-    //    return () => window.removeEventListener("scroll", handleScroll);
-    //}, [])
-
-
-    const drawGet = () => {
-
+    try {
+        content = await getProject(slug);
     }
+    catch { }
+
+    const latestRelease: ProjectRelease | undefined = content?.releases?.sort(r => r.date.getDate())[0] ?? undefined;
 
     const drawTitle = () => {
         return (
@@ -113,7 +116,7 @@ export default async function ({ params }: { params: { slug: string } }) {
                         <div className="Content_Hero_Vignette" />
                     </div>
 
-                    <Content_Get release={latestRelease} cost={content.cost} />
+                    <Content_Get release={latestRelease} cost={content?.cost} />
 
                     <div className="Content_Main">
                         {drawTitle()}
