@@ -4,13 +4,14 @@ const URL = typeof window === "undefined"
     ? SERVER_URL
     : BASE_URL;
 
-export async function get<T>(uri: string): Promise<T | undefined> {
+export async function get<T>(uri: string, nextCaching: NextFetchRequestConfig | undefined = undefined): Promise<T | undefined> {
     const res = await fetch(`${URL}/api/${uri}`, {
         method: "GET",
         credentials: "include",
         headers: {
             "Content-Type": "application/json"
         },
+        next: nextCaching
     });
 
     if (DEBUG_SLOW_API === true)
@@ -27,7 +28,7 @@ export async function get<T>(uri: string): Promise<T | undefined> {
     return res.json();
 }
 
-export async function post<T>(uri: string, obj?: any): Promise<T | undefined> {
+export async function post<T>(uri: string, obj?: any, nextCaching: NextFetchRequestConfig | undefined = undefined): Promise<T | undefined> {
     const res = await fetch(`${URL}/api/${uri}`, {
         method: "POST",
         credentials: "include",
@@ -35,6 +36,7 @@ export async function post<T>(uri: string, obj?: any): Promise<T | undefined> {
             "Content-Type": "application/json"
         },
         body: obj ? JSON.stringify(obj) : "",
+        next: nextCaching
     });
 
 
