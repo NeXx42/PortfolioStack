@@ -19,8 +19,6 @@ public class MailService
 
     public async Task SendEmailVerification(string target)
     {
-        return;
-
         long emailCode = new Random().NextInt64(100000, 999999);
 
         if (!_cache.SetIfNotExists(target, emailCode, TimeSpan.FromMinutes(5)))
