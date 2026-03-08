@@ -124,6 +124,16 @@ public class ContentService
                 {
                     ProjectId = newId,
                     TagId = x.id,
+                }).ToArray() ?? [],
+
+                Releases = project.releases?.Select(x => new ReleaseModel()
+                {
+                    Version = x.version,
+                    Size = x.size,
+                    Downloads = x.downloads?.Select(d => new ReleaseDownloadModel()
+                    {
+                        DownloadLink = d.link ?? string.Empty
+                    }).ToArray() ?? []
                 }).ToArray() ?? []
             };
 
@@ -136,6 +146,8 @@ public class ContentService
                 .Include(p => p.Elements)
                     .ThenInclude(e => e.Parameters)
                 .Include(t => t.Tags)
+                .Include(p => p.Releases)
+                    .ThenInclude(r => r.Downloads)
                 .SingleAsync(p => p.id == project.id);
 
             dbEntry.name = project.gameName;
@@ -205,6 +217,18 @@ public class ContentService
                 ProjectId = project.id,
                 TagId = x.id,
             }) ?? []);
+
+            _portfolioContext.RemoveRange(dbEntry.Releases);
+            await _portfolioContext.AddRangeAsync(project.releases?.Select(x => new ReleaseModel()
+            {
+                ProjectId = project.id,
+                Version = x.version,
+                Size = x.size,
+                Downloads = x.downloads?.Select(d => new ReleaseDownloadModel()
+                {
+                    DownloadLink = d.link ?? string.Empty
+                }).ToArray() ?? []
+            }).ToArray() ?? []);
 
             await _portfolioContext.SaveChangesAsync();
         }

@@ -2,6 +2,7 @@ import { useDebugValue, useEffect, useState } from "react";
 
 import { ProjectContentType } from "@shared/enums"
 import type { Project, ProjectContent, ProjectContentParam, ProjectTag } from "@shared/types"
+import Admin_Project_Release from "./Admin_Project_Release";
 
 interface Props {
     item: Project,
@@ -280,6 +281,10 @@ export default function (props: Props) {
                     </ol>
                 </li>
             </ol>
+            <h1>Releases</h1>
+
+            <Admin_Project_Release project={item} setProject={setItem} />
+
             <h1>Elements</h1>
 
             <ol>
