@@ -38,6 +38,11 @@ builder.Services.AddAuthentication(options =>
                 context.Token = cookie;
 
             return Task.CompletedTask;
+        },
+        OnAuthenticationFailed = context =>
+        {
+            Console.Write(context.Exception?.Message);
+            return Task.CompletedTask;
         }
     };
 });
