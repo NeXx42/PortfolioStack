@@ -39,11 +39,11 @@ jobs:
         
       - name: Push Backend Docker image
         run: |
-          docker push ghcr.io/nexx42/backend:${{ github.sha }}
+          docker push ghcr.io/nexx42/portfolio_api
 
       - name: Push Frontend Docker image
         run: |
-          docker push ghcr.io/nexx42/frontend:${{ github.sha }}
+          docker push ghcr.io/nexx42/portfolio_frontend
           
       #- name: Deploy to server
       #  uses: appleboy/ssh-action@v0.1.6
