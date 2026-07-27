@@ -19,10 +19,10 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-        ValidIssuer = "portfolio",
+        ValidIssuer = "NexxAuth",
 
         ValidateAudience = true,
-        ValidAudience = "portfolio",
+        ValidAudience = "NexxAuth",
 
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
@@ -35,9 +35,7 @@ builder.Services.AddAuthentication(options =>
         OnMessageReceived = context =>
         {
             if (context.Request.Cookies.TryGetValue(AuthenticationService.AUTH_COOKIE_NAME, out string? cookie))
-            {
                 context.Token = cookie;
-            }
 
             return Task.CompletedTask;
         }
@@ -67,7 +65,6 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("Email
 builder.Services.Configure<GeneralSettings>(builder.Configuration.GetSection("Settings"));
 builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("Encryption"));
 
-builder.Services.AddSingleton<EncryptionService>();
 builder.Services.AddSingleton<CacheService>();
 
 builder.Services.AddScoped<AuthenticationService>();

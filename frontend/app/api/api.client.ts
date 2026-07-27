@@ -8,27 +8,27 @@ import { post, get } from "./api.shared";
 // -------------------- authentication
 
 export async function login(email: string, password: string): Promise<User> {
-    return (await post<User>("auth/login", { email, password }))!;
+    return (await post<User>("user/login", { email, password }))!;
 }
 
 export async function signup(email: string, displayName: string, password: string, emailCode: number): Promise<User> {
-    return (await post<User>("auth/signup", { email, displayName, password, emailVerification: emailCode }))!;
+    return (await post<User>("user/signup", { email, displayName, password, emailVerification: emailCode }))!;
 }
 
 export async function getLoggedInUser(): Promise<User> {
-    return (await get("auth/profile"))!;
+    return (await get("user/profile"))!;
 }
 
 export async function logout() {
-    await post("auth/logout");
+    await post("user/logout");
 }
 
 export async function auth_Email_Verify(emailAddress: string): Promise<void> {
-    await post("auth/email/verification", { address: emailAddress });
+    await post("user/email/verification", { address: emailAddress });
 }
 
 export async function auth_Email_Confirm(emailAddress: string, code: number): Promise<boolean> {
-    return (await post("auth/email/confirmation", { address: emailAddress, code: code }))!;
+    return (await post("user/email/confirmation", { address: emailAddress, code: code }))!;
 }
 
 // -------------------- Content

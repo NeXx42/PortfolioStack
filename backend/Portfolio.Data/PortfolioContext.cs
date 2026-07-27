@@ -7,8 +7,6 @@ public class PortfolioContext : DbContext
 {
     public PortfolioContext(DbContextOptions<PortfolioContext> options) : base(options) { }
 
-    public DbSet<UserModel> Users { get; set; }
-
     public DbSet<ProjectModel> Projects { get; set; }
 
     public DbSet<ReleaseModel> Releases { get; set; }

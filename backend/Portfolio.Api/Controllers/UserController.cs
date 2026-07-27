@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Portfolio.Api.Services;
 using Portfolio.Api.Types;
-using Portfolio.Core.DTOs;
+using Portfolio.Core.Data;
 
 namespace Portfolio.Api.Controllers;
 
 [ApiController]
-[Route("api/auth")]
+[Route("api/user")]
 public class UserController : ControllerBase
 {
     private readonly MailService _mail;
@@ -49,10 +49,10 @@ public class UserController : ControllerBase
         try
         {
             _authService.ValidateCreation(request.email, request.displayName, request.password, request.emailVerification);
-            UserDto usr = await _authService.CreateUserEntry(request.email, request.displayName, request.password);
+            string token = await _authService.CreateUserEntry(request.email, request.displayName, request.password);
 
-            AddTokenCookie(usr);
-            return Results.Json(usr);
+            AddTokenCookie(token);
+            return Results.Ok();
         }
         catch (Exception e)
         {
@@ -71,15 +71,10 @@ public class UserController : ControllerBase
     {
         try
         {
-            UserDto? usr = await _authService.ConfirmLogin(login.email, login.password);
+            string token = await _authService.Login(login.email, login.password);
+            AddTokenCookie(token);
 
-            if (usr != null)
-            {
-                AddTokenCookie(usr);
-                return Results.Json(usr);
-            }
-
-            return Results.BadRequest("Invalid login");
+            return Results.Ok();
         }
         catch (Exception e)
         {
@@ -92,7 +87,7 @@ public class UserController : ControllerBase
     {
         if (User.Identity?.IsAuthenticated == true)
         {
-            UserDto? usr = await GetSessionUser();
+            UserObject? usr = await GetSessionUser();
 
             // invalidate token
             if (usr == null)
@@ -111,14 +106,12 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<IResult> Logout()
     {
-        UserDto? usr = await GetSessionUser();
+        UserObject? usr = await GetSessionUser();
 
         if (usr == null)
             return Results.Unauthorized();
 
         HttpContext.Response.Cookies.Delete(AuthenticationService.AUTH_COOKIE_NAME);
-        await _authService.ClearUserSession(usr);
-
         return Results.Ok();
     }
 
@@ -169,10 +162,8 @@ public class UserController : ControllerBase
         }
     }
 
-    private void AddTokenCookie(UserDto usr)
+    private void AddTokenCookie(string token)
     {
-        string token = _authService.GenerateToken(usr);
-
         HttpContext.Response.Cookies.Append(AuthenticationService.AUTH_COOKIE_NAME, token, new CookieOptions
         {
             HttpOnly = true,
@@ -182,13 +173,25 @@ public class UserController : ControllerBase
         });
     }
 
-    private async Task<UserDto?> GetSessionUser()
+    private async Task<UserObject?> GetSessionUser()
     {
         string? userGuid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        string? displayName = User.FindFirst(ClaimTypes.Name)?.Value;
+        string? email = User.FindFirst(ClaimTypes.Email)?.Value;
+        string? role = User.FindFirst(ClaimTypes.Role)?.Value;
 
         if (Guid.TryParse(userGuid, out Guid id))
         {
-            return await _authService.GetLogin(id);
+            UserRoles userRole = UserRoles.None;
+            Enum.TryParse(role, ignoreCase: true, out userRole);
+
+            return new UserObject()
+            {
+                Id = id,
+                Email = email!,
+                DisplayName = displayName!,
+                role = userRole,
+            };
         }
 
         return null;

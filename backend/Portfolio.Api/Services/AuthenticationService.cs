@@ -1,16 +1,8 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Security.Claims;
+using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.IdentityModel.Tokens;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal;
-using Portfolio.Core.DTOs;
-using Portfolio.Core.Models;
-using Portfolio.Data;
+using System.Text.Json;
+using Microsoft.Extensions.Options;
+using Portfolio.Api.Types;
 
 namespace Portfolio.Api.Services;
 
@@ -18,112 +10,47 @@ public class AuthenticationService
 {
     public const string AUTH_COOKIE_NAME = "auth_token";
 
-    private readonly PortfolioContext _context;
-
     private readonly MailService _mail;
-    private readonly CacheService _cache;
-    private readonly EncryptionService _encryptionService;
+    private readonly string _authServiceURL;
 
-    public AuthenticationService(PortfolioContext context, CacheService cache, MailService mail, EncryptionService encryptionService)
+    public AuthenticationService(MailService mail, IOptions<SecuritySettings> securitySettings)
     {
-        _encryptionService = encryptionService;
-
         _mail = mail;
-        _cache = cache;
-        _context = context;
+        _authServiceURL = securitySettings.Value.authServiceURL;
     }
 
-    public async Task<UserDto> CreateUserEntry(string email, string displayName, string password)
+    public async Task<string> CreateUserEntry(string email, string displayName, string password)
     {
-        _cache.Remove(email);
-
-        string emailHash = _encryptionService.ComputeEmailHash(email);
-
-        if (await _context.Users.AnyAsync(x => x.emailHash.Equals(emailHash)))
+        return (await SendRequestToAuthService<string>(HttpMethod.Post, "register", new
         {
-            throw new Exception("Email already exists");
+            email,
+            displayName,
+            password,
+        }))!;
+    }
+
+    public async Task<string> Login(string email, string password)
+    {
+        return (await SendRequestToAuthService<string>(HttpMethod.Post, "", new
+        {
+            email,
+            password
+        }))!;
+    }
+
+    private async Task<T?> SendRequestToAuthService<T>(HttpMethod method, string path, object json)
+    {
+        using (HttpClient client = new HttpClient())
+        {
+            HttpRequestMessage msg = new HttpRequestMessage(method, Path.Combine(_authServiceURL, path));
+            msg.Content = new StringContent(JsonSerializer.Serialize(json), Encoding.UTF8, "application/json");
+
+            HttpResponseMessage res = await client.SendAsync(msg);
+            res.EnsureSuccessStatusCode();
+
+            string resText = await res.Content!.ReadAsStringAsync(); ;
+            return JsonSerializer.Deserialize<T>(resText);
         }
-
-        UserModel dbEntry = new UserModel()
-        {
-            displayName = _encryptionService.EncryptData(displayName),
-            email = _encryptionService.EncryptData(email),
-
-            emailHash = _encryptionService.ComputeEmailHash(email),
-            passwordHash = _encryptionService.EncryptAndHashPassword(password)
-        };
-
-        await _context.Users.AddAsync(dbEntry);
-        await _context.SaveChangesAsync();
-
-        UserDto usr = _encryptionService.DecryptUserModel(dbEntry);
-
-        _cache.SetIfNotExists(usr.id.ToString(), usr);
-        return usr;
-    }
-
-    public async Task<UserDto?> ConfirmLogin(string email, string password)
-    {
-        string emailHash = _encryptionService.ComputeEmailHash(email);
-
-        UserModel? dbUser = await _context.Users
-            .Where(x => x.emailHash.Equals(emailHash))
-            .FirstOrDefaultAsync();
-
-        if (dbUser == null)
-            throw new Exception("Email not found");
-
-        if (!_encryptionService.CheckPassword(dbUser, password))
-            throw new Exception("Invalid password");
-
-        return await GetLogin(dbUser.userId);
-    }
-
-    public async Task<UserDto?> GetLogin(Guid userId)
-    {
-        if (_cache.TryGetValue(userId.ToString(), out UserDto? usr))
-        {
-            return usr;
-        }
-
-        var dbUsr = await _context.Users.FirstOrDefaultAsync(u => u.userId == userId);
-
-        if (dbUsr != null)
-        {
-            usr = _encryptionService.DecryptUserModel(dbUsr);
-            _cache.SetIfNotExists(userId.ToString(), usr);
-
-            return usr;
-        }
-
-        return usr;
-    }
-
-    public async Task ClearUserSession(UserDto usr)
-    {
-        _cache.Remove(usr.id.ToString());
-    }
-
-    public string GenerateToken(UserDto usr)
-    {
-        JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-        SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, usr.id.ToString()),
-                new Claim(ClaimTypes.Email, usr.email),
-                new Claim(ClaimTypes.Name, usr.displayName),
-                new Claim( ClaimTypes.Role, usr.role.ToString())
-            }),
-            Audience = "portfolio",
-            Issuer = "portfolio",
-            Expires = DateTime.UtcNow.AddDays(7),
-            SigningCredentials = _encryptionService.GetJWTSingingCredentials()
-        };
-
-        SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
     }
 
     public void ValidateCreation(string email, string displayName, string password, long verification)
