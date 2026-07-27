@@ -26,13 +26,13 @@ jobs:
         
       - name: Build Backend Docker image
         run: |
-          docker build -t ghcr.io/nexx42/backend:${{ github.sha }} ./backend
+          docker build -t ghcr.io/nexx42/portfolio_api ./backend
 
       - name: Build Frontend Docker image
         run: |
           docker build \
             --build-arg ENVIRONMENT=production \
-            -t ghcr.io/nexx42/frontend:${{ github.sha }} \
+            -t ghcr.io/nexx42/portfolio_frontend \
             ./frontend
           
       # push  
