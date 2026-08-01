@@ -4,4 +4,5 @@ public class SecuritySettings
 {
     public string jwtToken { get; set; } = "";
     public string authServiceURL { get; set; } = "";
+    public string authServiceToken { get; set; } = "";
 }

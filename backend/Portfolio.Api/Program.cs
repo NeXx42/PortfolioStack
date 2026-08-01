@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using System.Text;
+using AuthEngineMiddleman;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Portfolio.Api.Services;
 using Portfolio.Api.Types;
@@ -72,7 +74,20 @@ builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("E
 
 builder.Services.AddSingleton<CacheService>();
 
-builder.Services.AddScoped<AuthenticationService>();
+if (builder.Environment.IsDevelopment() && false)
+{
+    builder.Services.AddScoped<IAuthenticationService, AuthenticationMockService>();
+}
+else
+{
+    builder.Services.AddSingleton(sp =>
+    {
+        var options = sp.GetRequiredService<IOptions<SecuritySettings>>();
+        return new AuthEngineMiddlemanService(options.Value.authServiceURL, options.Value.authServiceToken);
+    });
+    builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+}
+
 builder.Services.AddScoped<ContentService>();
 builder.Services.AddScoped<MailService>();
 

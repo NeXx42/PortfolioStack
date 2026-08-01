@@ -13,11 +13,11 @@ namespace Portfolio.Api.Controllers;
 public class UserController : ControllerBase
 {
     private readonly MailService _mail;
-    private readonly AuthenticationService _authService;
+    private readonly IAuthenticationService _authService;
 
     private readonly GeneralSettings _options;
 
-    public UserController(AuthenticationService authService, MailService mail, IOptions<GeneralSettings> options)
+    public UserController(IAuthenticationService authService, MailService mail, IOptions<GeneralSettings> options)
     {
         _mail = mail;
         _authService = authService;
