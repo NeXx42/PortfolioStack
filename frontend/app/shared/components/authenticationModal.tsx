@@ -45,15 +45,19 @@ export default function AuthenticationModal(props: Props) {
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (await login(email, password))
-            props.onExit();
+        if (await login(email, password)) {
+            window.location.reload();
+            //props.onExit();
+        }
     };
 
     const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (await signup(email, displayName, password, emailCode ?? 0))
-            props.onExit();
+        if (await signup(email, displayName, password, emailCode ?? 0)) {
+            window.location.reload();
+            //props.onExit();
+        }
     };
 
     const sendEmailVerification = () => {

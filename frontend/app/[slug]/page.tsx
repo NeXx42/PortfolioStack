@@ -78,6 +78,9 @@ export default async function ({ params }: { params: { slug: string } }) {
             [ProjectContentType.Features]: Content_About,
             [ProjectContentType.Releases]: Content_Releases,
             [ProjectContentType.Requirements]: Content_About,
+
+            // not used
+            [ProjectContentType.LauncherMetadata]: Content_About,
         }
 
         const Component = contentMap[element.type];

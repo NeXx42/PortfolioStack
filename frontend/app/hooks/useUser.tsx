@@ -39,11 +39,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(u);
             setLoading(false);
 
-            window.location.reload();
+            return true;
         }
         catch (err: any) {
             setError(err.message || "login failed");
             setLoading(false);
+
+            return false;
         }
     }
 
@@ -57,11 +59,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(u);
             setLoading(false);
 
-            window.location.reload();
+            return true;
         }
         catch (err: any) {
             setError(err.message || "login failed");
             setLoading(false);
+
+            return false;
         }
     }
 
