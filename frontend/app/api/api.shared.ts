@@ -54,6 +54,28 @@ export async function post<T>(uri: string, obj?: any, nextCaching: NextFetchRequ
     return res.json();
 }
 
+export async function postForm<T>(uri: string, obj: FormData): Promise<T | undefined> {
+    const res = await fetch(`${URL}/api/${uri}`, {
+        method: "POST",
+        credentials: "include",
+        body: obj,
+    });
+
+
+    if (DEBUG_SLOW_API === true)
+        await new Promise(res => setTimeout(res, 5000));
+
+    if (!res.ok) {
+        throw await handleException(res);
+    }
+
+    if (res.status === 204 || res.headers.get("content-length") === "0") {
+        return undefined;
+    }
+
+    return res.json();
+}
+
 async function handleException(res: Response): Promise<Error> {
     try {
         const errorData = await res.json();

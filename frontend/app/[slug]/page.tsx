@@ -4,7 +4,6 @@ import { fetchGame } from "@api/api.server";
 
 import Navbar from "@shared/components/navbar";
 import Footer from "@shared/components/footer";
-import CommonButton from "@shared/components/commonButton";
 
 import { Project } from "@shared/types";
 import { ProjectContentType } from "@shared/enums";

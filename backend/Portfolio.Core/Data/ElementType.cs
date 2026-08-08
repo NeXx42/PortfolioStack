@@ -7,4 +7,5 @@ public enum ElementType
     Features,
     Requirements,
     Releases,
+    LauncherMetadata
 }

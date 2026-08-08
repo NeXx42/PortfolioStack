@@ -35,16 +35,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         try {
             const u = await api.login(email, password);
-            setUser(u);
 
-            return true;
+            setUser(u);
+            setLoading(false);
+
+            window.location.reload();
         }
         catch (err: any) {
             setError(err.message || "login failed");
-        }
-        finally {
             setLoading(false);
-            return false;
         }
     }
 
@@ -54,16 +53,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         try {
             const u = await api.signup(email, displayName, password, emailCode);
-            setUser(u);
 
-            return true;
+            setUser(u);
+            setLoading(false);
+
+            window.location.reload();
         }
         catch (err: any) {
             setError(err.message || "login failed");
-        }
-        finally {
             setLoading(false);
-            return false;
         }
     }
 

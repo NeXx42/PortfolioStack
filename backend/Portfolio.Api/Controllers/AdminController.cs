@@ -1,4 +1,5 @@
 using System.Net.NetworkInformation;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Portfolio.Api.Services;
@@ -14,11 +15,13 @@ namespace Portfolio.Api.Controllers;
 public class AdminController : ControllerBase
 {
     private ContentService _content;
+    private AdminService _admin;
     private CacheService _cache;
 
-    public AdminController(ContentService content, CacheService cache)
+    public AdminController(ContentService content, AdminService admin, CacheService cache)
     {
         _content = content;
+        _admin = admin;
         _cache = cache;
     }
 
@@ -39,7 +42,7 @@ public class AdminController : ControllerBase
     [HttpPost("save")]
     public async Task<IResult> SaveItem(ProjectDto project)
     {
-        await _content.Save(project);
+        //await _content.Save(project);
         return Results.Ok();
     }
 
@@ -51,7 +54,7 @@ public class AdminController : ControllerBase
 
         try
         {
-            var res = await _content.SaveImage(file);
+            var res = await _admin.SaveImage(file);
             return Results.Json(res);
         }
         catch (Exception e)
@@ -65,7 +68,7 @@ public class AdminController : ControllerBase
     {
         try
         {
-            var res = await _content.GetImages();
+            var res = await _admin.GetImages();
             return Results.Json(res);
         }
         catch (Exception e)
@@ -93,5 +96,118 @@ public class AdminController : ControllerBase
     {
         await _content.SaveTags(tags);
         return Results.Ok();
+    }
+
+    // new
+
+    [HttpGet("{projectId}")]
+    public async Task<IResult> GetProject(Guid projectId)
+    {
+        try
+        {
+            ProjectDto project = await _admin.GetProject(projectId);
+            return Results.Json(project);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
+
+    [HttpPost("project/create")]
+    public async Task<IResult> CreateProject()
+    {
+        try
+        {
+            ProjectModel project = await _admin.CreateProject();
+            return Results.Json(project.slug);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
+
+    [HttpGet("projects")]
+    public async Task<IResult> GetProjects()
+    {
+        try
+        {
+            ProjectDto[] projects = await _content.GetAllProjects();
+            return Results.Json(projects);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
+
+    public class SaveProjectRequest
+    {
+        public string data { get; set; } = "";
+    }
+
+    [HttpPost("project/save")]
+    [Consumes("multipart/form-data")]
+    public async Task<IResult> SaveProject([FromForm] SaveProjectRequest request)
+    {
+        try
+        {
+            ProjectDto newData = JsonSerializer.Deserialize<ProjectDto>(request.data)!;
+            IFormCollection form = await Request.ReadFormAsync();
+
+            foreach (IFormFile file in form.Files)
+            {
+                string uri = await _admin.SaveImage(file);
+                newData.icon = uri;
+
+                break;
+            }
+
+            await _admin.SaveProject(newData);
+            return Results.Ok();
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
+
+    public class SaveProjectContentRequest
+    {
+        public int ContentId { get; set; }
+        public string NewData { get; set; } = "";
+    }
+
+    [HttpPost("project/{projectId}/save")]
+    [Consumes("multipart/form-data")]
+    public async Task<IResult> SaveProjectContent(Guid projectId, [FromForm] SaveProjectContentRequest request)
+    {
+        try
+        {
+            ProjectDto.ElementGroup newData = JsonSerializer.Deserialize<ProjectDto.ElementGroup>(request.NewData)!;
+
+            IFormCollection form = await Request.ReadFormAsync();
+            Dictionary<string, IFormFile> files = new Dictionary<string, IFormFile>();
+
+            foreach (IFormFile file in form.Files)
+                files.Add(file.FileName, file);
+
+            foreach (var element in newData.elements ?? [])
+            {
+                if (files.TryGetValue(element.value1!, out IFormFile? img))
+                {
+                    string uri = await _admin.SaveImage(img);
+                    element.value1 = uri;
+                }
+            }
+
+            await _admin.SaveProjectContent(projectId, newData);
+            return Results.Ok();
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
     }
 }

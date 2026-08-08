@@ -1,0 +1,42 @@
+.admin_Project {
+    margin: 25px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 50px;
+}
+
+.admin_Project_Details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.admin_Project_Details>div {
+    display: grid;
+    grid-template-columns: 150px auto;
+}
+
+.admin_Project_Popup {
+    position: absolute;
+    inset: 0px;
+
+    background-color: rgba(0, 0, 0, 0.518);
+}
+
+.admin_Project_PopupContent {
+
+    margin: 25px;
+
+    background-color: rgb(0, 0, 0);
+    border: 1px solid white;
+
+    padding: 10px;
+}
+
+.admin_Project_DetailsWrapper {
+    display: grid;
+    grid-template-columns: auto 500px;
+    gap: 50px;
+}

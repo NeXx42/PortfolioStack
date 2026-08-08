@@ -1,7 +1,4 @@
-using System.Transactions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Options;
 using Portfolio.Api.Types;
 using Portfolio.Core.Data;
@@ -27,6 +24,17 @@ public class ContentService
         _portfolioContext = portfolioContext;
 
         _settings = settings.Value;
+    }
+
+    public async Task<ProjectDto[]> GetAllProjects()
+    {
+        ProjectModel[] dbRes = await _portfolioContext.Projects
+            .Include(p => p.Tags)
+            .ThenInclude(t => t.Tag)
+            .ToArrayAsync();
+
+        ProjectDto[] results = dbRes.Select(ProjectDto.Map).ToArray();
+        return results;
     }
 
     public async Task<ProjectDto[]> GetContentForType(ProjectType type)
@@ -69,8 +77,10 @@ public class ContentService
         if (_cache.TryGetValue(slug, out ProjectDto? proj) && proj != null)
             return proj;
 
+        ElementType[] excludedMetadata = [ElementType.LauncherMetadata];
+
         ProjectModel? game = await _portfolioContext.Projects
-            .Include(p => p.Elements)
+            .Include(p => p.Elements.Where(e => !excludedMetadata.Contains(e.Type)))
                 .ThenInclude(p => p.Parameters)
             .Include(p => p.Tags)
                 .ThenInclude(t => t.Tag)
@@ -89,148 +99,43 @@ public class ContentService
         return null;
     }
 
-    public async Task Save(ProjectDto project)
+    public async Task<GameLauncherMetadata[]> GetGameLauncherMetadata(Guid? featured, int? limit)
     {
-        if (project.id == Guid.Empty)
-        {
-            Guid newId = Guid.NewGuid();
+        var query = _portfolioContext.Projects
+            .Include(p => p.Elements.Where(e => e.Type == ElementType.LauncherMetadata))
+                .ThenInclude(p => p.Parameters)
+            .Where(g => g.projectType == ProjectType.Game)
+            .AsQueryable();
 
-            ProjectModel dbEntry = new ProjectModel()
-            {
-                id = newId,
-                name = project.gameName,
-                Price = project.cost,
-                projectType = project.type,
-                icon = project.icon,
-                CreatedDate = project.dateCreated ?? DateTime.UtcNow,
-                UpdatedDate = project.dateUpdated ?? DateTime.UtcNow,
-                description = project.shortDescription,
-                slug = ProjectDto.ConvertNameToSlug(project.gameName),
-                Version = project.version,
-
-                Elements = project.elements?.Select(e => new ProjectElementModel()
-                {
-                    Type = e.type,
-                    Parameters = e.elements?.Select(x => new ProjectElementParameterModel()
-                    {
-                        Order = x.order,
-                        ParameterValue1 = x.value1,
-                        ParameterValue2 = x.value2,
-                        ParameterValue3 = x.value3
-                    }).ToArray() ?? []
-                }).ToArray() ?? [],
-
-                Tags = project.tags?.Select(x => new ProjectTagModel()
-                {
-                    ProjectId = newId,
-                    TagId = x.id,
-                }).ToArray() ?? [],
-
-                Releases = project.releases?.Select(x => new ReleaseModel()
-                {
-                    Version = x.version,
-                    Size = x.size,
-                    Downloads = x.downloads?.Select(d => new ReleaseDownloadModel()
-                    {
-                        DownloadLink = d.link ?? string.Empty
-                    }).ToArray() ?? []
-                }).ToArray() ?? []
-            };
-
-            await _portfolioContext.AddAsync(dbEntry);
-            await _portfolioContext.SaveChangesAsync();
-        }
+        if (featured.HasValue)
+            query = query.OrderByDescending(g => g.id == featured.Value)
+                        .ThenByDescending(g => g.UpdatedDate);
         else
+            query = query.OrderByDescending(g => g.UpdatedDate);
+
+        if (limit.HasValue)
+            query = query.Take(limit.Value);
+
+        return (await query.ToArrayAsync()).Select(Map).ToArray();
+
+        GameLauncherMetadata Map(ProjectModel model)
         {
-            ProjectModel dbEntry = await _portfolioContext.Projects
-                .Include(p => p.Elements)
-                    .ThenInclude(e => e.Parameters)
-                .Include(t => t.Tags)
-                .Include(p => p.Releases)
-                    .ThenInclude(r => r.Downloads)
-                .SingleAsync(p => p.id == project.id);
-
-            dbEntry.name = project.gameName;
-            dbEntry.Price = project.cost;
-            dbEntry.projectType = project.type;
-            dbEntry.icon = project.icon;
-            dbEntry.UpdatedDate = DateTime.UtcNow;
-            dbEntry.description = project.shortDescription;
-            dbEntry.slug = ProjectDto.ConvertNameToSlug(project.gameName);
-            dbEntry.Version = project.version;
-
-            var elementContainer = dbEntry.Elements.Where(x => !(project.elements?.Any(e => e.id == x.Id) ?? false)).ToArray();
-            _portfolioContext.RemoveRange(elementContainer);
-
-            elementContainer = project.elements?.Where(x => x.id < 0).Select(x => new ProjectElementModel()
+            var data = new GameLauncherMetadata()
             {
-                ProjectId = dbEntry.id,
-                Type = x.type,
+                Id = model.id,
+                GameName = model.name,
+            };
+            var launcherData = model.Elements.FirstOrDefault(e => e.Type == ElementType.LauncherMetadata);
 
-                Parameters = x.elements?.Select(p => new ProjectElementParameterModel
-                {
-                    Order = p.order,
-                    ParameterValue1 = p.value1,
-                    ParameterValue2 = p.value2,
-                    ParameterValue3 = p.value3
-                }).ToArray() ?? []
-            }).ToArray() ?? [];
-            await _portfolioContext.AddRangeAsync(elementContainer);
-
-            foreach (var element in project.elements ?? [])
+            if (launcherData != null)
             {
-                if (element.id < 0)
-                    continue;
-
-                var dbElement = dbEntry.Elements!.Single(x => x.Id == element.id);
-                dbElement.Type = element.type;
-
-                var paramContainer = dbElement.Parameters.Where(x => !(element.elements?.Any(e => e.id == x.Id) ?? false)).ToArray();
-                _portfolioContext.RemoveRange(paramContainer);
-
-                paramContainer = element.elements?.Where(x => x.id < 0).Select(p => new ProjectElementParameterModel()
-                {
-                    ProjectElementId = dbElement.Id,
-                    Order = p.order,
-                    ParameterValue1 = p.value1,
-                    ParameterValue2 = p.value2,
-                    ParameterValue3 = p.value3
-                }).ToArray() ?? [];
-                await _portfolioContext.AddRangeAsync(paramContainer);
-
-                foreach (var param in element.elements ?? [])
-                {
-                    if (param.id < 0)
-                        continue;
-
-                    var dbParam = dbElement.Parameters.Single(x => x.Id == param.id);
-                    dbParam.Order = param.order;
-                    dbParam.ParameterValue1 = param.value1;
-                    dbParam.ParameterValue2 = param.value2;
-                    dbParam.ParameterValue3 = param.value3;
-                }
+                data.IconUrl = launcherData.Parameters.FirstOrDefault(p => !string.IsNullOrEmpty(p.ParameterValue2) && p.ParameterValue2.Equals("icon"))?.ParameterValue1;
+                data.ImageUrls = launcherData.Parameters.Where(p => string.IsNullOrEmpty(p.ParameterValue2) || !p.ParameterValue2.Equals("icon"))?
+                    .Select(p => p.ParameterValue1!)
+                    .ToArray() ?? [];
             }
 
-            _portfolioContext.RemoveRange(dbEntry.Tags);
-            await _portfolioContext.AddRangeAsync(project.tags?.Select(x => new ProjectTagModel()
-            {
-                ProjectId = project.id,
-                TagId = x.id,
-            }) ?? []);
-
-            _portfolioContext.RemoveRange(dbEntry.Releases);
-            await _portfolioContext.AddRangeAsync(project.releases?.Select(x => new ReleaseModel()
-            {
-                ProjectId = project.id,
-                Version = x.version,
-                Size = x.size,
-                Downloads = x.downloads?.Select(d => new ReleaseDownloadModel()
-                {
-                    DownloadLink = d.link ?? string.Empty
-                }).ToArray() ?? []
-            }).ToArray() ?? []);
-
-            await _portfolioContext.SaveChangesAsync();
+            return data;
         }
     }
 
@@ -248,36 +153,6 @@ public class ContentService
 
     public async Task<string[]> GetSlugs()
         => await _portfolioContext.Projects.Select(x => x.slug).ToArrayAsync();
-
-    public async Task<string> SaveImage(IFormFile file)
-    {
-        if (string.IsNullOrEmpty(_settings.ContentStorageFolder))
-            throw new Exception("ContentStorageFolder not set");
-
-        if (!Directory.Exists(_settings.ContentStorageFolder))
-            Directory.CreateDirectory(_settings.ContentStorageFolder);
-
-        string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-        string path = Path.Combine(_settings.ContentStorageFolder, fileName);
-
-        using (var stream = new FileStream(path, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-
-        return fileName;
-    }
-
-    public async Task<string[]> GetImages()
-    {
-        if (string.IsNullOrEmpty(_settings.ContentStorageFolder))
-            throw new Exception("ContentStorageFolder not set");
-
-        if (!Directory.Exists(_settings.ContentStorageFolder))
-            return [];
-
-        return Directory.GetFiles(_settings.ContentStorageFolder).Select(x => Path.GetFileName(x)).ToArray();
-    }
 
     public async Task<ProjectDto.Tag[]> GetTags()
     {

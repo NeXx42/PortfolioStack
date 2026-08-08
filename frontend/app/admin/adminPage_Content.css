@@ -1,0 +1,21 @@
+.adminPage_Content {
+    position: relative;
+    height: 100%;
+}
+
+.adminPage_Content_Modal {
+    position: absolute;
+    inset: 0px;
+    background-color: rgba(0, 0, 0, 0.363);
+}
+
+.adminPage_Content_ModalInner {
+    background-color: green;
+    position: absolute;
+
+    width: 90%;
+    height: 90%;
+
+    left: 5%;
+    top: 5%;
+}

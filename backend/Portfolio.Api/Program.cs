@@ -74,7 +74,7 @@ builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("E
 
 builder.Services.AddSingleton<CacheService>();
 
-if (builder.Environment.IsDevelopment() && false)
+if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<IAuthenticationService, AuthenticationMockService>();
 }
@@ -89,6 +89,7 @@ else
 }
 
 builder.Services.AddScoped<ContentService>();
+builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<MailService>();
 
 builder.Services.AddMemoryCache();

@@ -1,0 +1,12 @@
+.admin_Project_Screenshots_Preview {
+    width: calc(100vw * .6);
+    margin: auto;
+}
+
+.admin_Project_LauncherMetadata_Table {
+    width: 100%;
+}
+
+.admin_Project_LauncherMetadata_Table input {
+    width: 100%;
+}

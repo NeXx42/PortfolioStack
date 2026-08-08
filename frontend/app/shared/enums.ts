@@ -11,6 +11,7 @@ export enum ProjectContentType {
     Features = 2,
     Requirements = 3,
     Releases = 4,
+    LauncherMetadata = 5,
 }
 
 

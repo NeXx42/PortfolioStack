@@ -1,9 +1,9 @@
 "use client"
 
-import type { Project, User, ProjectTag } from "@shared/types";
+import type { Project, User, ProjectTag, ProjectContent } from "@shared/types";
 import type { ProjectType } from "@shared/enums";
 
-import { post, get } from "./api.shared";
+import { post, get, postForm } from "./api.shared";
 
 // -------------------- authentication
 
@@ -71,4 +71,26 @@ export async function admin_GetTags(): Promise<ProjectTag[]> {
 
 export async function admin_SaveTags(tags: ProjectTag[]) {
     await post("admin/tags", tags);
+}
+
+// rewrite
+
+export async function admin_GetProject(id: string): Promise<Project> {
+    return (await get(`admin/${id}`))!;
+}
+
+export async function admin_CreateProject(): Promise<string> {
+    return (await post("admin/project/create"))!;
+}
+
+export async function admin_GetProjects(): Promise<Project[]> {
+    return (await get("admin/projects"))!
+}
+
+export async function admin_SaveProject(form: FormData): Promise<string> {
+    return (await postForm("admin/project/save", form))!
+}
+
+export async function admin_SaveContent(projectId: string, form: FormData) {
+    return (await postForm(`admin/project/${projectId}/save`, form))!
 }

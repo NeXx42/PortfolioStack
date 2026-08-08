@@ -59,15 +59,6 @@ public class ContentController : ControllerBase
         return Results.Json(res);
     }
 
-
-
-    public class UpdateRequest
-    {
-        public ProjectDto.ElementGroup[]? newPages { get; set; }
-        public ProjectDto.ElementGroup[]? updates { get; set; }
-        public int[]? deletions { get; set; }
-    }
-
     [HttpGet("Links")]
     public async Task<IResult> GetLinks()
     {
@@ -79,6 +70,20 @@ public class ContentController : ControllerBase
         catch (Exception e)
         {
             return Results.Json(e.Message);
+        }
+    }
+
+    [HttpGet("GameLauncher")]
+    public async Task<IResult> GetGameLauncherMetadata([FromQuery] Guid? featuredId = null, [FromQuery] int? limit = null)
+    {
+        try
+        {
+            var res = await _content.GetGameLauncherMetadata(featuredId, limit);
+            return Results.Json(res);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
         }
     }
 }
