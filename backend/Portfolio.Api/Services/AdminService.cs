@@ -73,7 +73,9 @@ public class AdminService
 
     public async Task<string> SaveProject(ProjectDto project)
     {
-        ProjectModel model = await _portfolioContext.Projects.SingleAsync(p => p.id == project.id);
+        ProjectModel model = await _portfolioContext.Projects
+            .Include(m => m.Tags)
+            .SingleAsync(p => p.id == project.id);
 
         model.name = project.gameName;
         model.icon = project.icon;
@@ -81,8 +83,19 @@ public class AdminService
         model.projectType = project.type;
         model.slug = project.slug;
 
-        await _portfolioContext.SaveChangesAsync();
+        _portfolioContext.RemoveRange(model.Tags);
+        model.Tags.Clear();
 
+        foreach (int tag in project.tags?.Select(t => t.id).ToArray() ?? [])
+        {
+            model.Tags.Add(new ProjectTagModel()
+            {
+                ProjectId = model.id,
+                TagId = tag,
+            });
+        }
+
+        await _portfolioContext.SaveChangesAsync();
         return project.slug;
     }
 
@@ -141,5 +154,41 @@ public class AdminService
                 ParameterValue3 = param.value3,
             };
         }
+    }
+
+    public async Task<ProjectDto.Tag[]> GetTags()
+    {
+        return (await _portfolioContext.Tags.ToArrayAsync()).Select(ProjectDto.Tag.Map).ToArray();
+    }
+
+    public async Task SaveTags(ProjectDto.Tag[] tags)
+    {
+        HashSet<int> tagIds = tags.Select(x => x.id).ToHashSet();
+
+        TagModel[] tagsToRemove = await _portfolioContext.Tags.Where(x => !tagIds.Contains(x.Id)).ToArrayAsync();
+        ProjectTagModel[] oldProjectTags = await _portfolioContext.ProjectTags.Where(x => !tagIds.Contains(x.Id)).ToArrayAsync();
+
+        foreach (var tag in tags)
+        {
+            if (tag.id < 0)
+            {
+                await _portfolioContext.Tags.AddAsync(new TagModel()
+                {
+                    Name = tag.name,
+                    customColour = tag.customColour
+                });
+            }
+            else
+            {
+                var existingDb = await _portfolioContext.Tags.SingleOrDefaultAsync(t => t.Id == tag.id);
+                existingDb!.Name = tag.name;
+                existingDb!.customColour = tag.customColour;
+            }
+        }
+
+        _portfolioContext.RemoveRange(tagsToRemove);
+        _portfolioContext.RemoveRange(oldProjectTags);
+
+        await _portfolioContext.SaveChangesAsync();
     }
 }

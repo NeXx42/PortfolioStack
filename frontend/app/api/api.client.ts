@@ -44,25 +44,8 @@ export async function fetchGame(gameId: string): Promise<Project> {
 
 // -------------------- admin
 
-
-export async function admin_Slugs(): Promise<string[]> {
-    return (await get("admin/slugs"))!;
-}
-
 export async function admin_ClearCache(): Promise<void> {
     await get("admin/clearCache");
-}
-
-export async function admin_SaveItem(item: Project): Promise<void> {
-    await post("admin/save", item)
-}
-
-export async function admin_UploadImage(img: FormData): Promise<string> {
-    return (await post("admin/upload", img))!;
-}
-
-export async function admin_GetImages(): Promise<string[]> {
-    return (await get("admin/images"))!;
 }
 
 export async function admin_GetTags(): Promise<ProjectTag[]> {

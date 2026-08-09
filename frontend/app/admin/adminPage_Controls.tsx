@@ -1,15 +1,12 @@
-import { useAdmin } from "../hooks/userAdmin";
-import CommonButton from "../shared/components/commonButton";
+import * as api from "@api/api.client"
 
 export default function () {
-    const {
-        clearCache,
-    } = useAdmin()
+
 
     return (
         <>
             <div className="Admin_Controls">
-                <button onClick={() => clearCache()} >Clear Cache</button>
+                <button onClick={() => api.admin_ClearCache()} >Clear Cache</button>
             </div>
         </>
     )

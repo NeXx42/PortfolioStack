@@ -19,3 +19,20 @@
     left: 5%;
     top: 5%;
 }
+
+table {
+    width: 100%;
+}
+
+td,
+th {
+    border: solid 1px gray;
+}
+
+td>button {
+    width: 100%;
+}
+
+td>p {
+    text-align: center;
+}

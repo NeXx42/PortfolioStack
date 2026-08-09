@@ -25,13 +25,6 @@ public class AdminController : ControllerBase
         _cache = cache;
     }
 
-    [HttpGet("slugs")]
-    public async Task<IResult> GetContent()
-    {
-        var res = await _content.GetSlugs();
-        return Results.Json(res);
-    }
-
     [HttpGet("clearCache")]
     public IResult ClearCache()
     {
@@ -39,50 +32,12 @@ public class AdminController : ControllerBase
         return Results.Ok();
     }
 
-    [HttpPost("save")]
-    public async Task<IResult> SaveItem(ProjectDto project)
-    {
-        //await _content.Save(project);
-        return Results.Ok();
-    }
-
-    [HttpPost("upload")]
-    public async Task<IResult> SaveImage(IFormFile file)
-    {
-        if (file == null || file.Length == 0)
-            return Results.BadRequest("No file provided");
-
-        try
-        {
-            var res = await _admin.SaveImage(file);
-            return Results.Json(res);
-        }
-        catch (Exception e)
-        {
-            return Results.InternalServerError(e.Message);
-        }
-    }
-
-    [HttpGet("images")]
-    public async Task<IResult> GetImages()
-    {
-        try
-        {
-            var res = await _admin.GetImages();
-            return Results.Json(res);
-        }
-        catch (Exception e)
-        {
-            return Results.InternalServerError(e.Message);
-        }
-    }
-
     [HttpGet("tags")]
     public async Task<IResult> GetTags()
     {
         try
         {
-            var res = await _content.GetTags();
+            var res = await _admin.GetTags();
             return Results.Json(res);
         }
         catch (Exception e)
@@ -94,7 +49,7 @@ public class AdminController : ControllerBase
     [HttpPost("tags")]
     public async Task<IResult> AddTags(ProjectDto.Tag[] tags)
     {
-        await _content.SaveTags(tags);
+        await _admin.SaveTags(tags);
         return Results.Ok();
     }
 

@@ -2,9 +2,9 @@
 
 import * as api from "@api/api.client"
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAdmin } from "../hooks/userAdmin"
-import { Project, User } from "@shared/types";
+import { ProjectTag } from "@shared/types";
 
 import useRequest from "../hooks/useRequest";
 
@@ -12,46 +12,116 @@ import "./adminPage_Content.css";
 
 export default function () {
     const router = useRouter();
+
+
     const { data: projectData } = useRequest(api => api.admin_GetProjects());
+    const { data: tagData } = useRequest(api => api.admin_GetTags());
+
+    const [uniqueId, setUniqueId] = useState(-1);
+    const [tags, setTags] = useState<ProjectTag[]>([]);
+
+    useEffect(() => {
+        setTags(tagData ?? []);
+    }, [tagData])
+
+    const getUniqueId = () => {
+        setUniqueId(prev => prev - 1);
+        return uniqueId;
+    }
 
     function createProject() {
         api.admin_CreateProject().then(r => router.push(`admin/${r}`))
     }
 
+    const createTag = () => {
+        setTags(prev => [
+            ...prev,
+            {
+                id: getUniqueId(),
+                name: "new",
+                customColour: ""
+            }
+        ])
+    }
+
+    const updateTag = <K extends keyof ProjectTag>(id: number, value: ProjectTag[K], prop: K) => {
+        setTags(prev => prev.map(p => {
+            if (p.id !== id) return p;
+            return {
+                ...p,
+                [prop]: value
+            }
+        }))
+    }
+
+    const saveTags = () => {
+        api.admin_SaveTags(tags)
+            .then(_ => window.document.location.reload())
+            .catch(e => alert(e.message));
+    }
+
     return (
         <div className="adminPage_Content">
+            <h2>Tags</h2>
             <table>
                 <thead>
-
                     <tr>
-                        <th>Id</th>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th>Control</th>
+                        <th><p>Id</p></th>
+                        <th><p>Name</p></th>
+                        <th><p>Control</p></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        tags?.map(t =>
+                            <tr key={t.id}>
+                                <td><p>{t.id}</p></td>
+                                <td><input value={t.name} onChange={e => updateTag(t.id, e.target.value, "name")} /></td>
+                                <td><button onClick={() => router.push(`admin/${t.id}`)}>Remove</button></td>
+                            </tr>
+                        )
+                    }
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button onClick={createTag}>Create</button>
+                            <button onClick={saveTags}>Save</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Content</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th><p>Id</p></th>
+                        <th><p>Name</p></th>
+                        <th><p>Status</p></th>
+                        <th><p>Control</p></th>
                     </tr>
                 </thead>
                 <tbody>
                     {
                         projectData?.map(p =>
-                            <tr>
-                                <td>
-                                    {p.id}
-                                </td>
-                                <td>
-                                    {p.slug}
-                                </td>
-                                <td>
-                                    active
-                                </td>
-                                <td>
-                                    <button onClick={() => router.push(`admin/${p.id}`)}>Edit</button>
-                                </td>
+                            <tr key={p.id}>
+                                <td><p>{p.id}</p></td>
+                                <td><p>{p.slug}</p></td>
+                                <td><p>active</p></td>
+                                <td><button onClick={() => router.push(`admin/${p.id}`)}>Edit</button></td>
                             </tr>
                         )
                     }
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><button onClick={createProject}>Create</button></td>
+                    </tr>
                 </tbody>
             </table>
-            <button onClick={createProject}>Create</button>
+
         </div>
     )
 }

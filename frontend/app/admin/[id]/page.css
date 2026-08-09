@@ -18,6 +18,11 @@
     grid-template-columns: 150px auto;
 }
 
+div.admin_Project_Details_Tags {
+    display: flex;
+    gap: 10px;
+}
+
 .admin_Project_Popup {
     position: absolute;
     inset: 0px;

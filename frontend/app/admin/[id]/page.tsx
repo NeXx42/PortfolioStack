@@ -3,7 +3,7 @@
 import * as api from "@api/api.client"
 
 import useRequest from "@/app/hooks/useRequest"
-import { Project, ProjectContent } from "@/app/shared/types";
+import { Project, ProjectContent, ProjectTag } from "@/app/shared/types";
 import { useParams, useRouter } from "next/navigation";
 import React, { ReactNode, useEffect, useState } from "react";
 
@@ -38,7 +38,9 @@ export default function () {
     const router = useRouter();
 
     const params = useParams<{ id: string }>();
-    const { data: originalData, sendRequest } = useRequest<Project>(api => api.admin_GetProject(params.id));
+
+    const { data: originalData } = useRequest<Project>(api => api.admin_GetProject(params.id));
+    const { data: tags } = useRequest<ProjectTag[]>(api => api.admin_GetTags());
 
     const [data, setData] = useState<Project | undefined>(undefined);
     const [editingBlogEntry, setEditingBlogEntry] = useState<ProjectContent | undefined>(undefined);
@@ -46,6 +48,8 @@ export default function () {
     useEffect(() => {
         setData(originalData);
     }, [originalData])
+
+    // base content
 
     const updateProperty = <K extends keyof Project>(value: Project[K], prop: K) => {
         setData((prev) => {
@@ -79,6 +83,34 @@ export default function () {
             .catch(e => alert(e.message));
     }
 
+    // tags
+
+    const addTag = () => {
+        setData(prev => ({
+            ...prev!,
+            tags: [...(prev!.tags ?? []), tags![0]]
+        }))
+    }
+
+    const removeTag = (index: number) => {
+        setData(prev => ({
+            ...prev!,
+            tags: prev?.tags?.filter((_, i) => {
+                return i !== index;
+            })
+        }))
+    }
+
+    const updateTag = (tagIndex: number, newTagIndex: number) => {
+        setData(prev => ({
+            ...prev!,
+            tags: prev!.tags!.map((t, i) =>
+                i === tagIndex ? tags![newTagIndex] : t
+            )
+        }))
+    }
+
+    // blogs
 
     const addBlogEntry = () => {
         setData((prev) => {
@@ -175,7 +207,7 @@ export default function () {
                         </div>
                         <div>
                             <a>Description</a>
-                            <textarea value={data?.shortDescription} onChange={e => updateProperty(e.target.value, "shortDescription")} />
+                            <textarea value={data?.shortDescription ?? ""} onChange={e => updateProperty(e.target.value, "shortDescription")} />
                         </div>
                         <div>
                             <a>Slug</a>
@@ -197,6 +229,29 @@ export default function () {
                         <div>
                             <a>Creation Date</a>
                             <input type="date" value={""} onChange={(e) => updateProperty(e.target.value ? new Date(e.target.value) : undefined, "dateCreated")} />
+                        </div>
+
+                        <div>
+                            <a>Tags</a>
+                            <div className="admin_Project_Details_Tags">
+
+                                {
+                                    data?.tags?.map((dt, i) => (
+                                        <div>
+                                            <select key={i} value={tags!.findIndex(t => t.id === dt.id)} onChange={e => updateTag(i, Number.parseInt(e.target.value))}>
+                                                {
+                                                    tags?.map((tt, ti) => (
+                                                        <option key={tt.id} value={ti}>{tt.name}</option>
+                                                    ))
+                                                }
+                                            </select>
+                                            <button type="button" onClick={() => removeTag(i)}>x</button>
+                                        </div>
+                                    ))
+                                }
+
+                                <button type="button" onClick={addTag}>+</button>
+                            </div>
                         </div>
 
                         <button type="button" onClick={saveDetails}>Save</button>
