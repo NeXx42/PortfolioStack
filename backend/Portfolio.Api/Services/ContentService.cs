@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Portfolio.Api.Types;
@@ -150,7 +151,48 @@ public class ContentService
         return dbRes;
     }
 
+    public async Task<ReleaseDTO?> GetRelease(Guid projectId, int? versionId)
+    {
+        ReleaseModel? release = await _portfolioContext.Releases
+            .Where(r => r.ProjectId == projectId && (!versionId.HasValue || r.ReleaseId == versionId.Value))
+            .Include(r => r.Downloads)
+            .OrderByDescending(r => r.ReleaseId)
+            .FirstOrDefaultAsync();
 
-    public async Task<string[]> GetSlugs()
-        => await _portfolioContext.Projects.Select(x => x.slug).ToArrayAsync();
+        return MapReleases(release).FirstOrDefault();
+    }
+
+    public async Task<ReleaseDTO[]> GetReleases(Guid projectId)
+    {
+        ReleaseModel[] releases = await _portfolioContext.Releases
+            .Where(r => r.ProjectId == projectId)
+            .Include(r => r.Downloads)
+            .OrderByDescending(r => r.ReleaseId)
+            .ToArrayAsync();
+
+        return MapReleases(releases);
+    }
+
+    private ReleaseDTO[] MapReleases(params ReleaseModel?[] releasesInp)
+    {
+        return releasesInp.Where(r => r != null).Select(release => new ReleaseDTO()
+        {
+            versionId = release!.ReleaseId,
+            patchNotes = release.PatchNotes,
+            version = release.VersionName,
+
+            downloads = release.Downloads.Select(d => new ReleaseDownloadDto()
+            {
+                platform = d.Platform,
+
+                size = d.DownloadSize,
+                entryPoint = d.EntryPoint,
+
+                downloadLink = d.DownloadUrl,
+                releaseEngineManifestLink = d.ReleaseEngineManifest
+
+            }).ToArray()
+
+        }).ToArray();
+    }
 }

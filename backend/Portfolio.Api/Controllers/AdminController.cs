@@ -165,4 +165,32 @@ public class AdminController : ControllerBase
             return Results.InternalServerError(e);
         }
     }
+
+    [HttpGet("project/{projectId}/releases")]
+    public async Task<IResult> GetProjectReleases(Guid projectId)
+    {
+        try
+        {
+            var releases = await _content.GetReleases(projectId);
+            return Results.Json(releases);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
+
+    [HttpPost("project/{projectId}/release")]
+    public async Task<IResult> CreateOrUpdateRelease(Guid projectId, [FromBody] ReleaseDTO release)
+    {
+        try
+        {
+            await _admin.CreateOrUpdateRelease(projectId, release);
+            return Results.Ok();
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
 }

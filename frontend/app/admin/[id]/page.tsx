@@ -16,6 +16,7 @@ import ItemCard from "@/app/components/itemCard";
 import adminPage_Content_About from "./adminPage_Content_About";
 import adminPage_Content_Screenshots from "./adminPage_Content_Screenshots";
 import adminPage_Content_LauncherMetadata from "./adminPage_Content_LauncherMetadata";
+import AdminPage_Releases from "./adminPage_Releases";
 
 export interface ProjectAdminContent {
     projectId: string,
@@ -44,6 +45,7 @@ export default function () {
 
     const [data, setData] = useState<Project | undefined>(undefined);
     const [editingBlogEntry, setEditingBlogEntry] = useState<ProjectContent | undefined>(undefined);
+    const [editingReleases, setEditingReleases] = useState(false)
 
     useEffect(() => {
         setData(originalData);
@@ -154,6 +156,16 @@ export default function () {
         )
     }
 
+    const drawEditingReleases = (): ReactNode => {
+        return (
+            <div className="admin_Project_Popup" onClick={() => setEditingReleases(false)}>
+                <div className="admin_Project_PopupContent" onClick={e => e.stopPropagation()}>
+                    <AdminPage_Releases content={data!} />
+                </div>
+            </div>
+        )
+    }
+
     const saveContent = async (projectId: string, contentId: number, data: ProjectContent) => {
         const form = new FormData();
 
@@ -237,8 +249,8 @@ export default function () {
 
                                 {
                                     data?.tags?.map((dt, i) => (
-                                        <div>
-                                            <select key={i} value={tags!.findIndex(t => t.id === dt.id)} onChange={e => updateTag(i, Number.parseInt(e.target.value))}>
+                                        <div key={i}>
+                                            <select value={tags!.findIndex(t => t.id === dt.id)} onChange={e => updateTag(i, Number.parseInt(e.target.value))}>
                                                 {
                                                     tags?.map((tt, ti) => (
                                                         <option key={tt.id} value={ti}>{tt.name}</option>
@@ -259,6 +271,7 @@ export default function () {
                     <ItemCard itemData={data} />
                 </div>
 
+                <button onClick={() => setEditingReleases(true)}>Releases</button>
 
                 <div>
                     <h1>Blog content</h1>
@@ -296,9 +309,8 @@ export default function () {
                     <button onClick={addBlogEntry}>Create</button>
                 </div>
 
-                {
-                    editingBlogEntry && drawBlogEdit()
-                }
+                {editingBlogEntry && drawBlogEdit()}
+                {editingReleases && drawEditingReleases()}
             </div>
         </>
     )

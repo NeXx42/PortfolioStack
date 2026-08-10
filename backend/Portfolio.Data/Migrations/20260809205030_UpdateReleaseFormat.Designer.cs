@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Portfolio.Data;
@@ -11,9 +12,11 @@ using Portfolio.Data;
 namespace Portfolio.Data.Migrations
 {
     [DbContext(typeof(PortfolioContext))]
-    partial class PortfolioContextModelSnapshot : ModelSnapshot
+    [Migration("20260809205030_UpdateReleaseFormat")]
+    partial class UpdateReleaseFormat
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -174,27 +177,32 @@ namespace Portfolio.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("EntryPoint")
+                    b.Property<string>("ReleaseDownloadModelPlatform")
                         .HasColumnType("text");
 
-                    b.Property<string>("ReleaseEngineManifest")
-                        .HasColumnType("text");
+                    b.Property<Guid?>("ReleaseDownloadModelProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("ReleaseDownloadModelReleaseId")
+                        .HasColumnType("integer");
 
                     b.HasKey("ProjectId", "ReleaseId", "Platform");
+
+                    b.HasIndex("ReleaseDownloadModelProjectId", "ReleaseDownloadModelReleaseId", "ReleaseDownloadModelPlatform");
 
                     b.ToTable("ReleaseDownloads");
                 });
 
-            modelBuilder.Entity("Portfolio.Core.Models.ReleaseModel", b =>
+            modelBuilder.Entity("Portfolio.Core.Models.ReleaseMetadataModel", b =>
                 {
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("ReleaseId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReleaseId"));
+                    b.Property<bool>("IsInReleaseEngine")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("PatchNotes")
                         .HasColumnType("text");
@@ -270,16 +278,20 @@ namespace Portfolio.Data.Migrations
 
             modelBuilder.Entity("Portfolio.Core.Models.ReleaseDownloadModel", b =>
                 {
-                    b.HasOne("Portfolio.Core.Models.ReleaseModel", "MetaData")
+                    b.HasOne("Portfolio.Core.Models.ReleaseMetadataModel", "MetaData")
                         .WithMany("Downloads")
                         .HasForeignKey("ProjectId", "ReleaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Portfolio.Core.Models.ReleaseDownloadModel", null)
+                        .WithMany("Downloads")
+                        .HasForeignKey("ReleaseDownloadModelProjectId", "ReleaseDownloadModelReleaseId", "ReleaseDownloadModelPlatform");
+
                     b.Navigation("MetaData");
                 });
 
-            modelBuilder.Entity("Portfolio.Core.Models.ReleaseModel", b =>
+            modelBuilder.Entity("Portfolio.Core.Models.ReleaseMetadataModel", b =>
                 {
                     b.HasOne("Portfolio.Core.Models.ProjectModel", "Project")
                         .WithMany("Releases")
@@ -304,7 +316,12 @@ namespace Portfolio.Data.Migrations
                     b.Navigation("Tags");
                 });
 
-            modelBuilder.Entity("Portfolio.Core.Models.ReleaseModel", b =>
+            modelBuilder.Entity("Portfolio.Core.Models.ReleaseDownloadModel", b =>
+                {
+                    b.Navigation("Downloads");
+                });
+
+            modelBuilder.Entity("Portfolio.Core.Models.ReleaseMetadataModel", b =>
                 {
                     b.Navigation("Downloads");
                 });

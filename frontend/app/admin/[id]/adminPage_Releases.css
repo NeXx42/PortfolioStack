@@ -1,0 +1,58 @@
+.adminPage_Releases {
+    display: grid;
+    grid-template-columns: 100px auto;
+}
+
+div.adminPage_Releases_Content_Download {
+    display: flex !important;
+    flex-direction: column !important;
+
+    gap: 10px !important;
+
+
+}
+
+.adminPage_Releases_Content_Download,
+.adminPage_Releases_Content_Downloads {
+    border: 1px solid white;
+    padding: 10px;
+}
+
+.adminPage_Releases_Content {
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+.adminPage_Releases_Content_Download>div,
+.adminPage_Releases_Content>div {
+    display: grid;
+    grid-template-columns: 200px auto;
+}
+
+div.adminPage_Releases_Content_Downloads {
+    display: flex;
+    gap: 5px;
+}
+
+.adminPage_Releases_Entries {
+    display: flex;
+    flex-direction: column;
+}
+
+.adminPage_Releases_Popup {
+    inset: 0px;
+
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.639);
+}
+
+.adminPage_Releases_Popup_Content {
+    position: absolute;
+    background-color: black;
+    inset: 50px;
+
+    border: 1px solid white;
+    padding: 10px;
+}

@@ -50,17 +50,22 @@ export interface ProjectTag {
 }
 
 export interface ProjectRelease {
-    id: number,
+    versionId: number,
     version: string,
-    size: string,
-    date: Date,
+
+    patchNotes?: string,
 
     downloads: ProjectReleaseDownload[]
 }
 
 export interface ProjectReleaseDownload {
-    id: number,
-    link: string
+    platform: string,
+
+    downloadLink: string
+    releaseEngineManifestLink?: string
+
+    entryPoint?: string
+    size: number
 }
 
 

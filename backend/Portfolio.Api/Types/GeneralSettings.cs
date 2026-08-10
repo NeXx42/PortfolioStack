@@ -4,4 +4,6 @@ public class GeneralSettings
 {
     public bool disableAccountCreation { get; set; } = false;
     public string? ContentStorageFolder { get; set; } = string.Empty;
+
+    public string releaseEngineUrl { get; set; } = string.Empty;
 }

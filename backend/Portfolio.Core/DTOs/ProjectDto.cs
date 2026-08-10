@@ -61,20 +61,6 @@ public class ProjectDto
                 }).ToArray() ?? []
             }).ToArray() ?? [],
 
-            releases = model.Releases?.Select(r => new Release()
-            {
-                id = r.Id,
-                version = r.Version,
-                date = r.ReleaseDate,
-                size = r.Size,
-
-                downloads = r.Downloads.Select(d => new Release.Download()
-                {
-                    id = d.Id,
-                    link = d.DownloadLink,
-                    type = d.DownloadType,
-                }).ToArray()
-            }).ToArray()
         };
     }
 

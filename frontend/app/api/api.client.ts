@@ -1,6 +1,6 @@
 "use client"
 
-import type { Project, User, ProjectTag, ProjectContent } from "@shared/types";
+import type { Project, User, ProjectTag, ProjectContent, ProjectRelease } from "@shared/types";
 import type { ProjectType } from "@shared/enums";
 
 import { post, get, postForm } from "./api.shared";
@@ -76,4 +76,12 @@ export async function admin_SaveProject(form: FormData): Promise<string> {
 
 export async function admin_SaveContent(projectId: string, form: FormData) {
     return (await postForm(`admin/project/${projectId}/save`, form))!
+}
+
+export async function admin_GetProjectReleases(projectId: string): Promise<ProjectRelease[]> {
+    return (await get(`admin/project/${projectId}/releases`))!
+}
+
+export async function admin_SaveProjectRelease(projectId: string, release: ProjectRelease) {
+    return (await post(`admin/project/${projectId}/release`, release))!
 }

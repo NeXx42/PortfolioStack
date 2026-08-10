@@ -9,8 +9,8 @@ public class PortfolioContext : DbContext
 
     public DbSet<ProjectModel> Projects { get; set; }
 
-    public DbSet<ReleaseModel> Releases { get; set; }
-    public DbSet<ReleaseDownloadModel> ReleaseDownloads { get; set; }
+    public DbSet<ReleaseModel> Releases => Set<ReleaseModel>();
+    public DbSet<ReleaseDownloadModel> ReleaseDownloads => Set<ReleaseDownloadModel>();
 
     public DbSet<TagModel> Tags { get; set; }
     public DbSet<ProjectTagModel> ProjectTags { get; set; }
@@ -19,4 +19,13 @@ public class PortfolioContext : DbContext
     public DbSet<ProjectElementParameterModel> ElementsParameters { get; set; }
 
     public DbSet<LinkModel> Links { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ReleaseDownloadModel>().HasKey(d => new { d.ProjectId, d.ReleaseId, d.Platform });
+        modelBuilder.Entity<ReleaseDownloadModel>().HasOne(d => d.MetaData).WithMany(r => r.Downloads);
+
+        modelBuilder.Entity<ReleaseModel>().HasKey(r => new { r.ProjectId, r.ReleaseId });
+        modelBuilder.Entity<ReleaseModel>().HasOne(m => m.Project).WithMany(p => p.Releases);
+    }
 }
