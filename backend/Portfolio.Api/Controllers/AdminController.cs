@@ -2,7 +2,9 @@ using System.Net.NetworkInformation;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Portfolio.Api.Services;
+using Portfolio.Api.Types;
 using Portfolio.Core.Data;
 using Portfolio.Core.DTOs;
 using Portfolio.Core.Models;
@@ -14,15 +16,19 @@ namespace Portfolio.Api.Controllers;
 [Route("api/admin")]
 public class AdminController : ControllerBase
 {
-    private ContentService _content;
-    private AdminService _admin;
-    private CacheService _cache;
+    private readonly ContentService _content;
+    private readonly AdminService _admin;
+    private readonly CacheService _cache;
 
-    public AdminController(ContentService content, AdminService admin, CacheService cache)
+    private readonly string _releaseEngineUrl;
+
+    public AdminController(ContentService content, AdminService admin, CacheService cache, IOptions<GeneralSettings> settings)
     {
         _content = content;
         _admin = admin;
         _cache = cache;
+
+        _releaseEngineUrl = settings.Value.releaseEngineUrl;
     }
 
     [HttpGet("clearCache")]
@@ -191,6 +197,56 @@ public class AdminController : ControllerBase
         catch (Exception e)
         {
             return Results.InternalServerError(e);
+        }
+    }
+
+    [HttpPost("project/{projectId}/release/{releaseId}")]
+    public async Task<IResult> CreateReleaseEngineEntry(Guid projectId, int releaseId, [FromQuery] string platform)
+    {
+        try
+        {
+            string uploadUri = await _admin.UploadToReleaseEngine(projectId, releaseId, platform);
+            return Results.Ok(uploadUri);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
+
+    [HttpPut("project/{ProjectId}/release/{ReleaseId}")]
+    [RequestSizeLimit(10L * (1024 * 1024 * 1024))]
+    public async Task<IResult> UploadFileToReleaseEngine(Guid projectId, int releaseId, [FromQuery] string platform, [FromQuery] string relativePath)
+    {
+        try
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                string url = Path.Combine(_releaseEngineUrl, "api", "Releases", projectId.ToString(), $"{releaseId}?platform={Uri.EscapeDataString(platform)}&relativePath={Uri.EscapeDataString(relativePath)}");
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, url)
+                {
+                    Content = new StreamContent(Request.Body)
+                };
+
+                request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(Request.ContentType ?? "application/octet-stream");
+                HttpResponseMessage response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string error = await response.Content.ReadAsStringAsync();
+
+                    return Results.Problem(
+                        detail: error,
+                        statusCode: (int)response.StatusCode
+                    );
+                }
+
+                return Results.StatusCode((int)response.StatusCode);
+            }
+        }
+        catch (Exception e)
+        {
+            return Results.Problem(e.Message);
         }
     }
 }

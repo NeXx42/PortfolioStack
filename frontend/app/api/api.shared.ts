@@ -1,6 +1,6 @@
 import { SERVER_URL, BASE_URL, DEBUG_SLOW_API } from "@shared/config";
 
-const URL = typeof window === "undefined"
+export const URL = typeof window === "undefined"
     ? SERVER_URL
     : BASE_URL;
 

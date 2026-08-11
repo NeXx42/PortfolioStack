@@ -7,8 +7,9 @@ import { ReactNode, useState } from "react";
 
 import "./adminPage_Releases.css"
 import AdminPage_Release_GithubDerive from "./releases/adminPage_Release_GithubDerive";
+import AdminPage_Release_Upload from "./releases/adminPage_Release_Upload";
 
-type Popups = "None" | "Github derive" | "Upload Release"
+type Popups = "None" | "Github derive" | "Uploading";
 
 export default function ({ content }: { content: Project }) {
     const { data } = useRequest(a => a.admin_GetProjectReleases(content.id));
@@ -95,6 +96,9 @@ export default function ({ content }: { content: Project }) {
         switch (popup) {
             case "Github derive":
                 return wrap(<AdminPage_Release_GithubDerive projectId={content.id} release={selectedRelease!} />)
+
+            case "Uploading":
+                return wrap(<AdminPage_Release_Upload projectId={content.id} releaseId={selectedRelease!.versionId} platform={selectedRelease?.downloads[selectedReleasePlatform].platform!} />)
         }
 
         return (<></>)
@@ -159,6 +163,10 @@ export default function ({ content }: { content: Project }) {
                 <div>
                     <a>Release engine link</a>
                     <input value={download.releaseEngineManifestLink} onChange={e => updateReleaseDownload(selectedReleasePlatform, "releaseEngineManifestLink", e.target.value)} />
+                </div>
+                <div>
+                    <a>Upload to release engine</a>
+                    <button onClick={() => setPopup("Uploading")}>Open</button>
                 </div>
 
                 <div>

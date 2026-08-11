@@ -3,7 +3,7 @@
 import type { Project, User, ProjectTag, ProjectContent, ProjectRelease } from "@shared/types";
 import type { ProjectType } from "@shared/enums";
 
-import { post, get, postForm } from "./api.shared";
+import { post, get, postForm, URL } from "./api.shared";
 
 // -------------------- authentication
 
@@ -84,4 +84,8 @@ export async function admin_GetProjectReleases(projectId: string): Promise<Proje
 
 export async function admin_SaveProjectRelease(projectId: string, release: ProjectRelease) {
     return (await post(`admin/project/${projectId}/release`, release))!
+}
+
+export async function admin_PrimeReleaseEngineUpload(projectId: string, releaseId: number, platform: string): Promise<string> {
+    return (await post<string>(`admin/project/${projectId}/release/${releaseId}?platform=${platform}`))!
 }

@@ -55,4 +55,6 @@ div.adminPage_Releases_Content_Downloads {
 
     border: 1px solid white;
     padding: 10px;
+
+    overflow: scroll;
 }
