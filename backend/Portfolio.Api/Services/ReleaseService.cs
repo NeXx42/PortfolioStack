@@ -97,7 +97,7 @@ public class ReleaseService(PortfolioContext portfolioContext, IOptions<GeneralS
         {
             using (HttpClient client = new HttpClient())
             {
-                string url = Path.Combine(settings.Value.releaseEngineUrl, "api", "Releases", session.projectId.ToString(), $"{session.releaseId}?platform={session.platform}");
+                string url = Path.Combine(settings.Value.releaseEngineUrl, "api", "Releases", session.projectId.ToString(), $"{session.releaseId}/InstallSize?platform={session.platform}");
 
                 HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Get, url);
                 HttpResponseMessage res = await client.SendAsync(msg);
@@ -105,13 +105,13 @@ public class ReleaseService(PortfolioContext portfolioContext, IOptions<GeneralS
                 res.EnsureSuccessStatusCode();
 
                 string json = await res.Content.ReadAsStringAsync();
-                JsonElement doc = JsonDocument.Parse(json).RootElement;
-
-                foreach (var file in doc.GetProperty("files").EnumerateArray())
-                    size += file.GetProperty("size").GetInt64();
+                long.TryParse(json, out size);
             }
         }
-        catch { }
+        catch
+        {
+            Console.WriteLine("Failed to derive install size");
+        }
 
         download.DownloadSize = size;
         download.ReleaseEngineManifest = Path.Combine(settings.Value.releaseEngineUrl, "api", "Releases", session.projectId.ToString());
