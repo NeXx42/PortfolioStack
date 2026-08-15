@@ -60,6 +60,18 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy.WithOrigins(
+            "https://nexx42.info",
+            "https://www.nexx42.info"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddDbContext<PortfolioContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -104,6 +116,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseCors("localhost");
 }
+
+app.UseCors("Frontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
