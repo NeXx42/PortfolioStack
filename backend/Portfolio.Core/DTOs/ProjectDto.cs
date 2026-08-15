@@ -21,7 +21,7 @@ public class ProjectDto
 
     public ElementGroup[]? elements { get; set; }
     public Tag[]? tags { get; set; }
-    public Release[]? releases { get; set; }
+    public ReleaseDTO[]? releases { get; set; }
 
     public ProjectType type { get; set; }
 
@@ -61,6 +61,22 @@ public class ProjectDto
                 }).ToArray() ?? []
             }).ToArray() ?? [],
 
+            releases = model.Releases.Select(r => new ReleaseDTO
+            {
+                versionId = r.ReleaseId,
+                version = r.VersionName,
+
+                status = r.Status,
+                patchNotes = r.PatchNotes,
+
+                downloads = r.Downloads.Select(d => new ReleaseDownloadDto()
+                {
+                    downloadLink = d.DownloadUrl,
+                    platform = d.Platform,
+                    size = d.DownloadSize,
+                }).ToArray()
+
+            }).ToArray()
         };
     }
 
@@ -108,23 +124,6 @@ public class ProjectDto
                 name = model.Name,
                 customColour = model.customColour
             };
-        }
-    }
-
-    public class Release
-    {
-        public int id { get; set; }
-        public required string version { get; set; }
-        public string? size { get; set; }
-        public DateTime? date { get; set; }
-
-        public Download[]? downloads { get; set; }
-
-        public class Download
-        {
-            public DownloadType type;
-            public required int id { get; set; }
-            public string? link { get; set; }
         }
     }
 }
