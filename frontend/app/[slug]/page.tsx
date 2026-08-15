@@ -49,7 +49,7 @@ export default async function ({ params }: { params: { slug: string } }) {
     }
     catch { }
 
-    const latestRelease: ProjectRelease | undefined = content?.releases?.sort(r => r.date.getDate())[0] ?? undefined;
+    const latestRelease: ProjectRelease | undefined = content?.releases?.sort(r => r.versionId)[0] ?? undefined;
 
     const drawTitle = () => {
         return (

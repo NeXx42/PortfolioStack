@@ -30,12 +30,12 @@ export default function (props: Props) {
             <div className={`Content_Get ${isGetSticky ? "Stuck" : ""}`}>
                 <div className="Content_Get_Details">
                     <span>VERSION <b>{props.release?.version ?? "-"}</b></span>
-                    <span>SIZE <b>{props.release?.size ?? "-"} MB</b></span>
+                    <span>SIZE <b>{"-"} MB</b></span>
                 </div>
 
                 <div className="Content_Get_Actions">
                     <label>{(props.cost ?? 0) > 0 ? `£${props.cost}` : ""}</label>
-                    <Link href={props.release?.downloads[0].link ?? ""}>
+                    <Link href={props.release?.downloads[0].downloadLink ?? ""}>
                         <CommonButton label={props.release !== null ? ((props.cost ?? 0) > 0 ? "Purchase" : "Download") : "Unavailable"} />
                     </Link>
                 </div>
