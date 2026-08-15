@@ -237,28 +237,4 @@ public class AdminService
             };
         }
     }
-
-    public async Task<string> UploadToReleaseEngine(Guid projectId, int releaseId, string platform)
-    {
-        ReleaseDownloadModel download = await _portfolioContext.ReleaseDownloads.SingleAsync(rd => rd.ProjectId == projectId && rd.ReleaseId == releaseId && rd.Platform == platform);
-        download.ReleaseEngineManifest = Path.Combine(_settings.releaseEngineUrl, "api", "Releases", projectId.ToString());
-
-        await _portfolioContext.SaveChangesAsync();
-
-        try
-        {
-            using (HttpClient client = new HttpClient())
-            {
-                string url = Path.Combine(_settings.releaseEngineUrl, "api", "Releases", projectId.ToString(), $"Create?releaseId={releaseId}");
-
-                HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Post, url);
-                HttpResponseMessage res = await client.SendAsync(msg);
-
-                res.EnsureSuccessStatusCode();
-            }
-        }
-        catch { }
-
-        return Path.Combine(Path.Combine("api", "admin", "project", projectId.ToString(), "release", $"{releaseId}?platform={platform}"));
-    }
 }

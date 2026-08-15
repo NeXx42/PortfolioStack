@@ -85,6 +85,7 @@ else
     builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 }
 
+builder.Services.AddScoped<ReleaseService>();
 builder.Services.AddScoped<ContentService>();
 builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<MailService>();

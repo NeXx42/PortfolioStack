@@ -86,6 +86,12 @@ export async function admin_SaveProjectRelease(projectId: string, release: Proje
     return (await post(`admin/project/${projectId}/release`, release))!
 }
 
-export async function admin_PrimeReleaseEngineUpload(projectId: string, releaseId: number, platform: string): Promise<string> {
-    return (await post<string>(`admin/project/${projectId}/release/${releaseId}?platform=${platform}`))!
+// releases
+
+export async function releases_PrimeReleaseEngineUpload(projectId: string, releaseId: number, platform: string): Promise<string> {
+    return (await post<string>(`Releases/${projectId}/${releaseId}?platform=${platform}`))!
+}
+
+export async function releases_CompleteReleaseEngine(sessionGuid: string) {
+    return (await post(`Releases/${sessionGuid}/Complete`))!
 }

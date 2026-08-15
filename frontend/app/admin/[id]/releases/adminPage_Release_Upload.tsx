@@ -1,22 +1,33 @@
 import * as api from "@api/api.client"
 import { URL } from "@api/api.shared"
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+
+type DirectoryInputProps =
+    React.InputHTMLAttributes<HTMLInputElement> & {
+        webkitdirectory?: string;
+    };
+
+const inputProps: DirectoryInputProps = {
+    type: "file",
+    webkitdirectory: "",
+    multiple: true,
+};
 
 export default function ({ projectId, releaseId, platform }: { projectId: string, releaseId: number, platform: string }) {
+    const inputRef = useRef<HTMLInputElement>(null);
+
     const [uploadFiles, setUploadFiles] = useState<File[]>([])
     const [uploadPercentage, setUploadPercentage] = useState<number | undefined>(undefined);
-
 
     const handleFileUpload = async () => {
         setUploadPercentage(0);
 
-        const uri: string = await api.admin_PrimeReleaseEngineUpload(projectId, releaseId, platform);
-        console.log(uri);
+        const sessionId: string = await api.releases_PrimeReleaseEngineUpload(projectId, releaseId, platform);
 
         for (var i = 0; i < uploadFiles.length; i++) {
             const relativePath = uploadFiles[i].webkitRelativePath.split("/").slice(1).join("/");
-            const url = `${URL}/${uri}&relativePath=${encodeURIComponent(relativePath)}`;
+            const url = `${URL}/api/Releases/${sessionId}/Upload?relativePath=${encodeURIComponent(relativePath)}`;
 
             await new Promise(resolve => setTimeout(resolve, 10));
 
@@ -36,6 +47,7 @@ export default function ({ projectId, releaseId, platform }: { projectId: string
             setUploadPercentage((i / uploadFiles.length) * 100);
         }
 
+        await api.releases_CompleteReleaseEngine(sessionId);
         setUploadPercentage(100);
     }
 
@@ -45,16 +57,13 @@ export default function ({ projectId, releaseId, platform }: { projectId: string
 
             <div style={{ display: "flex", flexDirection: "column" }}>
                 <div style={{ display: "flex", flexDirection: "row" }}>
-                    <input type="range" min={0} max={100} value={uploadPercentage} onChange={_ => { }} />
+                    <input type="range" min={0} max={100} value={uploadPercentage ?? 0} readOnly={true} />
                     <a>{uploadPercentage ?? 0}%</a>
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "row" }}>
                     <input
-                        type="file"
-                        webkitdirectory=""
-                        directory=""
-                        multiple
+                        {...inputProps}
                         onChange={e => setUploadFiles(Array.from(e.target.files ?? []))}
                     />
                     <button onClick={handleFileUpload}>Upload</button>
