@@ -1,6 +1,6 @@
 import * as api from "@api/api.client"
 
-import { Project, ProjectRelease, ProjectReleaseDownload } from "@/app/shared/types"
+import { Project, ProjectRelease, ProjectReleaseDownload, releaseStatus } from "@/app/shared/types"
 import useRequest from "@/app/hooks/useRequest"
 
 import { ReactNode, useState } from "react";
@@ -117,6 +117,13 @@ export default function ({ content }: { content: Project }) {
                 </div>
 
                 <div>
+                    <a>Status</a>
+                    <select value={selectedRelease.status} onChange={e => updateRelease("status", Number.parseInt(e.target.value))}>
+                        {releaseStatus.map((m, i) => <option key={m} value={i}>{m}</option>)}
+                    </select>
+                </div>
+
+                <div>
                     <a>Patch notes</a>
                     <textarea value={selectedRelease.patchNotes} onChange={e => updateRelease("patchNotes", e.target.value)} />
                 </div>
@@ -152,7 +159,15 @@ export default function ({ content }: { content: Project }) {
             <div className="adminPage_Releases_Content_Download">
                 <div>
                     <a>Platform</a>
-                    <input value={download.platform} onChange={e => updateReleaseDownload(selectedReleasePlatform, "platform", e.target.value)} />
+                    <select value={download.platform} onChange={e => updateReleaseDownload(selectedReleasePlatform, "platform", e.target.value)}>
+                        <option value={"Windows"} label="Windows" />
+                        <option value={"Linux"} label="Linux" />
+                    </select>
+                </div>
+
+                <div>
+                    <a>Entrypoint</a>
+                    <input value={download.entryPoint} onChange={e => updateReleaseDownload(selectedReleasePlatform, "entryPoint", e.target.value)} />
                 </div>
 
                 <div>

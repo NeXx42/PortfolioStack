@@ -9,10 +9,10 @@ namespace Portfolio.Api.Controllers;
 
 [ApiController]
 [Route("api/Releases")]
-[Authorize(Roles = nameof(UserRoles.Admin))]
 public class ReleaseController(ReleaseService _service, CacheService _cache, IOptions<GeneralSettings> _settings) : ControllerBase
 {
     [HttpPost("{projectId}/{releaseId}")]
+    [Authorize(Roles = nameof(UserRoles.Admin))]
     public async Task<IResult> CreateReleaseEngineEntry(Guid projectId, int releaseId, [FromQuery] string platform)
     {
         try
@@ -32,6 +32,7 @@ public class ReleaseController(ReleaseService _service, CacheService _cache, IOp
     }
 
     [HttpPut("{sessionId}/Upload")]
+    [Authorize(Roles = nameof(UserRoles.Admin))]
     [RequestSizeLimit(10L * (1024 * 1024 * 1024))]
     public async Task<IResult> UploadFileToReleaseEngine(Guid sessionId, [FromQuery] string relativePath)
     {
@@ -71,6 +72,7 @@ public class ReleaseController(ReleaseService _service, CacheService _cache, IOp
     }
 
     [HttpPost("{sessionId}/Complete")]
+    [Authorize(Roles = nameof(UserRoles.Admin))]
     public async Task<IResult> CompleteReleaseUpload(Guid sessionId)
     {
         if (!_cache.TryGetValue(sessionId.ToString(), out UploadSession session))
@@ -82,6 +84,24 @@ public class ReleaseController(ReleaseService _service, CacheService _cache, IOp
             _cache.Remove(sessionId.ToString());
 
             return Results.Ok();
+        }
+        catch (Exception e)
+        {
+            return Results.Problem(e.Message);
+        }
+    }
+
+    [HttpGet("{projectId}/{releaseId}")]
+    public async Task<IResult> GetDownloadFiles(Guid projectId, int releaseId, [FromQuery] string platform)
+    {
+        try
+        {
+            var files = await _service.GetDownloadFiles(projectId, releaseId, platform);
+            return Results.Json(files);
+        }
+        catch (ArgumentException e)
+        {
+            return Results.BadRequest(e.Message);
         }
         catch (Exception e)
         {

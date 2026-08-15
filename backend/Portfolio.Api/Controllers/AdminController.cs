@@ -17,14 +17,16 @@ namespace Portfolio.Api.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly ContentService _content;
+    private readonly ReleaseService _releases;
     private readonly AdminService _admin;
     private readonly CacheService _cache;
 
     private readonly string _releaseEngineUrl;
 
-    public AdminController(ContentService content, AdminService admin, CacheService cache, IOptions<GeneralSettings> settings)
+    public AdminController(ContentService content, ReleaseService releases, AdminService admin, CacheService cache, IOptions<GeneralSettings> settings)
     {
         _content = content;
+        _releases = releases;
         _admin = admin;
         _cache = cache;
 
@@ -177,7 +179,7 @@ public class AdminController : ControllerBase
     {
         try
         {
-            var releases = await _content.GetReleases(projectId);
+            var releases = await _releases.GetReleases(projectId);
             return Results.Json(releases);
         }
         catch (Exception e)
@@ -191,7 +193,7 @@ public class AdminController : ControllerBase
     {
         try
         {
-            await _admin.CreateOrUpdateRelease(projectId, release);
+            await _releases.CreateOrUpdateRelease(projectId, release);
             return Results.Ok();
         }
         catch (Exception e)

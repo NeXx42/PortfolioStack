@@ -1,3 +1,5 @@
+using Portfolio.Core.Data;
+
 namespace Portfolio.Core.DTOs;
 
 public class ReleaseDTO
@@ -7,5 +9,6 @@ public class ReleaseDTO
 
     public string? patchNotes { get; set; }
 
+    public ReleaseStatus status { get; set; }
     public ReleaseDownloadDto[] downloads { get; set; } = [];
 }

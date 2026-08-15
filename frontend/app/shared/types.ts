@@ -1,5 +1,8 @@
 import type { ProjectContentType, ProjectType, UserRoles } from "./enums"
 
+export const releaseStatus = ["Published", "Prerelease", "Unpublished"];
+export type ReleaseStatus = typeof releaseStatus[number];
+
 export interface User {
     userId: string,
     displayName: string
@@ -53,6 +56,7 @@ export interface ProjectRelease {
     versionId: number,
     version: string,
 
+    status?: number,
     patchNotes?: string,
 
     downloads: ProjectReleaseDownload[]
