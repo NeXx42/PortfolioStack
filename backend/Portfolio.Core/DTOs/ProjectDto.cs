@@ -12,18 +12,17 @@ public class ProjectDto
 
     public string? icon { get; set; }
     public string? shortDescription { get; set; }
+    public string? genre { get; set; }
 
     public DateTime? dateCreated { get; set; }
     public DateTime? dateUpdated { get; set; }
-
-    public string? version { get; set; }
-    public decimal? cost { get; set; }
 
     public ElementGroup[]? elements { get; set; }
     public Tag[]? tags { get; set; }
     public ReleaseDTO[]? releases { get; set; }
 
     public ProjectType type { get; set; }
+    public ReleaseStatus status { get; set; }
 
     public static ProjectDto Map(ProjectModel model)
     {
@@ -34,17 +33,15 @@ public class ProjectDto
 
             icon = model.icon,
             slug = model.slug,
+            genre = model.genre,
 
             dateCreated = model.CreatedDate,
             dateUpdated = model.CreatedDate,
 
-            version = model.Version,
-            cost = model.Price,
-
             type = model.projectType,
+            status = model.status,
 
             tags = model.Tags?.Select(Tag.Map).ToArray(),
-
             elements = model.Elements?.Select(x => new ElementGroup()
             {
                 id = x.Id,
@@ -60,7 +57,6 @@ public class ProjectDto
                     value3 = p.ParameterValue3
                 }).ToArray() ?? []
             }).ToArray() ?? [],
-
             releases = model.Releases.Select(r => new ReleaseDTO
             {
                 versionId = r.ReleaseId,

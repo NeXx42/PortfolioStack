@@ -17,6 +17,7 @@ public class ReleaseModel
     public string? VersionName { get; set; }
     public string? PatchNotes { get; set; }
 
+    public DateTime Date { get; set; }
     public ReleaseStatus Status { get; set; }
 
     public ICollection<ReleaseDownloadModel> Downloads { get; set; } = new List<ReleaseDownloadModel>();

@@ -13,15 +13,15 @@ export interface Project {
     id: string,
     gameName: string,
     slug: string,
+
     icon: string,
     shortDescription: string,
-
-    cost?: number,
-    version?: string,
+    genre: string,
 
     dateCreated?: Date,
     dateUpdate?: Date,
 
+    status: number,
     type: ProjectType,
 
     elements?: ProjectContent[],

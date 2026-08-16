@@ -25,6 +25,16 @@ public class AdminService
         _settings = settings.Value;
     }
 
+    public async Task<ProjectDto[]> GetAllProjects()
+    {
+        ProjectModel[] dbRes = await _portfolioContext.Projects
+          .Include(p => p.Tags)
+          .ThenInclude(t => t.Tag)
+          .ToArrayAsync();
+
+        return dbRes.Select(ProjectDto.Map).ToArray();
+    }
+
     public async Task<string> SaveImage(IFormFile file)
     {
         if (string.IsNullOrEmpty(_settings.ContentStorageFolder))
@@ -82,6 +92,8 @@ public class AdminService
         model.description = project.shortDescription;
         model.projectType = project.type;
         model.slug = project.slug;
+        model.genre = project.genre;
+        model.status = project.status;
 
         _portfolioContext.RemoveRange(model.Tags);
         model.Tags.Clear();
@@ -108,6 +120,7 @@ public class AdminService
             id = id,
             name = "new",
             projectType = ProjectType.Project,
+            status = ReleaseStatus.Unpublished,
             slug = id.ToString()
         };
 

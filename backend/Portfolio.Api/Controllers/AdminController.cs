@@ -1,5 +1,5 @@
-using System.Net.NetworkInformation;
 using System.Text.Json;
+using AuthEngineShared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -14,24 +14,8 @@ namespace Portfolio.Api.Controllers;
 [ApiController]
 [Authorize(Roles = nameof(UserRoles.Admin))]
 [Route("api/admin")]
-public class AdminController : ControllerBase
+public class AdminController(ReleaseService _releases, AdminService _admin, CacheService _cache) : ControllerBase
 {
-    private readonly ContentService _content;
-    private readonly ReleaseService _releases;
-    private readonly AdminService _admin;
-    private readonly CacheService _cache;
-
-    private readonly string _releaseEngineUrl;
-
-    public AdminController(ContentService content, ReleaseService releases, AdminService admin, CacheService cache, IOptions<GeneralSettings> settings)
-    {
-        _content = content;
-        _releases = releases;
-        _admin = admin;
-        _cache = cache;
-
-        _releaseEngineUrl = settings.Value.releaseEngineUrl;
-    }
 
     [HttpGet("clearCache")]
     public IResult ClearCache()
@@ -96,7 +80,7 @@ public class AdminController : ControllerBase
     {
         try
         {
-            ProjectDto[] projects = await _content.GetAllProjects();
+            ProjectDto[] projects = await _admin.GetAllProjects();
             return Results.Json(projects);
         }
         catch (Exception e)

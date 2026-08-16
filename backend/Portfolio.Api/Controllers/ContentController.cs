@@ -1,7 +1,9 @@
+using AuthEngineShared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
+using Portfolio.Api.Helpers;
 using Portfolio.Api.Services;
 using Portfolio.Core.Data;
 using Portfolio.Core.DTOs;
@@ -25,7 +27,9 @@ public class ContentController : ControllerBase
     {
         try
         {
-            var res = await _content.GetContentForType(type);
+            UserObject? usr = await SessionHelper.GetSessionUser(User);
+            var res = await _content.GetContentForType(usr, type);
+
             return Results.Json(res);
         }
         catch (Exception e)
@@ -39,7 +43,9 @@ public class ContentController : ControllerBase
     {
         try
         {
-            var res = await _content.FeaturedContent();
+            UserObject? usr = await SessionHelper.GetSessionUser(User);
+            var res = await _content.FeaturedContent(usr);
+
             return Results.Json(res);
         }
         catch (Exception e)
@@ -51,7 +57,8 @@ public class ContentController : ControllerBase
     [HttpGet("{slug}")]
     public async Task<IResult> GetGame(string slug)
     {
-        var res = await _content.GetGame(slug);
+        UserObject? usr = await SessionHelper.GetSessionUser(User);
+        var res = await _content.GetGame(usr, slug);
 
         if (res == null)
             return Results.NotFound();
@@ -78,7 +85,9 @@ public class ContentController : ControllerBase
     {
         try
         {
-            var res = await _content.GetGameLauncherMetadata(featuredId, limit);
+            UserObject? usr = await SessionHelper.GetSessionUser(User);
+
+            var res = await _content.GetGameLauncherMetadata(usr, featuredId, limit);
             return Results.Json(res);
         }
         catch (Exception e)

@@ -1,3 +1,4 @@
+using AuthEngineShared;
 using Microsoft.EntityFrameworkCore;
 using Portfolio.Core.Data;
 using Portfolio.Core.DTOs;
@@ -8,43 +9,45 @@ namespace Portfolio.Api.Services;
 
 public class ContentService(CacheService _cache, PortfolioContext _portfolioContext)
 {
-    private const string CACHE_FEATURED_CONTENT = "Content_FeaturedContent";
-    private const string CACHE_LINKS = "Content_Links";
-
-    public async Task<ProjectDto[]> GetAllProjects()
+    private IQueryable<ProjectModel> SearchForProjectWithUser(UserObject? usr)
     {
-        ProjectModel[] dbRes = await _portfolioContext.Projects
-            .Include(p => p.Tags)
-            .ThenInclude(t => t.Tag)
-            .ToArrayAsync();
+        if (usr == null)
+            return _portfolioContext.Projects.Where(p => p.status == ReleaseStatus.Published);
 
-        ProjectDto[] results = dbRes.Select(ProjectDto.Map).ToArray();
-        return results;
+        if (usr.Role == UserRoles.Admin)
+            return _portfolioContext.Projects.AsQueryable();
+
+        // more complex filtering, maybe to licence engine
+        return _portfolioContext.Projects.Where(p => p.status == ReleaseStatus.Published);
     }
 
-    public async Task<ProjectDto[]> GetContentForType(ProjectType type)
+    public async Task<ProjectDto[]> GetContentForType(UserObject? usr, ProjectType type)
     {
-        if (_cache.TryGetValue(type.ToString(), out ProjectDto[]? projects) && projects != null)
+        string cacheKey = $"{type}_{usr?.Id}";
+
+        if (_cache.TryGetValue(cacheKey, out ProjectDto[]? projects) && projects != null)
             return projects;
 
-        ProjectModel[] dbRes = await _portfolioContext.Projects
+        ProjectModel[] dbRes = await SearchForProjectWithUser(usr)
             .Include(p => p.Tags)
-            .ThenInclude(t => t.Tag)
+                .ThenInclude(t => t.Tag)
             .Where(x => x.projectType == type)
             .ToArrayAsync();
 
         ProjectDto[] results = dbRes.Select(ProjectDto.Map).ToArray();
 
-        _cache.SetIfNotExists(type.ToString(), results);
+        _cache.SetIfNotExists(cacheKey, results);
         return results;
     }
 
-    public async Task<ProjectDto[]> FeaturedContent()
+    public async Task<ProjectDto[]> FeaturedContent(UserObject? usr)
     {
-        if (_cache.TryGetValue(CACHE_FEATURED_CONTENT, out ProjectDto[]? projects) && projects != null)
+        string cacheKey = $"Content_FeaturedContent_{usr?.Id}";
+
+        if (_cache.TryGetValue(cacheKey, out ProjectDto[]? projects) && projects != null)
             return projects;
 
-        ProjectModel[] dbRes = await _portfolioContext.Projects
+        ProjectModel[] dbRes = await SearchForProjectWithUser(usr)
             .Include(p => p.Tags)
                 .ThenInclude(t => t.Tag)
             .OrderByDescending(p => p.UpdatedDate)
@@ -53,18 +56,20 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
 
         ProjectDto[] results = dbRes.Select(ProjectDto.Map).ToArray();
 
-        _cache.SetIfNotExists(CACHE_FEATURED_CONTENT, results);
+        _cache.SetIfNotExists(cacheKey, results);
         return results;
     }
 
-    public async Task<ProjectDto?> GetGame(string slug)
+    public async Task<ProjectDto?> GetGame(UserObject? usr, string slug)
     {
-        if (_cache.TryGetValue(slug, out ProjectDto? proj) && proj != null)
+        string cacheKey = $"Content_Game_{slug}_{usr?.Id}";
+
+        if (_cache.TryGetValue(cacheKey, out ProjectDto? proj))
             return proj;
 
         ElementType[] excludedMetadata = [ElementType.LauncherMetadata];
 
-        ProjectModel? game = await _portfolioContext.Projects
+        ProjectModel? game = await SearchForProjectWithUser(usr)
             .Include(p => p.Elements.Where(e => !excludedMetadata.Contains(e.Type)))
                 .ThenInclude(p => p.Parameters)
             .Include(p => p.Tags)
@@ -76,22 +81,28 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
         if (game != null)
         {
             ProjectDto dto = ProjectDto.Map(game);
-            _cache.SetIfNotExists(slug, dto);
+            _cache.SetIfNotExists(cacheKey, dto);
 
             return dto;
         }
 
+        _cache.SetIfNotExists<ProjectDto?>(cacheKey, null);
         return null;
     }
 
-    public async Task<GameLauncherMetadata[]> GetGameLauncherMetadata(Guid? featured, int? limit)
+    public async Task<GameLauncherMetadata[]> GetGameLauncherMetadata(UserObject? usr, Guid? featured, int? limit)
     {
-        var query = _portfolioContext.Projects
+        string cacheKey = $"Content_Games_{usr?.Id}";
+
+        if (_cache.TryGetValue(cacheKey, out GameLauncherMetadata[]? games))
+            return games ?? [];
+
+        var query = SearchForProjectWithUser(usr)
             .Include(p => p.Elements.Where(e => e.Type == ElementType.LauncherMetadata))
                 .ThenInclude(p => p.Parameters)
             .Include(p => p.Releases.Where(r => r.Status != ReleaseStatus.Unpublished))
                 .ThenInclude(r => r.Downloads)
-            .Where(g => g.projectType == ProjectType.Game)
+            .Where(g => g.projectType == ProjectType.Game && g.Elements.Count() == 1)
             .AsQueryable();
 
         if (featured.HasValue)
@@ -103,9 +114,10 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
         if (limit.HasValue)
             query = query.Take(limit.Value);
 
-        // need to do licence filtering here?
+        GameLauncherMetadata[] content = (await query.ToArrayAsync()).Select(Map).ToArray();
+        _cache.SetIfNotExists(cacheKey, content);
 
-        return (await query.ToArrayAsync()).Select(Map).ToArray();
+        return content;
 
         GameLauncherMetadata Map(ProjectModel model)
         {
@@ -113,6 +125,9 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
             {
                 id = model.id,
                 gameName = model.name,
+                about = model.description ?? "",
+                genre = model.genre ?? "",
+
                 versions = model.Releases.Select(MapRelease).ToArray()
             };
             var launcherData = model.Elements.FirstOrDefault(e => e.Type == ElementType.LauncherMetadata);
@@ -150,12 +165,12 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
 
     public async Task<LinkModel[]> GetLinks()
     {
-        if (_cache.TryGetValue(CACHE_LINKS, out LinkModel[]? links) && links != null)
+        if (_cache.TryGetValue("Content_Links", out LinkModel[]? links) && links != null)
             return links;
 
         LinkModel[] dbRes = await _portfolioContext.Links.ToArrayAsync();
 
-        _cache.SetIfNotExists(CACHE_LINKS, dbRes);
+        _cache.SetIfNotExists("Content_Links", dbRes);
         return dbRes;
     }
 }

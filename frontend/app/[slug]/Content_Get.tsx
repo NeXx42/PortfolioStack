@@ -9,7 +9,6 @@ import CommonButton from "@shared/components/commonButton";
 
 interface Props {
     release: ProjectRelease | undefined,
-    cost?: number
 }
 
 export default function (props: Props) {
@@ -65,12 +64,13 @@ export default function (props: Props) {
 
     const drawDownloadButton = () => {
         const hasDownload = selectedDownload?.downloadLink != undefined && selectedDownload?.downloadLink != "";
+        const cost: number | undefined = undefined;
 
         return (
             <>
-                <label>{(props.cost ?? 0) > 0 ? `£${props.cost}` : ""}</label>
+                <label>{(cost ?? 0) > 0 ? `£${cost}` : ""}</label>
                 <Link href={selectedDownload?.downloadLink ?? ""}>
-                    <CommonButton label={hasDownload ? ((props.cost ?? 0) > 0 ? "Purchase" : `Download`) : "Unavailable"} />
+                    <CommonButton label={hasDownload ? ((cost ?? 0) > 0 ? "Purchase" : `Download`) : "Unavailable"} />
                 </Link>
             </>
         )

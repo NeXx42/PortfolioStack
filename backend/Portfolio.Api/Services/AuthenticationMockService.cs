@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using AuthEngineShared;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Portfolio.Api.Types;
@@ -28,7 +29,7 @@ public class AuthenticationMockService : IAuthenticationService
             Id = Guid.NewGuid(),
             DisplayName = "Test",
             Email = "Test",
-            role = UserRoles.Admin,
+            Role = UserRoles.Admin,
         };
 
         JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
@@ -39,7 +40,7 @@ public class AuthenticationMockService : IAuthenticationService
                 new Claim(ClaimTypes.NameIdentifier, fakeUser.Id.ToString()),
                 new Claim(ClaimTypes.Email, fakeUser.Email),
                 new Claim(ClaimTypes.Name, fakeUser.DisplayName),
-                new Claim(ClaimTypes.Role, fakeUser.role.ToString())
+                new Claim(ClaimTypes.Role, fakeUser.Role.ToString())
             }),
             Audience = "NexxAuth",
             Issuer = "NexxAuth",

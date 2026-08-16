@@ -3,7 +3,10 @@ namespace Portfolio.Core.Data;
 public class GameLauncherMetadata
 {
     public Guid id { get; set; }
+
     public string gameName { get; set; } = "";
+    public string about { get; set; } = "";
+    public string genre { get; set; } = "";
 
     public string? iconUrl { get; set; } = "";
     public string[] imageUrls { get; set; } = [];

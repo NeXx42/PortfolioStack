@@ -3,7 +3,7 @@
 import * as api from "@api/api.client"
 
 import useRequest from "@/app/hooks/useRequest"
-import { Project, ProjectContent, ProjectTag } from "@/app/shared/types";
+import { Project, ProjectContent, ProjectTag, releaseStatus } from "@/app/shared/types";
 import { useParams, useRouter } from "next/navigation";
 import React, { ReactNode, useEffect, useState } from "react";
 
@@ -210,20 +210,30 @@ export default function () {
                     <form className="admin_Project_Details" >
                         <h1>Details</h1>
                         <div>
-                            <a>Icon</a>
-                            <input type="file" accept="image/*" onChange={handleChange} />
+                            <a>Status</a>
+                            <select value={data.status} onChange={e => updateProperty(Number.parseInt(e.target.value), "status")}>
+                                {releaseStatus.map((m, i) => <option key={m} value={i}>{m}</option>)}
+                            </select>
                         </div>
                         <div>
                             <a>Name</a>
                             <input type="text" value={data?.gameName} onChange={e => updateProperty(e.target.value, "gameName")} />
                         </div>
                         <div>
+                            <a>Slug</a>
+                            <input type="text" value={data?.slug} onChange={e => updateProperty(e.target.value, "slug")} />
+                        </div>
+                        <div>
+                            <a>Icon</a>
+                            <input type="file" accept="image/*" onChange={handleChange} />
+                        </div>
+                        <div>
                             <a>Description</a>
                             <textarea value={data?.shortDescription ?? ""} onChange={e => updateProperty(e.target.value, "shortDescription")} />
                         </div>
                         <div>
-                            <a>Slug</a>
-                            <input type="text" value={data?.slug} onChange={e => updateProperty(e.target.value, "slug")} />
+                            <a>Genre</a>
+                            <input type="text" value={data.genre ?? ""} onChange={e => updateProperty(e.target.value, "genre")} />
                         </div>
                         <div>
                             <a>Type</a>

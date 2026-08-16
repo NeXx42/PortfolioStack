@@ -118,7 +118,7 @@ export default async function ({ params }: { params: { slug: string } }) {
                         <div className="Content_Hero_Vignette" />
                     </div>
 
-                    <Content_Get release={latestRelease} cost={content?.cost} />
+                    <Content_Get release={latestRelease} />
 
                     <div className="Content_Main">
                         {drawTitle()}

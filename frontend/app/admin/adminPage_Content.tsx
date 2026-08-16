@@ -4,7 +4,7 @@ import * as api from "@api/api.client"
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ProjectTag } from "@shared/types";
+import { ProjectTag, releaseStatus } from "@shared/types";
 
 import useRequest from "../hooks/useRequest";
 
@@ -108,7 +108,7 @@ export default function () {
                             <tr key={p.id}>
                                 <td><p>{p.id}</p></td>
                                 <td><p>{p.slug}</p></td>
-                                <td><p>active</p></td>
+                                <td><p>{releaseStatus[p.status]}</p></td>
                                 <td><button onClick={() => router.push(`admin/${p.id}`)}>Edit</button></td>
                             </tr>
                         )

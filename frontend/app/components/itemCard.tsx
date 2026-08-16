@@ -24,15 +24,12 @@ export default function ItemCard({
 
     const getCost = (): string => {
         if (itemData?.type === ProjectType.Game)
-            return itemData.cost == null ? "Free" : itemData.cost!.toString();
+            return "Free";
 
         return "";
     }
 
     const getAction = () => {
-        if (itemData?.cost !== null)
-            return "Purchase"
-
         switch (itemData?.type) {
             case ProjectType.Software:
                 return "Download";

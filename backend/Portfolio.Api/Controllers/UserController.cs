@@ -1,7 +1,9 @@
 using System.Security.Claims;
+using AuthEngineShared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Portfolio.Api.Helpers;
 using Portfolio.Api.Services;
 using Portfolio.Api.Types;
 using Portfolio.Core.Data;
@@ -87,7 +89,7 @@ public class UserController : ControllerBase
     {
         if (User.Identity?.IsAuthenticated == true)
         {
-            UserObject? usr = await GetSessionUser();
+            UserObject? usr = await SessionHelper.GetSessionUser(User);
 
             // invalidate token
             if (usr == null)
@@ -106,7 +108,7 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<IResult> Logout()
     {
-        UserObject? usr = await GetSessionUser();
+        UserObject? usr = await SessionHelper.GetSessionUser(User);
 
         if (usr == null)
             return Results.Unauthorized();
@@ -171,29 +173,5 @@ public class UserController : ControllerBase
             SameSite = SameSiteMode.Strict,
             Expires = DateTimeOffset.UtcNow.AddHours(1)
         });
-    }
-
-    private async Task<UserObject?> GetSessionUser()
-    {
-        string? userGuid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        string? displayName = User.FindFirst(ClaimTypes.Name)?.Value;
-        string? email = User.FindFirst(ClaimTypes.Email)?.Value;
-        string? role = User.FindFirst(ClaimTypes.Role)?.Value;
-
-        if (Guid.TryParse(userGuid, out Guid id))
-        {
-            UserRoles userRole = UserRoles.None;
-            Enum.TryParse(role, ignoreCase: true, out userRole);
-
-            return new UserObject()
-            {
-                Id = id,
-                Email = email!,
-                DisplayName = displayName!,
-                role = userRole,
-            };
-        }
-
-        return null;
     }
 }
