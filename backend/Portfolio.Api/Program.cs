@@ -70,7 +70,8 @@ builder.Services.AddCors(options =>
             "https://upload.nexx42.info"
         )
         .AllowAnyHeader()
-        .AllowAnyMethod();
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 
