@@ -3,7 +3,7 @@
 import type { Project, User, ProjectTag, ProjectContent, ProjectRelease } from "@shared/types";
 import type { ProjectType } from "@shared/enums";
 
-import { post, get, postForm, URL } from "./api.shared";
+import { post, get, postForm } from "./api.shared";
 
 // -------------------- authentication
 

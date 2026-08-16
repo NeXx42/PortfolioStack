@@ -1,8 +1,6 @@
-export const BASE_URL =
-    process.env.NEXT_PUBLIC_BASE_URL ?? "INVALID";
+export const SERVER_API_URL = process.env.SERVER_API_URL ?? "INVALID";
 
-export const SERVER_URL =
-    process.env.NEXT_PUBLIC_SERVER_URL ?? "INVALID";
+export const CLIENT_UPLOAD_URL = process.env.NEXT_PUBLIC_UPLOAD_URL ?? "";
+export const CLIENT_API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
-export const DEBUG_SLOW_API =
-    process.env.NEXT_PUBLIC_DEBUG_SLOW_API === "true";
+export const DEBUG_SLOW_API = process.env.NEXT_PUBLIC_DEBUG_SLOW_API === "true";

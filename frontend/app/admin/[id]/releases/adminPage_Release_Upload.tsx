@@ -1,5 +1,5 @@
 import * as api from "@api/api.client"
-import { URL } from "@api/api.shared"
+import { CLIENT_UPLOAD_URL } from "@shared/config"
 
 import { useRef, useState } from "react";
 
@@ -27,7 +27,7 @@ export default function ({ projectId, releaseId, platform }: { projectId: string
 
         for (var i = 0; i < uploadFiles.length; i++) {
             const relativePath = uploadFiles[i].webkitRelativePath.split("/").slice(1).join("/");
-            const url = `${URL}/api/Releases/${sessionId}/Upload?relativePath=${encodeURIComponent(relativePath)}`;
+            const url = `${CLIENT_UPLOAD_URL}/api/Releases/${sessionId}/Upload?relativePath=${encodeURIComponent(relativePath)}`;
 
             await new Promise(resolve => setTimeout(resolve, 10));
 

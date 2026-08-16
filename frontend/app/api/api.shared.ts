@@ -1,8 +1,8 @@
-import { SERVER_URL, BASE_URL, DEBUG_SLOW_API } from "@shared/config";
+import { DEBUG_SLOW_API, CLIENT_API_URL, SERVER_API_URL } from "@shared/config";
 
-export const URL = typeof window === "undefined"
-    ? SERVER_URL
-    : BASE_URL;
+const URL = typeof window === "undefined"
+    ? SERVER_API_URL
+    : CLIENT_API_URL;
 
 export async function get<T>(uri: string, nextCaching: NextFetchRequestConfig | undefined = undefined): Promise<T | undefined> {
     const res = await fetch(`${URL}/api/${uri}`, {
