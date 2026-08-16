@@ -74,8 +74,6 @@ public class ReleaseService(PortfolioContext portfolioContext, IOptions<GeneralS
 
                 HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Post, url);
                 HttpResponseMessage res = await client.SendAsync(msg);
-
-                res.EnsureSuccessStatusCode();
             }
         }
         catch { }
@@ -200,16 +198,36 @@ public class ReleaseService(PortfolioContext portfolioContext, IOptions<GeneralS
             JsonElement doc = JsonDocument.Parse(json).RootElement;
 
             foreach (var file in doc.EnumerateArray())
+            {
+                string downloadUrl = file.GetProperty("url").GetString()!;
+                string hash = file.GetProperty("hash").GetString()!;
+                string relativePath = file.GetProperty("path").GetString()!;
+
+                long? size = TryToGetSize(file, "size");
+                long? compressedSize = TryToGetSize(file, "compressedSize");
+                string compressionAlgorithm = file.GetProperty("compressionAlgorithm").GetString()!;
+
                 files.Add(new FileDownloadInfo()
                 {
-                    downloadUrl = file.GetProperty("url").GetString()!,
-                    hash = file.GetProperty("hash").GetString()!,
-                    relativePath = file.GetProperty("path").GetString()!,
+                    downloadUrl = downloadUrl,
+                    hash = hash,
+                    relativePath = relativePath,
 
-                    size = file.GetProperty("size").TryGetInt64(out long size) ? size : null,
+                    size = size,
+                    compressedSize = compressedSize,
+                    compressionAlgorithm = compressionAlgorithm,
                 });
+            }
         }
 
         return files.ToArray();
+
+        long? TryToGetSize(JsonElement root, string propertyName)
+        {
+            if (root.TryGetProperty(propertyName, out JsonElement el) && el.ValueKind == JsonValueKind.Number && el.TryGetInt64(out long size))
+                return size;
+
+            return null;
+        }
     }
 }
