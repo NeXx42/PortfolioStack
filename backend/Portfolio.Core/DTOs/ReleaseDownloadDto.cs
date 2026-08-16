@@ -1,3 +1,5 @@
+using Portfolio.Core.Models;
+
 namespace Portfolio.Core.DTOs;
 
 public class ReleaseDownloadDto
@@ -9,4 +11,11 @@ public class ReleaseDownloadDto
 
     public string? entryPoint { get; set; }
     public long size { get; set; }
+
+    public static ReleaseDownloadDto Map(ReleaseDownloadModel d) => new ReleaseDownloadDto()
+    {
+        downloadLink = d.DownloadUrl,
+        platform = d.Platform,
+        size = d.DownloadSize,
+    };
 }

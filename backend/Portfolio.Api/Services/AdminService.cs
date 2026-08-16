@@ -94,6 +94,10 @@ public class AdminService
         model.slug = project.slug;
         model.genre = project.genre;
         model.status = project.status;
+        model.UpdatedDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        if (project.dateCreated != null)
+            model.CreatedDate = project.dateCreated.Value;
 
         _portfolioContext.RemoveRange(model.Tags);
         model.Tags.Clear();
@@ -130,7 +134,7 @@ public class AdminService
         return project;
     }
 
-    public async Task SaveProjectContent(Guid projectId, ProjectDto.ElementGroup newData)
+    public async Task SaveProjectContent(Guid projectId, ElementDto newData)
     {
         if (newData.id < 0)
         {
@@ -157,7 +161,7 @@ public class AdminService
             await _portfolioContext.SaveChangesAsync();
         }
 
-        ProjectElementParameterModel MapParam(ProjectDto.ElementGroup.ElementParameter param)
+        ProjectElementParameterModel MapParam(ElementParameterDto param)
         {
             return new ProjectElementParameterModel()
             {
@@ -169,12 +173,12 @@ public class AdminService
         }
     }
 
-    public async Task<ProjectDto.Tag[]> GetTags()
+    public async Task<TagDto[]> GetTags()
     {
-        return (await _portfolioContext.Tags.ToArrayAsync()).Select(ProjectDto.Tag.Map).ToArray();
+        return (await _portfolioContext.Tags.ToArrayAsync()).Select(TagDto.Map).ToArray();
     }
 
-    public async Task SaveTags(ProjectDto.Tag[] tags)
+    public async Task SaveTags(TagDto[] tags)
     {
         HashSet<int> tagIds = tags.Select(x => x.id).ToHashSet();
 

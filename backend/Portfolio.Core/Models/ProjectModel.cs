@@ -24,8 +24,8 @@ public class ProjectModel
     [Required]
     public required ReleaseStatus status { get; set; }
 
-    public DateTime CreatedDate { get; set; }
-    public DateTime UpdatedDate { get; set; }
+    public long? CreatedDate { get; set; }
+    public long? UpdatedDate { get; set; }
 
     public ICollection<ProjectElementModel> Elements { get; set; } = new List<ProjectElementModel>();
     public ICollection<ProjectTagModel> Tags { get; set; } = new List<ProjectTagModel>();

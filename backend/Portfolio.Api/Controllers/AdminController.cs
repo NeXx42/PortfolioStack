@@ -2,10 +2,7 @@ using System.Text.Json;
 using AuthEngineShared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Portfolio.Api.Services;
-using Portfolio.Api.Types;
-using Portfolio.Core.Data;
 using Portfolio.Core.DTOs;
 using Portfolio.Core.Models;
 
@@ -39,7 +36,7 @@ public class AdminController(ReleaseService _releases, AdminService _admin, Cach
     }
 
     [HttpPost("tags")]
-    public async Task<IResult> AddTags(ProjectDto.Tag[] tags)
+    public async Task<IResult> AddTags(TagDto[] tags)
     {
         await _admin.SaveTags(tags);
         return Results.Ok();
@@ -132,7 +129,7 @@ public class AdminController(ReleaseService _releases, AdminService _admin, Cach
     {
         try
         {
-            ProjectDto.ElementGroup newData = JsonSerializer.Deserialize<ProjectDto.ElementGroup>(request.NewData)!;
+            ElementDto newData = JsonSerializer.Deserialize<ElementDto>(request.NewData)!;
 
             IFormCollection form = await Request.ReadFormAsync();
             Dictionary<string, IFormFile> files = new Dictionary<string, IFormFile>();

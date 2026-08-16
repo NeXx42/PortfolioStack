@@ -128,6 +128,8 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
                 about = model.description ?? "",
                 genre = model.genre ?? "",
 
+                releaseDate = model.CreatedDate,
+
                 versions = model.Releases.Select(MapRelease).ToArray()
             };
             var launcherData = model.Elements.FirstOrDefault(e => e.Type == ElementType.LauncherMetadata);

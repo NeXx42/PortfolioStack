@@ -18,8 +18,8 @@ export interface Project {
     shortDescription: string,
     genre: string,
 
-    dateCreated?: Date,
-    dateUpdate?: Date,
+    dateCreated?: number,
+    dateUpdate?: number,
 
     status: number,
     type: ProjectType,

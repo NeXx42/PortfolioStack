@@ -250,7 +250,7 @@ export default function () {
 
                         <div>
                             <a>Creation Date</a>
-                            <input type="date" value={""} onChange={(e) => updateProperty(e.target.value ? new Date(e.target.value) : undefined, "dateCreated")} />
+                            <input type="date" value={data?.dateCreated ? new Date(data.dateCreated * 1000).toISOString().split("T")[0] : ""} onChange={(e) => updateProperty(Math.floor(new Date(e.target.value).getTime() / 1000), "dateCreated")} />
                         </div>
 
                         <div>
@@ -260,7 +260,7 @@ export default function () {
                                 {
                                     data?.tags?.map((dt, i) => (
                                         <div key={i}>
-                                            <select value={tags!.findIndex(t => t.id === dt.id)} onChange={e => updateTag(i, Number.parseInt(e.target.value))}>
+                                            <select value={tags?.findIndex(t => t.id === dt.id)} onChange={e => updateTag(i, Number.parseInt(e.target.value))}>
                                                 {
                                                     tags?.map((tt, ti) => (
                                                         <option key={tt.id} value={ti}>{tt.name}</option>

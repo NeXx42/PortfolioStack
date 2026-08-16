@@ -8,6 +8,9 @@ public class GameLauncherMetadata
     public string about { get; set; } = "";
     public string genre { get; set; } = "";
 
+    public long? releaseDate { get; set; }
+    public long? updateDate { get; set; } // version
+
     public string? iconUrl { get; set; } = "";
     public string[] imageUrls { get; set; } = [];
 

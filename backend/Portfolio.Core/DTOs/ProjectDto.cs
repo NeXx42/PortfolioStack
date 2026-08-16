@@ -14,11 +14,12 @@ public class ProjectDto
     public string? shortDescription { get; set; }
     public string? genre { get; set; }
 
-    public DateTime? dateCreated { get; set; }
-    public DateTime? dateUpdated { get; set; }
+    public long? dateCreated { get; set; }
+    public long? dateUpdated { get; set; }
 
-    public ElementGroup[]? elements { get; set; }
-    public Tag[]? tags { get; set; }
+    public ElementDto[]? elements { get; set; }
+
+    public TagDto[]? tags { get; set; }
     public ReleaseDTO[]? releases { get; set; }
 
     public ProjectType type { get; set; }
@@ -33,93 +34,18 @@ public class ProjectDto
 
             icon = model.icon,
             slug = model.slug,
+            shortDescription = model.description,
             genre = model.genre,
 
             dateCreated = model.CreatedDate,
-            dateUpdated = model.CreatedDate,
+            dateUpdated = model.UpdatedDate,
 
             type = model.projectType,
             status = model.status,
 
-            tags = model.Tags?.Select(Tag.Map).ToArray(),
-            elements = model.Elements?.Select(x => new ElementGroup()
-            {
-                id = x.Id,
-                type = x.Type,
-
-                elements = x.Parameters?.Select(p => new ElementGroup.ElementParameter()
-                {
-                    id = p.Id,
-                    order = p.Order,
-
-                    value1 = p.ParameterValue1,
-                    value2 = p.ParameterValue2,
-                    value3 = p.ParameterValue3
-                }).ToArray() ?? []
-            }).ToArray() ?? [],
-            releases = model.Releases.Select(r => new ReleaseDTO
-            {
-                versionId = r.ReleaseId,
-                version = r.VersionName,
-
-                status = r.Status,
-                patchNotes = r.PatchNotes,
-
-                downloads = r.Downloads.Select(d => new ReleaseDownloadDto()
-                {
-                    downloadLink = d.DownloadUrl,
-                    platform = d.Platform,
-                    size = d.DownloadSize,
-                }).ToArray()
-
-            }).ToArray()
+            tags = model.Tags?.Select(TagDto.Map).ToArray(),
+            elements = model.Elements?.Select(ElementDto.Map).ToArray() ?? [],
+            releases = model.Releases.Select(ReleaseDTO.Map).ToArray()
         };
-    }
-
-    public static string ConvertNameToSlug(string name) => name.ToLower().Replace(" ", "-");
-
-    public class ElementGroup
-    {
-        public required int id { get; set; }
-        public required ElementType type { get; set; }
-        public ElementParameter[]? elements { get; set; }
-
-
-        public class ElementParameter
-        {
-            public required int id { get; set; }
-            public required int order { get; set; }
-
-            public string? value1 { get; set; }
-            public string? value2 { get; set; }
-            public string? value3 { get; set; }
-        }
-    }
-
-    public class Tag
-    {
-        public int id { get; set; }
-        public required string name { get; set; }
-        public string? customColour { get; set; }
-
-        public static Tag Map(ProjectTagModel model)
-        {
-            return new Tag()
-            {
-                id = model.Tag!.Id,
-                name = model.Tag!.Name,
-                customColour = model.Tag!.customColour
-            };
-        }
-
-        public static Tag Map(TagModel model)
-        {
-            return new Tag()
-            {
-                id = model.Id,
-                name = model.Name,
-                customColour = model.customColour
-            };
-        }
     }
 }
