@@ -1,17 +1,17 @@
+export const dynamic = "force-dynamic";
+
 import { fetchLinks, fetchFeaturedContent } from "@api/api.server"
 
 import ItemCard from "./components/itemCard";
 import Navbar from "@shared/components/navbar";
 
-import { ProjectType } from "@shared/enums";
-
-import "./Home.css";
 import Footer from "@shared/components/footer";
 import LinkCard from "./components//linkCard";
-import ItemCardSkeleton from "./components/itemCardSkeleton";
 import CardList from "./components/cardList";
 import { Project, Link } from "./shared/types";
 import StarContainer from "./shared/components/starContainer";
+
+import "./Home.css";
 
 export default async function () {
 

@@ -32,8 +32,7 @@ jobs:
         run: |
           docker build \
             --build-arg ENVIRONMENT=production \
-            --build-arg SERVER_API_URL=https://nexx42.info/ \
-            --build-arg NEXT_PUBLIC_UPLOAD_URL=https://upload.nexx42.info/ \
+            --build-arg NEXT_PUBLIC_UPLOAD_URL="https://upload.nexx42.info/" \
             -t ghcr.io/nexx42/portfolio_frontend \
             ./frontend
           

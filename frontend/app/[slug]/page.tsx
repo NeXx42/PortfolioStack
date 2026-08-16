@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import "./page.css"
 
 import { fetchGame } from "@api/api.server";
