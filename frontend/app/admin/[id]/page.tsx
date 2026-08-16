@@ -17,6 +17,7 @@ import adminPage_Content_About from "./adminPage_Content_About";
 import adminPage_Content_Screenshots from "./adminPage_Content_Screenshots";
 import adminPage_Content_LauncherMetadata from "./adminPage_Content_LauncherMetadata";
 import AdminPage_Releases from "./adminPage_Releases";
+import CommonButton from "@/app/shared/components/commonButton";
 
 export interface ProjectAdminContent {
     projectId: string,
@@ -276,7 +277,7 @@ export default function () {
                             </div>
                         </div>
 
-                        <button type="button" onClick={saveDetails}>Save</button>
+                        <CommonButton onClick={saveDetails} label="Save" />
                     </form>
                     <ItemCard itemData={data} />
                 </div>
@@ -295,10 +296,10 @@ export default function () {
                         </thead>
                         <tbody>
                             {
-                                data?.elements?.map(blog => (
+                                data?.elements?.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map(blog => (
                                     <tr key={blog.id}>
                                         <td>{blog.id}</td>
-                                        <td>{blog.order}</td>
+                                        <td><input type="number" value={blog.order ?? 0} onChange={e => editBlogEntry(blog.id, Number(e.target.value), "order")} /></td>
                                         <td>
                                             <select value={blog.type} onChange={(e) => editBlogEntry(blog.id, Number(e.target.value) as ProjectContentType, "type")} >
                                                 {Object.values(ProjectContentType)

@@ -19,7 +19,7 @@ export interface Project {
     genre: string,
 
     dateCreated?: number,
-    dateUpdate?: number,
+    dateUpdated?: number,
 
     status: number,
     type: ProjectType,

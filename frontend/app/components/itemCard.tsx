@@ -53,7 +53,7 @@ export default function ItemCard({
                         })}
                     </div>
                     <h2>{itemData?.gameName}</h2>
-                    <p>{itemData?.shortDescription}</p>
+                    <p className="legibleText" dangerouslySetInnerHTML={{ __html: itemData?.shortDescription ?? "" }} />
                 </div>
 
                 <div className="Component_ItemCard_Action">

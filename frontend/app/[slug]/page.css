@@ -10,6 +10,15 @@
 
     list-style-type: none;
     color: #2e5068;
+
+    cursor: pointer;
+}
+
+.Content_BreadCrumbs a {
+    text-decoration: none;
+    color: #2e5068;
+
+    transition: all .2s;
 }
 
 .Content_BreadCrumbs li:nth-child(1)::marker {
@@ -21,11 +30,11 @@
     color: rgba(74, 154, 184, 0.25);
 }
 
-.Content_BreadCrumbs li:last-child {
+.Content_BreadCrumbs>li:last-child>a {
     color: #5a8090;
 }
 
-.Content_BreadCrumbs li:hover {
+.Content_BreadCrumbs>li:hover>a {
     color: #5a8090;
 }
 

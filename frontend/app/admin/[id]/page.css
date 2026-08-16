@@ -45,3 +45,20 @@ div.admin_Project_Details_Tags {
     grid-template-columns: auto 500px;
     gap: 50px;
 }
+
+table {
+    width: 100%;
+}
+
+td,
+th {
+    border: solid 1px gray;
+}
+
+td>button {
+    width: 100%;
+}
+
+td>p {
+    text-align: center;
+}

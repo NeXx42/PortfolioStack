@@ -102,7 +102,7 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
                 .ThenInclude(p => p.Parameters)
             .Include(p => p.Releases.Where(r => r.Status != ReleaseStatus.Unpublished))
                 .ThenInclude(r => r.Downloads)
-            .Where(g => g.projectType == ProjectType.Game && g.Elements.Count() == 1)
+            .Where(g => g.projectType == ProjectType.Game)
             .AsQueryable();
 
         if (featured.HasValue)
@@ -136,8 +136,8 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
 
             if (launcherData != null)
             {
-                data.iconUrl = launcherData.Parameters.FirstOrDefault(p => !string.IsNullOrEmpty(p.ParameterValue2) && p.ParameterValue2.Equals("icon"))?.ParameterValue1;
-                data.imageUrls = launcherData.Parameters.Where(p => string.IsNullOrEmpty(p.ParameterValue2) || !p.ParameterValue2.Equals("icon"))?
+                data.iconUrl = launcherData.Parameters.FirstOrDefault(p => !string.IsNullOrEmpty(p.ParameterValue2) && p.ParameterValue2.Equals("icon", StringComparison.CurrentCultureIgnoreCase))?.ParameterValue1;
+                data.imageUrls = launcherData.Parameters.Where(p => string.IsNullOrEmpty(p.ParameterValue2) || !p.ParameterValue2.Equals("icon", StringComparison.CurrentCultureIgnoreCase))?
                     .Select(p => p.ParameterValue1!)
                     .ToArray() ?? [];
             }

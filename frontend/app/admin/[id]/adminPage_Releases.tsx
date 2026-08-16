@@ -159,10 +159,13 @@ export default function ({ content }: { content: Project }) {
             <div className="adminPage_Releases_Content_Download">
                 <div>
                     <a>Platform</a>
-                    <select value={download.platform} onChange={e => updateReleaseDownload(selectedReleasePlatform, "platform", e.target.value)}>
-                        <option value={"Windows"} label="Windows" />
-                        <option value={"Linux"} label="Linux" />
-                    </select>
+                    <div>
+                        <input type="text" value={download.platform} onChange={e => updateReleaseDownload(selectedReleasePlatform, "platform", e.target.value)} />
+                        <select value={download.platform} onChange={e => updateReleaseDownload(selectedReleasePlatform, "platform", e.target.value)}>
+                            <option value={"Windows"} label="Windows" />
+                            <option value={"Linux"} label="Linux" />
+                        </select>
+                    </div>
                 </div>
 
                 <div>

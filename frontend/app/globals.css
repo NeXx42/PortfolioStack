@@ -80,3 +80,7 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+.legibleText {
+  font-family: "IM Fell English", Georgia, serif;
+}

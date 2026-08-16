@@ -10,6 +10,6 @@ export default function CommonButton(props: Props) {
 
 
     return (
-        <button className="Common_Button" onClick={props.onClick}>{props.label}</button>
+        <button type="button" className="Common_Button" onClick={props.onClick}>{props.label}</button>
     );
 }

@@ -6,7 +6,7 @@ import Navbar from "@shared/components/navbar";
 import Footer from "@shared/components/footer";
 
 import { Project } from "@shared/types";
-import { ProjectContentType } from "@shared/enums";
+import { ProjectContentType, ProjectType } from "@shared/enums";
 import type { ProjectContent, ProjectRelease } from "@shared/types";
 
 import Content_About from "./Content_About";
@@ -61,9 +61,9 @@ export default async function ({ params }: { params: { slug: string } }) {
                 <div className="Content_Title_Tagline">
                     <span>By Nexx42</span>
                     <div />
-                    <span>Released {content?.gameName}</span>
+                    <span>Released {content?.dateCreated ? new Date(content.dateCreated * 1000).toLocaleDateString() : "-"}</span>
                     <div />
-                    <span>Updated {content?.gameName}</span>
+                    <span>Updated {content?.dateUpdated ? new Date(content.dateUpdated * 1000).toLocaleDateString() : "-"}</span>
                 </div>
             </section>
         )
@@ -104,9 +104,8 @@ export default async function ({ params }: { params: { slug: string } }) {
 
                 <div className="Content_ContentFitter">
                     <ol className="Content_BreadCrumbs">
-                        <li><a>Home</a></li>
-                        <li><a>Projects</a></li>
-                        <li><a>Games</a></li>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/#projects">{ProjectType[content?.type ?? 0]}</a></li>
                         <li><a>{content?.gameName}</a></li>
                     </ol>
 
