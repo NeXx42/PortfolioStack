@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using AuthEngineShared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +5,6 @@ using Microsoft.Extensions.Options;
 using Portfolio.Api.Helpers;
 using Portfolio.Api.Services;
 using Portfolio.Api.Types;
-using Portfolio.Core.Data;
 
 namespace Portfolio.Api.Controllers;
 
@@ -170,6 +168,7 @@ public class UserController : ControllerBase
         {
             HttpOnly = true,
             Secure = true,
+            Domain = _options.cookieDomain,
             SameSite = SameSiteMode.Strict,
             Expires = DateTimeOffset.UtcNow.AddHours(1)
         });

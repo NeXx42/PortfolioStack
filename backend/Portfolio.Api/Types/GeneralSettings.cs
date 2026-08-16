@@ -6,4 +6,5 @@ public class GeneralSettings
     public string? ContentStorageFolder { get; set; } = string.Empty;
 
     public string releaseEngineUrl { get; set; } = string.Empty;
+    public string cookieDomain { get; set; } = string.Empty;
 }
