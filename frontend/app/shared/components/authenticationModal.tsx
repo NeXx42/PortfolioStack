@@ -108,7 +108,7 @@ export default function AuthenticationModal(props: Props) {
                             </div>
 
                             <label>{error}</label>
-                            <CommonButton label="Login" />
+                            <CommonButton type="submit" label="Login" />
                         </form>
                     ) : (
                         <form onSubmit={handleSignup} id="Component_AuthenticationModal_signup" className="Component_AuthenticationModal_Form">
@@ -133,7 +133,7 @@ export default function AuthenticationModal(props: Props) {
                             </div>
 
                             <label>{error ?? emailVerificationError}</label>
-                            <CommonButton label="Signup" />
+                            <CommonButton type="submit" label="Signup" />
                         </form>
                     )
                 }
