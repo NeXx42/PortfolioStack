@@ -66,7 +66,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
             "https://nexx42.info",
-            "https://www.nexx42.info"
+            "https://www.nexx42.info",
+            "https://upload.nexx42.info"
         )
         .AllowAnyHeader()
         .AllowAnyMethod();
