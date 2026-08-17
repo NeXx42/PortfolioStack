@@ -90,11 +90,11 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
         return null;
     }
 
-    public async Task<GameLauncherMetadata[]> GetGameLauncherMetadata(UserObject? usr, Guid? featured, int? limit)
+    public async Task<List<GameLauncherMetadata>> GetGameLauncherMetadata(UserObject? usr, Guid? featured, int? limit)
     {
         string cacheKey = $"Content_Games_{usr?.Id}";
 
-        if (_cache.TryGetValue(cacheKey, out GameLauncherMetadata[]? games))
+        if (_cache.TryGetValue(cacheKey, out List<GameLauncherMetadata>? games))
             return games ?? [];
 
         var query = SearchForProjectWithUser(usr)
@@ -114,14 +114,21 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
         if (limit.HasValue)
             query = query.Take(limit.Value);
 
-        GameLauncherMetadata[] content = (await query.ToArrayAsync()).Select(Map).ToArray();
-        _cache.SetIfNotExists(cacheKey, content);
+        ProjectModel[] projects = await query.ToArrayAsync();
+        List<GameLauncherMetadata> content = new(projects.Length);
 
+        foreach (ProjectModel model in projects)
+        {
+            if (TryMap(model, out GameLauncherMetadata data))
+                content.Add(data);
+        }
+
+        _cache.SetIfNotExists(cacheKey, content);
         return content;
 
-        GameLauncherMetadata Map(ProjectModel model)
+        bool TryMap(ProjectModel model, out GameLauncherMetadata data)
         {
-            var data = new GameLauncherMetadata()
+            data = new GameLauncherMetadata()
             {
                 id = model.id,
                 gameName = model.name,
@@ -140,9 +147,11 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
                 data.imageUrls = launcherData.Parameters.Where(p => string.IsNullOrEmpty(p.ParameterValue2) || !p.ParameterValue2.Equals("icon", StringComparison.CurrentCultureIgnoreCase))?
                     .Select(p => p.ParameterValue1!)
                     .ToArray() ?? [];
+
+                return true;
             }
 
-            return data;
+            return false;
         }
 
         GameLauncherMetadata.Releases MapRelease(ReleaseModel release)
