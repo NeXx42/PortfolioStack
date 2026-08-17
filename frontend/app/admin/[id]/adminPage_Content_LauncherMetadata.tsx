@@ -2,16 +2,27 @@ import { useState } from "react";
 import { ProjectAdminContent } from "./page";
 import Content_Screenshots from "@/app/[slug]/Content_Screenshots";
 
-import "./adminPage_Content_LauncherMetadata.css"
-import { ProjectContentParam } from "@/app/shared/types";
+import { ProjectContent, ProjectContentParam } from "@/app/shared/types";
 import CommonButton from "@/app/shared/components/commonButton";
 
-type MetadataType = "Screenshot" | "Icon";
-const MetadataTypes: MetadataType[] = ["Screenshot", "Icon"];
+import "./adminPage_Content_LauncherMetadata.css"
+
+const MetadataType = {
+    Icon: "Icon",
+    Screenshot: "Screenshot",
+    About: "About",
+} as const;
+
+type MetadataType = typeof MetadataType[keyof typeof MetadataType];
 
 export default function (props: ProjectAdminContent) {
     const [data, setData] = useState(props.content)
     const [newIndex, setNewIndex] = useState(-1);
+
+    const fakeScreenshotData: ProjectContent = {
+        ...data,
+        elements: data.elements?.filter(e => e.value2 === MetadataType.Screenshot)
+    }
 
     const addScreenshot = () => {
         setNewIndex(prev => prev -= 1)
@@ -22,7 +33,7 @@ export default function (props: ProjectAdminContent) {
                 id: newIndex,
                 order: ((prev.elements ?? []).map(e => e.order).sort((a, b) => b - a)[0] ?? 0) + 1,
                 value1: "",
-                value2: "",
+                value2: MetadataType.About,
                 value3: ""
             }]
         }))
@@ -51,7 +62,7 @@ export default function (props: ProjectAdminContent) {
     return (
         <div>
             <div className="admin_Project_Screenshots_Preview">
-                <Content_Screenshots content={data} />
+                <Content_Screenshots content={fakeScreenshotData} />
             </div>
 
             <div className="admin_Project_Screenshots">
@@ -70,13 +81,23 @@ export default function (props: ProjectAdminContent) {
                             <td>{d.order}</td>
                             <td>
                                 <div>
-                                    <input value={d.value1} onChange={e => updateProp(d.id, "value1", e.target.value)}></input>
-                                    <input type="file" onChange={e => updateProp(d.id, "value1", URL.createObjectURL(e.target.files![0]))}></input>
+                                    {
+                                        d.value2 !== MetadataType.About ?
+                                            (
+                                                <>
+                                                    <input value={d.value1} onChange={e => updateProp(d.id, "value1", e.target.value)}></input>
+                                                    <input type="file" onChange={e => updateProp(d.id, "value1", URL.createObjectURL(e.target.files![0]))}></input>
+                                                </>
+                                            ) : (
+                                                <textarea value={d.value1} onChange={e => updateProp(d.id, "value1", e.target.value)} />
+                                            )
+                                    }
+
                                 </div>
                             </td>
                             <td>
                                 <select value={d.value2} onChange={e => updateProp(d.id, "value2", e.target.value)}>
-                                    {MetadataTypes.map(m => <option key={m} value={m}>{m}</option>)}
+                                    {Object.keys(MetadataType).map(m => <option key={m} value={m}>{m}</option>)}
                                 </select>
                             </td>
                             <td><button onClick={() => removeScreenshot(d.id)}>Remove</button></td>

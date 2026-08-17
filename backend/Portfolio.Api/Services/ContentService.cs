@@ -143,15 +143,18 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
 
             if (launcherData != null)
             {
-                data.iconUrl = launcherData.Parameters.FirstOrDefault(p => !string.IsNullOrEmpty(p.ParameterValue2) && p.ParameterValue2.Equals("icon", StringComparison.CurrentCultureIgnoreCase))?.ParameterValue1;
-                data.imageUrls = launcherData.Parameters.Where(p => string.IsNullOrEmpty(p.ParameterValue2) || !p.ParameterValue2.Equals("icon", StringComparison.CurrentCultureIgnoreCase))?
-                    .Select(p => p.ParameterValue1!)
-                    .ToArray() ?? [];
+                data.iconUrl = GetParametersOfType(GameLauncherMetadataParameterType.Icon).FirstOrDefault()?.ParameterValue1;
+                data.imageUrls = GetParametersOfType(GameLauncherMetadataParameterType.Screenshot)?.Select(p => p.ParameterValue1!).ToArray() ?? [];
+                data.about = GetParametersOfType(GameLauncherMetadataParameterType.About)?.FirstOrDefault()?.ParameterValue1 ?? data.about;
 
                 return true;
+
+                IEnumerable<ProjectElementParameterModel> GetParametersOfType(GameLauncherMetadataParameterType typeSearch)
+                    => launcherData.Parameters.Where(p => p.ParameterValue2?.Equals(typeSearch.ToString(), StringComparison.CurrentCultureIgnoreCase) ?? false);
             }
 
             return false;
+
         }
 
         GameLauncherMetadata.Releases MapRelease(ReleaseModel release)
