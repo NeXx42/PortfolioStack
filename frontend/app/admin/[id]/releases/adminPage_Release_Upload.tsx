@@ -29,8 +29,6 @@ export default function ({ projectId, releaseId, platform }: { projectId: string
             const relativePath = uploadFiles[i].webkitRelativePath.split("/").slice(1).join("/");
             const url = `${CLIENT_UPLOAD_URL}/api/Releases/${sessionId}/Upload?relativePath=${encodeURIComponent(relativePath)}`;
 
-            await new Promise(resolve => setTimeout(resolve, 10));
-
             const response = await fetch(url, {
                 method: "PUT",
                 credentials: "include",

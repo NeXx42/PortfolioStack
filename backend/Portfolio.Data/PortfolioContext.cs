@@ -20,6 +20,8 @@ public class PortfolioContext : DbContext
 
     public DbSet<LinkModel> Links { get; set; }
 
+    public DbSet<FileModel> Files => Set<FileModel>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<ReleaseDownloadModel>().HasKey(d => new { d.ProjectId, d.ReleaseId, d.Platform });

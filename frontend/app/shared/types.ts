@@ -82,3 +82,9 @@ export interface Link {
     customColour?: string,
     icon?: string
 }
+
+export interface ServerFile {
+    id: string,
+    fileName: string,
+    size: number
+}

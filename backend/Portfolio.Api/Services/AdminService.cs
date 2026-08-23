@@ -11,6 +11,7 @@ namespace Portfolio.Api.Services;
 public class AdminService
 {
     private const string IMAGE_URI_PREFIX = "images";
+    private const string IMAGE_STORAGE_SUBFOLDER = "Images";
 
     private CacheService _cache;
     private PortfolioContext _portfolioContext;
@@ -44,7 +45,11 @@ public class AdminService
             Directory.CreateDirectory(_settings.ContentStorageFolder);
 
         string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-        string path = Path.Combine(_settings.ContentStorageFolder, fileName);
+
+        string root = Path.Combine(_settings.ContentStorageFolder, IMAGE_STORAGE_SUBFOLDER);
+        Directory.CreateDirectory(root);
+
+        string path = Path.Combine(root, fileName);
 
         using (var stream = new FileStream(path, FileMode.Create))
         {

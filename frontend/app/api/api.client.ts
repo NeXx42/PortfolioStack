@@ -1,6 +1,6 @@
 "use client"
 
-import type { Project, User, ProjectTag, ProjectContent, ProjectRelease } from "@shared/types";
+import type { Project, User, ProjectTag, ProjectContent, ProjectRelease, ServerFile } from "@shared/types";
 import type { ProjectType } from "@shared/enums";
 
 import { post, get, postForm } from "./api.shared";
@@ -94,4 +94,7 @@ export async function releases_PrimeReleaseEngineUpload(projectId: string, relea
 
 export async function releases_CompleteReleaseEngine(sessionGuid: string) {
     return (await post(`Releases/${sessionGuid}/Complete`))!
+}
+export async function releases_ServerFiles(): Promise<ServerFile[]> {
+    return (await get(`Releases/Uploads`))!
 }

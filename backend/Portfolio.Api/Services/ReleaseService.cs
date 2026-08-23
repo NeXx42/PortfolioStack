@@ -1,4 +1,5 @@
 using System.Text.Json;
+using AuthEngineShared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Portfolio.Api.Types;
@@ -10,6 +11,8 @@ namespace Portfolio.Api.Services;
 
 public class ReleaseService(PortfolioContext portfolioContext, IOptions<GeneralSettings> settings)
 {
+    private const string FILE_UPLOAD_SUBFOLDER = "Files";
+
     public async Task CreateOrUpdateRelease(Guid projectId, ReleaseDTO data)
     {
         ReleaseModel model;
@@ -229,5 +232,63 @@ public class ReleaseService(PortfolioContext portfolioContext, IOptions<GeneralS
 
             return null;
         }
+    }
+
+    public async Task<Guid> UploadGenericFile(string hash, long size, long compressedSize, string compression, string tempPath, string fileName)
+    {
+        if (portfolioContext.Files.Any(f => f.Hash.Equals(hash)))
+            throw new Exception("File already exists");
+
+        Guid id = Guid.NewGuid();
+
+        string target = GetGenericFilePath(id);
+        File.Move(tempPath, target);
+
+        FileModel file = new FileModel
+        {
+            Id = id,
+            Hash = hash,
+
+            FileName = fileName,
+
+            Size = size,
+            CompressedSize = compressedSize,
+            CompressionType = compression,
+
+            TimeUploaded = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+        };
+
+        await portfolioContext.AddAsync(file);
+        await portfolioContext.SaveChangesAsync();
+
+        return id;
+    }
+
+    public async Task<FileDto[]> GetGenericFiles()
+    {
+        var files = await portfolioContext.Files.ToArrayAsync();
+        return files.Select(FileDto.Map).ToArray();
+    }
+
+    public string GetGenericFilePath(Guid id)
+    {
+        if (string.IsNullOrEmpty(settings.Value.ContentStorageFolder))
+            throw new Exception("Content folder not set");
+
+        string root = Path.Combine(settings.Value.ContentStorageFolder, FILE_UPLOAD_SUBFOLDER);
+        Directory.CreateDirectory(root);
+
+        return Path.Combine(root, id.ToString());
+    }
+
+    public async Task<FileDto?> GetGenericFileInfo(UserObject? usr, Guid id)
+    {
+        // auth stuff
+        FileModel? file = await portfolioContext.Files.FirstOrDefaultAsync(f => f.Id == id);
+
+        if (file == null)
+            return null;
+
+        return FileDto.Map(file);
     }
 }

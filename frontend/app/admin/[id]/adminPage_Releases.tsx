@@ -5,14 +5,17 @@ import useRequest from "@/app/hooks/useRequest"
 
 import { ReactNode, useState } from "react";
 
-import "./adminPage_Releases.css"
 import AdminPage_Release_GithubDerive from "./releases/adminPage_Release_GithubDerive";
 import AdminPage_Release_Upload from "./releases/adminPage_Release_Upload";
 
-type Popups = "None" | "Github derive" | "Uploading";
+import "./adminPage_Releases.css"
+import AdminPage_Release_ServerFile from "./releases/adminPage_Release_ServerFile";
+
+type Popups = "None" | "Github derive" | "ReleaseEngineUpload" | "ServerUpload";
 
 export default function ({ content }: { content: Project }) {
     const { data } = useRequest(a => a.admin_GetProjectReleases(content.id));
+    const { data: serverFiles } = useRequest(a => a.releases_ServerFiles());
 
     const [selectedRelease, setSelectedRelease] = useState<ProjectRelease | undefined>(undefined)
     const [selectedReleasePlatform, setSelectedReleasePlatform] = useState(0)
@@ -97,8 +100,11 @@ export default function ({ content }: { content: Project }) {
             case "Github derive":
                 return wrap(<AdminPage_Release_GithubDerive projectId={content.id} release={selectedRelease!} />)
 
-            case "Uploading":
+            case "ReleaseEngineUpload":
                 return wrap(<AdminPage_Release_Upload projectId={content.id} releaseId={selectedRelease!.versionId} platform={selectedRelease?.downloads[selectedReleasePlatform].platform!} />)
+
+            case "ServerUpload":
+                return wrap(<AdminPage_Release_ServerFile />)
         }
 
         return (<></>)
@@ -175,18 +181,22 @@ export default function ({ content }: { content: Project }) {
 
                 <div>
                     <a>Download link</a>
-                    <input value={download.downloadLink} onChange={e => updateReleaseDownload(selectedReleasePlatform, "downloadLink", e.target.value)} />
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px" }}>
+                        <input value={download.downloadLink} onChange={e => updateReleaseDownload(selectedReleasePlatform, "downloadLink", e.target.value)} />
+                        <select value={""} onChange={e => updateReleaseDownload(selectedReleasePlatform, "downloadLink", `api/Releases/${e.target.value}/Download`)}>
+                            <option />
+                            {serverFiles?.map(f => <option value={f.id}>{f.fileName}</option>)}
+                        </select>
+                        <button onClick={() => setPopup("ServerUpload")}>Upload</button>
+                    </div>
                 </div>
-
                 <div>
                     <a>Release engine link</a>
-                    <input value={download.releaseEngineManifestLink} onChange={e => updateReleaseDownload(selectedReleasePlatform, "releaseEngineManifestLink", e.target.value)} />
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 100px" }}>
+                        <input value={download.releaseEngineManifestLink} onChange={e => updateReleaseDownload(selectedReleasePlatform, "releaseEngineManifestLink", e.target.value)} />
+                        <button onClick={() => setPopup("ReleaseEngineUpload")}>Upload</button>
+                    </div>
                 </div>
-                <div>
-                    <a>Upload to release engine</a>
-                    <button onClick={() => setPopup("Uploading")}>Open</button>
-                </div>
-
                 <div>
                     <a>Size (bytes)</a>
                     <input value={download.size} onChange={e => updateReleaseDownload(selectedReleasePlatform, "size", Number.parseInt(e.target.value))} />
