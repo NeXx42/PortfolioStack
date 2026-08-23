@@ -96,5 +96,5 @@ export async function releases_CompleteReleaseEngine(sessionGuid: string) {
     return (await post(`Releases/${sessionGuid}/Complete`))!
 }
 export async function releases_ServerFiles(): Promise<ServerFile[]> {
-    return (await get(`Releases/Uploads`))!
+    return (await get(`Releases/ServerFiles`))!
 }

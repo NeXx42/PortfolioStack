@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using AuthEngineShared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 using Portfolio.Api.Helpers;
 using Portfolio.Api.Services;
@@ -13,7 +14,7 @@ namespace Portfolio.Api.Controllers;
 
 [ApiController]
 [Route("api/Releases")]
-public class ReleaseController(ReleaseService _service, CacheService _cache, IOptions<GeneralSettings> _settings) : ControllerBase
+public class ReleaseController(ReleaseService _service, CacheService _cache, IOptions<GeneralSettings> _settings, IContentTypeProvider _contentTypeProvider) : ControllerBase
 {
     [HttpPost("{projectId}/{releaseId}")]
     [Authorize(Roles = nameof(UserRoles.Admin))]
@@ -111,7 +112,7 @@ public class ReleaseController(ReleaseService _service, CacheService _cache, IOp
         }
     }
 
-    [HttpPut("Upload")]
+    [HttpPut("ServerFile/Upload")]
     [Authorize(Roles = nameof(UserRoles.Admin))]
     [RequestSizeLimit(10L * (1024 * 1024 * 1024))]
     public async Task<IResult> UploadGenericFile([FromQuery] string fileName, CancellationToken cancellationToken)
@@ -153,7 +154,7 @@ public class ReleaseController(ReleaseService _service, CacheService _cache, IOp
         }
     }
 
-    [HttpGet("Uploads")]
+    [HttpGet("ServerFiles")]
     [Authorize(Roles = nameof(UserRoles.Admin))]
     public async Task<IResult> GetGenericFiles()
     {
@@ -168,7 +169,7 @@ public class ReleaseController(ReleaseService _service, CacheService _cache, IOp
         }
     }
 
-    [HttpGet("{FileId}/Download")]
+    [HttpGet("ServerFile/{FileId}")]
     public async Task<IResult> DownloadGenericFile(Guid fileId)
     {
         UserObject? usr = await SessionHelper.GetSessionUser(User);
@@ -179,31 +180,33 @@ public class ReleaseController(ReleaseService _service, CacheService _cache, IOp
         if (file == null || !System.IO.File.Exists(filePath))
             return Results.NotFound();
 
-        Func<Task<IResult>> decompressionTask = Uncompressed;
+        Func<Stream> buildResult = Uncompressed;
 
         switch (file.compression ?? "")
         {
             case "gzip":
-                decompressionTask = Gzip;
+                buildResult = Gzip;
                 break;
         }
 
-        return await decompressionTask();
-
-        async Task<IResult> Gzip()
+        if (!_contentTypeProvider.TryGetContentType(file.fileName, out string? contentType))
         {
-            await using FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            await using GZipStream gzip = new GZipStream(stream, CompressionMode.Decompress);
-
-            return Results.File(gzip);
+            contentType = "application/octet-stream";
         }
 
-        async Task<IResult> Uncompressed()
-        {
-            await using FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            await using GZipStream gzip = new GZipStream(stream, CompressionMode.Decompress);
+        return Results.File(buildResult(), contentType, file.fileName);
 
-            return Results.File(gzip);
+        Stream Gzip()
+        {
+            FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            GZipStream gzip = new GZipStream(stream, CompressionMode.Decompress);
+            return gzip;
+        }
+
+        Stream Uncompressed()
+        {
+            FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return stream;
         }
     }
 }

@@ -183,7 +183,7 @@ export default function ({ content }: { content: Project }) {
                     <a>Download link</a>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px" }}>
                         <input value={download.downloadLink} onChange={e => updateReleaseDownload(selectedReleasePlatform, "downloadLink", e.target.value)} />
-                        <select value={""} onChange={e => updateReleaseDownload(selectedReleasePlatform, "downloadLink", `api/Releases/${e.target.value}/Download`)}>
+                        <select value={""} onChange={e => updateReleaseDownload(selectedReleasePlatform, "downloadLink", `api/Releases/ServerFile/${e.target.value}`)}>
                             <option />
                             {serverFiles?.map(f => <option value={f.id}>{f.fileName}</option>)}
                         </select>

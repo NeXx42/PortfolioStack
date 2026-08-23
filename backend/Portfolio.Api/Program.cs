@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text;
 using AuthEngineMiddleman;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -103,6 +104,8 @@ builder.Services.AddScoped<ReleaseService>();
 builder.Services.AddScoped<ContentService>();
 builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<MailService>();
+
+builder.Services.AddSingleton<IContentTypeProvider, FileExtensionContentTypeProvider>();
 
 builder.Services.AddMemoryCache();
 

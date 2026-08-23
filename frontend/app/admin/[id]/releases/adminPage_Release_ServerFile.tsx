@@ -15,7 +15,7 @@ export default function () {
 
         setStatus("uploading");
 
-        const url = `${CLIENT_UPLOAD_URL}/api/Releases/Upload?fileName=${encodeURIComponent(uploadFile.name)}`;
+        const url = `${CLIENT_UPLOAD_URL}/api/Releases/ServerFile/Upload?fileName=${encodeURIComponent(uploadFile.name)}`;
         const response = await fetch(url, {
             method: "PUT",
             credentials: "include",
