@@ -1,9 +1,5 @@
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 using AuthEngineMiddleman;
-using Microsoft.Extensions.Options;
-using Portfolio.Api.Types;
+using AuthEngineShared;
 
 namespace Portfolio.Api.Services;
 
@@ -20,8 +16,11 @@ public class AuthenticationService : IAuthenticationService
         _middleman = middleman;
     }
 
-    public async Task<string> CreateUserEntry(string email, string displayName, string password) => await _middleman.Register(email, displayName, password);
-    public async Task<string> Login(string email, string password) => await _middleman.Authenticate(email, password);
+    public async Task<string?> Login(string email, string password) => await _middleman.Authenticate(email, password);
+    public async Task<string?> CreateUserEntry(string email, string displayName, string password) => await _middleman.Register(email, displayName, password);
+
+    public async Task<UserObject[]> GetUserSummaries() => await _middleman.GetUsers();
+
 
     public void ValidateCreation(string email, string displayName, string password, long verification)
     {

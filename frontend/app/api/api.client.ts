@@ -1,6 +1,6 @@
 "use client"
 
-import type { Project, User, ProjectTag, ProjectContent, ProjectRelease, ServerFile } from "@shared/types";
+import type { Project, User, ProjectTag, ProjectContent, ProjectRelease, ServerFile, UserSummary, ProjectEntitlement } from "@shared/types";
 import type { ProjectType } from "@shared/enums";
 
 import { post, get, postForm } from "./api.shared";
@@ -86,6 +86,10 @@ export async function admin_SaveProjectRelease(projectId: string, release: Proje
     return (await post(`admin/project/${projectId}/release`, release))!
 }
 
+export async function admin_GetUsers(): Promise<UserSummary[]> {
+    return (await get(`admin/users`))!
+}
+
 // releases
 
 export async function releases_PrimeReleaseEngineUpload(projectId: string, releaseId: number, platform: string): Promise<string> {
@@ -97,4 +101,18 @@ export async function releases_CompleteReleaseEngine(sessionGuid: string) {
 }
 export async function releases_ServerFiles(): Promise<ServerFile[]> {
     return (await get(`Releases/ServerFiles`))!
+}
+
+// entitlements
+
+export async function admin_GetEntitlements(projectId: string): Promise<ProjectEntitlement[]> {
+    return (await get<ProjectEntitlement[]>(`Entitlements/${projectId}`))!
+}
+
+export async function admin_UseEntitlements(projectId: string) {
+    return (await post<ProjectEntitlement[]>(`Entitlements/${projectId}/Create`))!
+}
+
+export async function admin_SaveEntitlements(projectId: string, entitlements: ProjectEntitlement[]) {
+    return (await post<ProjectEntitlement[]>(`Entitlements/${projectId}`, entitlements))!
 }

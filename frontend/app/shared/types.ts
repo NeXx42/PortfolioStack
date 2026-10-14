@@ -88,3 +88,16 @@ export interface ServerFile {
     fileName: string,
     size: number
 }
+
+export interface UserSummary {
+    id: string;
+    displayName: string;
+    email: string;
+    role: number;
+}
+
+export interface ProjectEntitlement {
+    key: string;
+    value?: string;
+    type: number;
+}

@@ -26,7 +26,7 @@ export default function <T>(req?: (api: typeof localApi) => Promise<T>) {
             setData(dat);
         }
         catch (e: any) {
-            setError(e.Message);
+            setError(e.message);
         }
         finally {
             setLoading(false);

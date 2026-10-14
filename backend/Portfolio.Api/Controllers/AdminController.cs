@@ -11,7 +11,7 @@ namespace Portfolio.Api.Controllers;
 [ApiController]
 [Authorize(Roles = nameof(UserRoles.Admin))]
 [Route("api/admin")]
-public class AdminController(ReleaseService _releases, AdminService _admin, CacheService _cache) : ControllerBase
+public class AdminController(ReleaseService _releases, IAuthenticationService _authService, AdminService _admin, CacheService _cache) : ControllerBase
 {
 
     [HttpGet("clearCache")]
@@ -176,6 +176,20 @@ public class AdminController(ReleaseService _releases, AdminService _admin, Cach
         {
             await _releases.CreateOrUpdateRelease(projectId, release);
             return Results.Ok();
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
+
+    [HttpGet("users")]
+    public async Task<IResult> GetUsers()
+    {
+        try
+        {
+            var res = await _authService.GetUserSummaries();
+            return Results.Json(res);
         }
         catch (Exception e)
         {

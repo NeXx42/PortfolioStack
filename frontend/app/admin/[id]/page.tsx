@@ -18,6 +18,7 @@ import adminPage_Content_Screenshots from "./adminPage_Content_Screenshots";
 import adminPage_Content_LauncherMetadata from "./adminPage_Content_LauncherMetadata";
 import AdminPage_Releases from "./adminPage_Releases";
 import CommonButton from "@/app/shared/components/commonButton";
+import AdminPage_Entitlements from "./adminPage_Entitlements";
 
 export interface ProjectAdminContent {
     projectId: string,
@@ -46,7 +47,6 @@ export default function () {
 
     const [data, setData] = useState<Project | undefined>(undefined);
     const [editingBlogEntry, setEditingBlogEntry] = useState<ProjectContent | undefined>(undefined);
-    const [editingReleases, setEditingReleases] = useState(false)
 
     useEffect(() => {
         setData(originalData);
@@ -157,16 +157,6 @@ export default function () {
         )
     }
 
-    const drawEditingReleases = (): ReactNode => {
-        return (
-            <div className="admin_Project_Popup" onClick={() => setEditingReleases(false)}>
-                <div className="admin_Project_PopupContent" onClick={e => e.stopPropagation()}>
-                    <AdminPage_Releases content={data!} />
-                </div>
-            </div>
-        )
-    }
-
     const saveContent = async (projectId: string, contentId: number, data: ProjectContent) => {
         const form = new FormData();
 
@@ -208,7 +198,7 @@ export default function () {
 
             <div className="admin_Project">
                 <div className="admin_Project_DetailsWrapper">
-                    <form className="admin_Project_Details" >
+                    <form className="admin_Project_Details container" >
                         <h1>Details</h1>
                         <div>
                             <a>Status</a>
@@ -282,9 +272,17 @@ export default function () {
                     <ItemCard itemData={data} />
                 </div>
 
-                <button onClick={() => setEditingReleases(true)}>Releases</button>
+                <div className="container">
+                    <h1>Releases</h1>
+                    <AdminPage_Releases content={data!} />
+                </div>
 
-                <div>
+                <div className="container">
+                    <h1>Entitlements</h1>
+                    <AdminPage_Entitlements id={data.id} />
+                </div>
+
+                <div className="container">
                     <h1>Blog content</h1>
                     <table>
                         <thead>
@@ -321,7 +319,6 @@ export default function () {
                 </div>
 
                 {editingBlogEntry && drawBlogEdit()}
-                {editingReleases && drawEditingReleases()}
             </div>
         </>
     )

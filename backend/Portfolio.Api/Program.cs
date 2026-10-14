@@ -86,7 +86,7 @@ builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("E
 
 builder.Services.AddSingleton<CacheService>();
 
-if (builder.Environment.IsDevelopment())
+if (false && builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<IAuthenticationService, AuthenticationMockService>();
 }
@@ -100,6 +100,9 @@ else
     builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 }
 
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped(sp => new EntitlementService(builder.Configuration["Services:LicenceEngine"]!, sp.GetRequiredService<IHttpContextAccessor>()));
 builder.Services.AddScoped<ReleaseService>();
 builder.Services.AddScoped<ContentService>();
 builder.Services.AddScoped<AdminService>();

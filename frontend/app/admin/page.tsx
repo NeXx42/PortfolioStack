@@ -14,6 +14,7 @@ import AdminPage_Controls from "./adminPage_Controls"
 import AdminPage_Content from "./adminPage_Content"
 
 import "./admin.css"
+import AdminPage_Users from "./adminPage_Users";
 
 export default function () {
     const { authenticatedUser } = useAuth();
@@ -27,6 +28,7 @@ export default function () {
     const pages = [
         { content: <AdminPage_Controls />, name: "Controls" },
         { content: <AdminPage_Content />, name: "Content" },
+        { content: <AdminPage_Users />, name: "Users" },
     ]
 
     const [currentPage, setCurrentPage] = useState(0);

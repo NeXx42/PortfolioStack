@@ -4,7 +4,7 @@
     display: flex;
     flex-direction: column;
 
-    gap: 50px;
+    gap: 10px;
 }
 
 .admin_Project_Details {
@@ -16,6 +16,11 @@
 .admin_Project_Details>div {
     display: grid;
     grid-template-columns: 150px auto;
+}
+
+.admin_Project_Details>button {
+    align-self: flex-end;
+    justify-self: flex-end;
 }
 
 div.admin_Project_Details_Tags {
@@ -43,7 +48,7 @@ div.admin_Project_Details_Tags {
 .admin_Project_DetailsWrapper {
     display: grid;
     grid-template-columns: auto 500px;
-    gap: 50px;
+    gap: 10px;
 }
 
 table {
@@ -61,4 +66,16 @@ td>button {
 
 td>p {
     text-align: center;
+}
+
+.container {
+    padding: 10px;
+
+    outline: 1px solid #7ec8e31f;
+    background-color: #0b0d17d1;
+    border-radius: 8px;
+}
+
+.container>h1 {
+    margin: 5px 5px;
 }

@@ -4,7 +4,6 @@ using AuthEngineShared;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Portfolio.Api.Types;
-using Portfolio.Core.Data;
 
 namespace Portfolio.Api.Services;
 
@@ -18,6 +17,22 @@ public class AuthenticationMockService : IAuthenticationService
     }
 
     public Task<string> CreateUserEntry(string email, string displayName, string password) { return Task.FromResult(CreateJWT()); }
+
+    public Task<UserObject[]> GetUserSummaries() => Task.FromResult((UserObject[])[
+        new UserObject{
+            Id = Guid.NewGuid(),
+            DisplayName = "Mocked Admin",
+            Email = "mock_admin@gmail.com",
+            Role = UserRoles.Admin
+        },
+        new UserObject{
+            Id = Guid.NewGuid(),
+            DisplayName = "Mocked",
+            Email = "mock@gmail.com",
+            Role = UserRoles.None
+        },
+    ]);
+
     public Task<string> Login(string email, string password) => Task.FromResult(CreateJWT());
 
     public void ValidateCreation(string email, string displayName, string password, long verification) { }
