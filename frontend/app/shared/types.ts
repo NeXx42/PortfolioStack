@@ -6,7 +6,7 @@ export type ReleaseStatus = typeof releaseStatus[number];
 export interface User {
     userId: string,
     displayName: string
-    role: UserRoles
+    role: number
 }
 
 export interface Project {
@@ -100,4 +100,9 @@ export interface ProjectEntitlement {
     key: string;
     value?: string;
     type: number;
+}
+
+export interface UserEntitlements {
+    key: string;
+    value: string | undefined;
 }

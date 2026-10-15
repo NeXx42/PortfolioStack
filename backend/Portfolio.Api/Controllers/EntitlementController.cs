@@ -62,4 +62,33 @@ public class EntitlementController(EntitlementService _service) : ControllerBase
         }
     }
 
+    [HttpGet("{ProjectId}/UserEntitlements")]
+    [Authorize(Roles = nameof(UserRoles.Admin))]
+    public async Task<IResult> GetUserEntitlements(Guid projectId, [FromQuery] Guid userId)
+    {
+        try
+        {
+            var res = await _service.GetUserEntitlements(projectId, userId);
+            return Results.Json(res);
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
+
+    [HttpPost("{ProjectId}/UserEntitlements")]
+    [Authorize(Roles = nameof(UserRoles.Admin))]
+    public async Task<IResult> UpdateUserEntitlements(Guid projectId, [FromQuery] Guid userId, [FromBody] UserEntitlementInfo[] entitlements)
+    {
+        try
+        {
+            await _service.UpdateUserEntitlements(projectId, userId, entitlements);
+            return Results.Ok();
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
 }

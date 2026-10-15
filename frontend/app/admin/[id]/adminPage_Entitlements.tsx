@@ -6,12 +6,7 @@ import useRequest from "@/app/hooks/useRequest"
 import CommonButton from "@/app/shared/components/commonButton";
 import { ProjectEntitlement } from "@/app/shared/types";
 import { useEffect, useState } from "react";
-
-type EntitlementKey = "Owned" | "Early Access";
-const EntitlementKeys: EntitlementKey[] = ["Owned", "Early Access"]
-
-type EntitlementType = "Default" | "AutoGrantedGuid" | "HardwareKeyed"
-const EntitlementTypes: EntitlementType[] = ["Default", "AutoGrantedGuid", "HardwareKeyed"]
+import { EntitlementKeys, EntitlementTypes } from "@/app/shared/enums";
 
 export default function ({ id }: { id: string }) {
     const { data, loading, error } = useRequest(a => a.admin_GetEntitlements(id));

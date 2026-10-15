@@ -40,6 +40,15 @@ public class EntitlementService : IDisposable
         await SendAsync(HttpMethod.Post, Path.Combine("licence", projectId.ToString(), "Entitlements"), entitlements);
     }
 
+    public async Task<UserEntitlementInfo[]> GetUserEntitlements(Guid projectId, Guid userId)
+    {
+        return (await SendAsyncAndDeserialize<UserEntitlementInfo[]>(HttpMethod.Get, Path.Combine("licence", projectId.ToString(), $"UserEntitlements?userId={userId}"))) ?? [];
+    }
+
+    public async Task UpdateUserEntitlements(Guid projectId, Guid userId, UserEntitlementInfo[] entitlements)
+    {
+        await SendAsync(HttpMethod.Post, Path.Combine("licence", projectId.ToString(), $"PatchUserEntitlement?userId={userId}"), entitlements);
+    }
 
 
     private async Task<T?> SendAsyncAndDeserialize<T>(HttpMethod method, string uri, object? body = null)
@@ -54,6 +63,8 @@ public class EntitlementService : IDisposable
 
     private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string uri, object? body = null)
     {
+        HttpResponseMessage? obj = null;
+
         try
         {
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(method, uri);
@@ -64,14 +75,19 @@ public class EntitlementService : IDisposable
                 httpRequestMessage.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
             }
 
-            HttpResponseMessage obj = await _client.SendAsync(httpRequestMessage);
+            obj = await _client.SendAsync(httpRequestMessage);
             obj.EnsureSuccessStatusCode();
 
             return obj;
         }
-        catch (Exception e)
+        catch
         {
-            Console.WriteLine(e);
+            if (obj != null)
+            {
+                string res = await obj.Content.ReadAsStringAsync();
+                Console.WriteLine(res);
+            }
+
             throw;
         }
     }

@@ -18,12 +18,6 @@ import AdminPage_Users from "./adminPage_Users";
 export default function () {
     const { authenticatedUser } = useAuth();
 
-    if (authenticatedUser?.role !== UserRoles.Admin)
-        return (<div>
-            <Navbar />
-            Unauthorised
-        </div>)
-
     const pages = [
         { content: <AdminPage_Controls />, name: "Controls" },
         { content: <AdminPage_Content />, name: "Content" },
@@ -31,6 +25,12 @@ export default function () {
     ]
 
     const [currentPage, setCurrentPage] = useState(0);
+
+    if (UserRoles[authenticatedUser?.role ?? 0] !== "Admin")
+        return (<div>
+            <Navbar />
+            Unauthorised
+        </div>)
 
     return (
         <div style={{ fontFamily: "sans-serif" }}>

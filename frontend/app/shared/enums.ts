@@ -15,7 +15,11 @@ export enum ProjectContentType {
 }
 
 
-export enum UserRoles {
-    None,
-    Admin
-}
+export type UserRole = "None" | "Admin";
+export const UserRoles: UserRole[] = ["None", "Admin"]
+
+export type EntitlementKey = "Owned" | "Early Access";
+export const EntitlementKeys: EntitlementKey[] = ["Owned", "Early Access"]
+
+export type EntitlementType = "Default" | "AutoGrantedGuid" | "HardwareKeyed"
+export const EntitlementTypes: EntitlementType[] = ["Default", "AutoGrantedGuid", "HardwareKeyed"]

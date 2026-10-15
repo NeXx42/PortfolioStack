@@ -1,6 +1,6 @@
 "use client"
 
-import type { Project, User, ProjectTag, ProjectContent, ProjectRelease, ServerFile, UserSummary, ProjectEntitlement } from "@shared/types";
+import type { Project, User, ProjectTag, ProjectContent, ProjectRelease, ServerFile, UserSummary, ProjectEntitlement, UserEntitlements } from "@shared/types";
 import type { ProjectType } from "@shared/enums";
 
 import { post, get, postForm } from "./api.shared";
@@ -119,4 +119,12 @@ export async function admin_UseEntitlements(projectId: string) {
 
 export async function admin_SaveEntitlements(projectId: string, entitlements: ProjectEntitlement[]) {
     return (await post<ProjectEntitlement[]>(`Entitlements/${projectId}`, entitlements))!
+}
+
+export async function admin_GetUserEntitlements(projectId: string, userId: string) {
+    return (await get<UserEntitlements[]>(`Entitlements/${projectId}/UserEntitlements?userId=${userId}`))
+}
+
+export async function admin_UpdateUserEntitlements(projectId: string, userId: string, entitlements: UserEntitlements[]) {
+    return (await post<UserEntitlements[]>(`Entitlements/${projectId}/UserEntitlements?userId=${userId}`, entitlements))
 }

@@ -1,10 +1,11 @@
 "use client"
 
+import "./userPopupModal.css"
+
 import { useAuth } from "@hooks/useUser"
 import { UserRoles } from "@shared/enums";
 import CommonButton from "@shared/components/commonButton";
 
-import "./userPopupModal.css"
 import { useRouter } from "next/navigation";
 
 export default function UserPopupModal() {
@@ -21,7 +22,7 @@ export default function UserPopupModal() {
     }
 
     return (<div className="Component_UserPopup">
-        {authenticatedUser?.role === UserRoles.Admin && (
+        {UserRoles[authenticatedUser?.role ?? 0] === "Admin" && (
             <CommonButton onClick={goToControlPanel} label="Admin" />
         )}
 

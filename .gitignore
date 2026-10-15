@@ -5,3 +5,4 @@ backend/Portfolio.Data/bin/Debug/net10.0/BuildHost-netcore/Microsoft.CodeAnalysi
 
 .secrets
 .inputs.json
+.vscode/settings.json
