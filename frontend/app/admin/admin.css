@@ -10,10 +10,12 @@
     height: 100%;
 
     padding: 10px;
-    background-color: red;
     display: flex;
     flex-direction: column;
+    gap: 5px;
 }
+
+.AdminPage_Main>aside>button {}
 
 .AdminPage_Main>div {
     padding: 10px;

@@ -90,6 +90,10 @@ export async function admin_GetUsers(): Promise<UserSummary[]> {
     return (await get(`admin/users`))!
 }
 
+export async function admin_UpdateUser(summary: UserSummary) {
+    return (await post(`admin/user`, summary))
+}
+
 // releases
 
 export async function releases_PrimeReleaseEngineUpload(projectId: string, releaseId: number, platform: string): Promise<string> {

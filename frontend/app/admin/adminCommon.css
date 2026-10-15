@@ -1,0 +1,48 @@
+table {
+    width: 100%;
+
+    outline: 1px solid #7ec8e31f;
+    background-color: #0b0d17d1;
+    border-radius: 8px;
+}
+
+
+thead>tr,
+tr:nth-child(even) {
+    background-color: #05060a;
+}
+
+td {
+    padding: 5px;
+    border: 0px solid #7ec8e31f;
+    text-align: left;
+    align-items: start;
+    justify-content: start;
+}
+
+td>button {
+    width: 100%;
+}
+
+td>p {
+    text-align: left;
+}
+
+select,
+button,
+textarea,
+input {
+    background-color: #1c2530;
+    color: #fff;
+    border-radius: 7px;
+    border: 1px solid #4a9ab840;
+    outline: none;
+    padding: 4px 5px;
+
+    cursor: pointer;
+    transition: all .1s;
+}
+
+button:hover {
+    background-color: #12181f;
+}

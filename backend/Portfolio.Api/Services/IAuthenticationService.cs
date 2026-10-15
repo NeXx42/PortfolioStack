@@ -8,5 +8,6 @@ public interface IAuthenticationService
     public Task<string?> Login(string email, string password);
     public void ValidateCreation(string email, string displayName, string password, long verification);
 
+    public Task UpdateUser(UserObject obj);
     public Task<UserObject[]> GetUserSummaries();
 }

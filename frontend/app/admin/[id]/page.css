@@ -51,23 +51,6 @@ div.admin_Project_Details_Tags {
     gap: 10px;
 }
 
-table {
-    width: 100%;
-}
-
-td,
-th {
-    border: solid 1px gray;
-}
-
-td>button {
-    width: 100%;
-}
-
-td>p {
-    text-align: center;
-}
-
 .container {
     padding: 10px;
 

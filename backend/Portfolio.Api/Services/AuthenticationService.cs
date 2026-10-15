@@ -20,6 +20,7 @@ public class AuthenticationService : IAuthenticationService
     public async Task<string?> CreateUserEntry(string email, string displayName, string password) => await _middleman.Register(email, displayName, password);
 
     public async Task<UserObject[]> GetUserSummaries() => await _middleman.GetUsers();
+    public async Task UpdateUser(UserObject obj) => await _middleman.SendRequestToAuthService<UserObject>(HttpMethod.Patch, "admin", obj);
 
 
     public void ValidateCreation(string email, string displayName, string password, long verification)
@@ -36,4 +37,5 @@ public class AuthenticationService : IAuthenticationService
         if (!_mail.ConfirmCode(email, verification))
             throw new Exception("Email not verified");
     }
+
 }

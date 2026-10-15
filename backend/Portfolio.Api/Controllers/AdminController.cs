@@ -196,4 +196,18 @@ public class AdminController(ReleaseService _releases, IAuthenticationService _a
             return Results.InternalServerError(e);
         }
     }
+
+    [HttpPost("user")]
+    public async Task<IResult> UpdateUser([FromBody] UserObject usr)
+    {
+        try
+        {
+            await _authService.UpdateUser(usr);
+            return Results.Ok();
+        }
+        catch (Exception e)
+        {
+            return Results.InternalServerError(e);
+        }
+    }
 }

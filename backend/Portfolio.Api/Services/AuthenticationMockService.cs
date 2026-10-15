@@ -11,41 +11,52 @@ public class AuthenticationMockService : IAuthenticationService
 {
     private readonly byte[] _jwtSigningKey;
 
+    private UserObject[] userList;
+
     public AuthenticationMockService(IOptions<SecuritySettings> settings)
     {
         _jwtSigningKey = Convert.FromBase64String(settings.Value.jwtToken);
+        userList = [
+            new UserObject{
+                Id = Guid.NewGuid(),
+                DisplayName = "Mocked Admin",
+                Email = "mock_admin@gmail.com",
+                Role = UserRoles.Admin
+            },
+            new UserObject{
+                Id = Guid.NewGuid(),
+                DisplayName = "Mocked",
+                Email = "mock@gmail.com",
+                Role = UserRoles.None
+            },
+        ];
     }
 
-    public Task<string> CreateUserEntry(string email, string displayName, string password) { return Task.FromResult(CreateJWT()); }
+    public Task<string?> CreateUserEntry(string email, string displayName, string password) { return Task.FromResult<string?>(CreateJWT()); }
 
-    public Task<UserObject[]> GetUserSummaries() => Task.FromResult((UserObject[])[
-        new UserObject{
-            Id = Guid.NewGuid(),
-            DisplayName = "Mocked Admin",
-            Email = "mock_admin@gmail.com",
-            Role = UserRoles.Admin
-        },
-        new UserObject{
-            Id = Guid.NewGuid(),
-            DisplayName = "Mocked",
-            Email = "mock@gmail.com",
-            Role = UserRoles.None
-        },
-    ]);
+    public Task<UserObject[]> GetUserSummaries() => Task.FromResult(userList);
 
-    public Task<string> Login(string email, string password) => Task.FromResult(CreateJWT());
+    public Task<string?> Login(string email, string password) => Task.FromResult<string?>(CreateJWT());
+
+    public Task UpdateUser(UserObject obj)
+    {
+        for (int i = 0; i < userList.Length; i++)
+        {
+            if (userList[i].Id == obj.Id)
+            {
+                userList[i] = obj;
+                break;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
 
     public void ValidateCreation(string email, string displayName, string password, long verification) { }
 
     private string CreateJWT()
     {
-        UserObject fakeUser = new UserObject()
-        {
-            Id = Guid.NewGuid(),
-            DisplayName = "Test",
-            Email = "Test",
-            Role = UserRoles.Admin,
-        };
+        UserObject fakeUser = userList[0];
 
         JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
         SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
@@ -53,8 +64,8 @@ public class AuthenticationMockService : IAuthenticationService
             Subject = new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, fakeUser.Id.ToString()),
-                new Claim(ClaimTypes.Email, fakeUser.Email),
-                new Claim(ClaimTypes.Name, fakeUser.DisplayName),
+                new Claim(ClaimTypes.Email, fakeUser.Email!),
+                new Claim(ClaimTypes.Name, fakeUser.DisplayName!),
                 new Claim(ClaimTypes.Role, fakeUser.Role.ToString())
             }),
             Audience = "NexxAuth",

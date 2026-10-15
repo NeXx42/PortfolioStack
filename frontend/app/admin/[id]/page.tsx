@@ -11,6 +11,7 @@ import { ProjectContentType, ProjectType } from "@/app/shared/enums";
 import Navbar from "@/app/shared/components/navbar";
 
 import "./page.css"
+import "../adminCommon.css"
 
 import ItemCard from "@/app/components/itemCard";
 import adminPage_Content_About from "./adminPage_Content_About";

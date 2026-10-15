@@ -1,0 +1,41 @@
+.adminPage_Users {
+    position: relative;
+    ;
+}
+
+.adminPage_Users_EditContainer {
+    position: absolute;
+    inset: 0px;
+    cursor: pointer;
+
+    backdrop-filter: blur(25px);
+    background-color: #000000aa;
+}
+
+.adminPage_Users_Edit {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+
+    padding: 50px;
+
+    outline: 1px solid #7ec8e31f;
+    background-color: #0b0d17;
+    border-radius: 8px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    cursor: default;
+}
+
+.adminPage_Users_Edit>header {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+}
+
+.adminPage_Users_Edit>button {
+    align-self: flex-end;
+}
