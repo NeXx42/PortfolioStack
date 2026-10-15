@@ -14,7 +14,7 @@ public class GameLauncherMetadata
     public string? iconUrl { get; set; } = "";
     public string[] imageUrls { get; set; } = [];
 
-    public Releases[] versions { get; set; } = [];
+    public List<Releases> versions { get; set; } = [];
 
     public struct Releases
     {

@@ -2,6 +2,7 @@ using System.Text.Json;
 using AuthEngineShared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Portfolio.Api.Helpers;
 using Portfolio.Api.Types;
 using Portfolio.Core.DTOs;
 using Portfolio.Core.Models;
@@ -9,7 +10,7 @@ using Portfolio.Data;
 
 namespace Portfolio.Api.Services;
 
-public class ReleaseService(PortfolioContext portfolioContext, IOptions<GeneralSettings> settings)
+public class ReleaseService(PortfolioContext portfolioContext, EntitlementService _entitlements, IOptions<GeneralSettings> settings)
 {
     private const string FILE_UPLOAD_SUBFOLDER = "Files";
 
@@ -169,6 +170,8 @@ public class ReleaseService(PortfolioContext portfolioContext, IOptions<GeneralS
 
     public async Task<FileDownloadInfo[]> GetDownloadFiles(Guid projectId, int versionId, string platform)
     {
+        using EntitlementHelper entitlementHelper = new EntitlementHelper(_entitlements);
+
         ReleaseModel? release = await portfolioContext.Releases
             .Include(r => r.Downloads)
             .Where(r => r.ProjectId == projectId && r.ReleaseId == versionId)
@@ -177,7 +180,7 @@ public class ReleaseService(PortfolioContext portfolioContext, IOptions<GeneralS
         if (release == null)
             throw new ArgumentException("Release not found");
 
-        if (release.Status != Core.Data.ReleaseStatus.Published)
+        if (!await entitlementHelper.HasAccessToDownload(release))
             throw new ArgumentException("Release not found");
 
         ReleaseDownloadModel? download = release.Downloads.FirstOrDefault(d => d.Platform.Equals(platform, StringComparison.InvariantCultureIgnoreCase));

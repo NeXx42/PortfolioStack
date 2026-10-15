@@ -1,5 +1,6 @@
 using AuthEngineShared;
 using Microsoft.EntityFrameworkCore;
+using Portfolio.Api.Helpers;
 using Portfolio.Core.Data;
 using Portfolio.Core.DTOs;
 using Portfolio.Core.Models;
@@ -7,7 +8,7 @@ using Portfolio.Data;
 
 namespace Portfolio.Api.Services;
 
-public class ContentService(CacheService _cache, PortfolioContext _portfolioContext)
+public class ContentService(CacheService _cache, PortfolioContext _portfolioContext, EntitlementService _entitlements)
 {
     private IQueryable<ProjectModel> SearchForProjectWithUser(UserObject? usr)
     {
@@ -18,7 +19,9 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
             return _portfolioContext.Projects.AsQueryable();
 
         // more complex filtering, maybe to licence engine
-        return _portfolioContext.Projects.Where(p => p.status == ReleaseStatus.Published);
+        return _portfolioContext.Projects
+            .AsNoTracking()
+            .Where(p => p.status == ReleaseStatus.Published);
     }
 
     public async Task<ProjectDto[]> GetContentForType(UserObject? usr, ProjectType type)
@@ -62,6 +65,7 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
 
     public async Task<ProjectDto?> GetGame(UserObject? usr, string slug)
     {
+        using EntitlementHelper entitlements = new EntitlementHelper(_entitlements);
         string cacheKey = $"Content_Game_{slug}_{usr?.Id}";
 
         if (_cache.TryGetValue(cacheKey, out ProjectDto? proj))
@@ -80,9 +84,20 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
 
         if (game != null)
         {
-            ProjectDto dto = ProjectDto.Map(game);
-            _cache.SetIfNotExists(cacheKey, dto);
+            List<ReleaseModel> permittedReleases = [];
 
+            foreach (ReleaseModel release in game.Releases)
+            {
+                if (!await entitlements.HasAccessToDownload(release))
+                    continue;
+
+                permittedReleases.Add(release);
+            }
+
+            game.Releases = permittedReleases;
+            ProjectDto dto = ProjectDto.Map(game);
+
+            _cache.SetIfNotExists(cacheKey, dto);
             return dto;
         }
 
@@ -93,6 +108,7 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
     public async Task<List<GameLauncherMetadata>> GetGameLauncherMetadata(UserObject? usr, Guid? featured, int? limit)
     {
         string cacheKey = $"Content_Games_{usr?.Id}";
+        using EntitlementHelper entitlements = new EntitlementHelper(_entitlements);
 
         if (_cache.TryGetValue(cacheKey, out List<GameLauncherMetadata>? games))
             return games ?? [];
@@ -119,61 +135,65 @@ public class ContentService(CacheService _cache, PortfolioContext _portfolioCont
 
         foreach (ProjectModel model in projects)
         {
-            if (TryMap(model, out GameLauncherMetadata data))
+            GameLauncherMetadata? data = await TryMap(model);
+
+            if (data != null)
                 content.Add(data);
         }
 
         _cache.SetIfNotExists(cacheKey, content);
         return content;
 
-        bool TryMap(ProjectModel model, out GameLauncherMetadata data)
+        async Task<GameLauncherMetadata?> TryMap(ProjectModel model)
         {
-            data = new GameLauncherMetadata()
+            var launcherData = model.Elements.FirstOrDefault(e => e.Type == ElementType.LauncherMetadata);
+
+            if (launcherData == null)
+                return null;
+
+            GameLauncherMetadata data = new GameLauncherMetadata
             {
                 id = model.id,
                 gameName = model.name,
-                about = model.description ?? "",
                 genre = model.genre ?? "",
 
                 releaseDate = model.CreatedDate,
-
-                versions = model.Releases.Select(MapRelease).ToArray()
+                iconUrl = GetParametersOfType(GameLauncherMetadataParameterType.Icon).FirstOrDefault()?.ParameterValue1,
+                imageUrls = GetParametersOfType(GameLauncherMetadataParameterType.Screenshot)?.Select(p => p.ParameterValue1!).ToArray() ?? [],
+                about = GetParametersOfType(GameLauncherMetadataParameterType.About)?.FirstOrDefault()?.ParameterValue1 ?? model.description ?? "",
             };
-            var launcherData = model.Elements.FirstOrDefault(e => e.Type == ElementType.LauncherMetadata);
 
-            if (launcherData != null)
+            foreach (ReleaseModel release in model.Releases)
             {
-                data.iconUrl = GetParametersOfType(GameLauncherMetadataParameterType.Icon).FirstOrDefault()?.ParameterValue1;
-                data.imageUrls = GetParametersOfType(GameLauncherMetadataParameterType.Screenshot)?.Select(p => p.ParameterValue1!).ToArray() ?? [];
-                data.about = GetParametersOfType(GameLauncherMetadataParameterType.About)?.FirstOrDefault()?.ParameterValue1 ?? data.about;
+                if (!await entitlements.HasAccessToDownload(release))
+                    continue;
 
-                return true;
-
-                IEnumerable<ProjectElementParameterModel> GetParametersOfType(GameLauncherMetadataParameterType typeSearch)
-                    => launcherData.Parameters.Where(p => p.ParameterValue2?.Equals(typeSearch.ToString(), StringComparison.CurrentCultureIgnoreCase) ?? false);
+                data.versions.Add(MapRelease(release));
             }
 
-            return false;
+            return data;
 
-        }
+            IEnumerable<ProjectElementParameterModel> GetParametersOfType(GameLauncherMetadataParameterType typeSearch)
+                => launcherData.Parameters.Where(p => p.ParameterValue2?.Equals(typeSearch.ToString(), StringComparison.CurrentCultureIgnoreCase) ?? false);
 
-        GameLauncherMetadata.Releases MapRelease(ReleaseModel release)
-        {
-            return new GameLauncherMetadata.Releases()
+            GameLauncherMetadata.Releases MapRelease(ReleaseModel release)
             {
-                versionId = release.ReleaseId,
-                versionName = release.VersionName ?? "",
-                patchNotes = release.PatchNotes,
-
-                platforms = release.Downloads.Select(d => new GameLauncherMetadata.Releases.Platform
+                return new GameLauncherMetadata.Releases()
                 {
-                    platform = d.Platform,
-                    size = d.DownloadSize,
-                    link = d.ReleaseEngineManifest,
-                    entrypoint = d.EntryPoint
+                    versionId = release.ReleaseId,
+                    versionName = release.VersionName ?? "",
+                    patchNotes = release.PatchNotes,
 
-                }).ToArray()
-            };
+                    platforms = release.Downloads.Select(d => new GameLauncherMetadata.Releases.Platform
+                    {
+                        platform = d.Platform,
+                        size = d.DownloadSize,
+                        link = d.ReleaseEngineManifest,
+                        entrypoint = d.EntryPoint
+
+                    }).ToArray()
+                };
+            }
         }
     }
 

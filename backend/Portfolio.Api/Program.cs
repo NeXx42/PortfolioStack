@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Portfolio.Api.Services;
 using Portfolio.Api.Types;
@@ -39,6 +40,9 @@ builder.Services.AddAuthentication(options =>
         {
             if (context.Request.Cookies.TryGetValue(AuthenticationService.AUTH_COOKIE_NAME, out string? cookie))
                 context.Token = cookie;
+
+            if (context.Request.Headers.TryGetValue("x-key", out StringValues token))
+                context.Token = token;
 
             return Task.CompletedTask;
         },

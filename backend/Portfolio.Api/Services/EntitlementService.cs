@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Primitives;
 using Portfolio.Core.Data;
 
 namespace Portfolio.Api.Services;
@@ -9,9 +10,17 @@ public class EntitlementService : IDisposable
     private HttpClient _client;
     private string? _authCookie;
 
+    public bool hasValidCookie => !string.IsNullOrEmpty(_authCookie);
+
     public EntitlementService(string _url, IHttpContextAccessor _httpAccessor)
     {
-        _httpAccessor.HttpContext?.Request.Cookies.TryGetValue(AuthenticationService.AUTH_COOKIE_NAME, out _authCookie);
+        if (!_httpAccessor.HttpContext?.Request.Cookies.TryGetValue(AuthenticationService.AUTH_COOKIE_NAME, out _authCookie) ?? false)
+        {
+            if (_httpAccessor.HttpContext?.Request.Headers.TryGetValue("x-key", out StringValues token) ?? false)
+            {
+                _authCookie = token.ToString();
+            }
+        }
 
         _client = new HttpClient()
         {
@@ -43,6 +52,12 @@ public class EntitlementService : IDisposable
     public async Task<UserEntitlementInfo[]> GetUserEntitlements(Guid projectId, Guid userId)
     {
         return (await SendAsyncAndDeserialize<UserEntitlementInfo[]>(HttpMethod.Get, Path.Combine("licence", projectId.ToString(), $"UserEntitlements?userId={userId}"))) ?? [];
+    }
+
+    public async Task<UserEntitlementInfo[]> Enrich(Guid projectId)
+    {
+        // sends cookie from request sender, so no need to pass it into the function
+        return (await SendAsyncAndDeserialize<UserEntitlementInfo[]>(HttpMethod.Get, Path.Combine("licence", projectId.ToString(), $"Enrich"))) ?? [];
     }
 
     public async Task UpdateUserEntitlements(Guid projectId, Guid userId, UserEntitlementInfo[] entitlements)
