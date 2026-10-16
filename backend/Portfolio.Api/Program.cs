@@ -1,14 +1,8 @@
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 using AuthEngineMiddleman;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Tokens;
 using Portfolio.Api.Services;
 using Portfolio.Api.Types;
 using Portfolio.Data;
@@ -17,75 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 Console.WriteLine($"Current environment: {builder.Environment.EnvironmentName}");
 
 string authUrl = builder.Configuration["Encryption:AuthServiceURL"] ?? throw new InvalidOperationException("Authservice url is not defined");
-string publicKey;
 
-using (HttpClient client = new HttpClient())
-{
-    HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, Path.Combine(authUrl, "api", "auth", "publickey"));
-    HttpResponseMessage res = await client.SendAsync(req);
-
-    try
-    {
-        res.EnsureSuccessStatusCode();
-    }
-    catch (Exception e)
-    {
-        Console.WriteLine($"Failed to get public key for authservice.\n{e.Message}");
-        throw;
-    }
-
-    string json = await res.Content.ReadAsStringAsync();
-    publicKey = JsonDocument.Parse(json).RootElement.GetProperty("key").GetString() ?? throw new InvalidDataException("Public key from authservice is invalid");
-}
-
-RSA rsa = RSA.Create();
-
-rsa.ImportFromPem(publicKey.Replace("\\n", "\n"));
-RsaSecurityKey rsaKey = new RsaSecurityKey(rsa) { KeyId = "NexxAuth" };
+AuthEngineSigningService signingService = new AuthEngineSigningService(authUrl);
+await signingService.Setup();
 
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidIssuer = "NexxAuth",
-
-        ValidateAudience = true,
-        ValidAudience = "NexxAuth",
-
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-
-        IssuerSigningKey = rsaKey,
-        ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
-
-        RoleClaimType = ClaimTypes.Role,
-        ClockSkew = TimeSpan.FromSeconds(30)
-    };
-
-    options.Events = new JwtBearerEvents
-    {
-        OnMessageReceived = context =>
-        {
-            if (context.Request.Cookies.TryGetValue(AuthenticationService.AUTH_COOKIE_NAME, out string? cookie))
-                context.Token = cookie;
-
-            if (context.Request.Headers.TryGetValue("x-key", out StringValues token))
-                context.Token = token;
-
-            return Task.CompletedTask;
-        },
-        OnAuthenticationFailed = context =>
-        {
-            Console.Write(context.Exception?.Message);
-            return Task.CompletedTask;
-        }
-    };
-});
+}).AddJwtBearer(signingService.HandleSigning);
 
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
