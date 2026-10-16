@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using AuthEngineShared;
 using Microsoft.Extensions.Primitives;
 using Portfolio.Core.Data;
 
@@ -16,7 +17,7 @@ public class EntitlementService : IDisposable
     {
         if (!_httpAccessor.HttpContext?.Request.Cookies.TryGetValue(AuthenticationService.AUTH_COOKIE_NAME, out _authCookie) ?? false)
         {
-            if (_httpAccessor.HttpContext?.Request.Headers.TryGetValue("x-key", out StringValues token) ?? false)
+            if (_httpAccessor.HttpContext?.Request.Headers.TryGetValue(AuthEngineConsts.AUTHENGINE_HEADERAUTH, out StringValues token) ?? false)
             {
                 _authCookie = token.ToString();
             }
@@ -83,7 +84,7 @@ public class EntitlementService : IDisposable
         try
         {
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(method, uri);
-            httpRequestMessage.Headers.Add("x-key", _authCookie);
+            httpRequestMessage.Headers.Add(AuthEngineConsts.AUTHENGINE_HEADERAUTH, _authCookie);
 
             if (body != null)
             {
