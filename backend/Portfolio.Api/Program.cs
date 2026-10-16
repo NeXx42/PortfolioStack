@@ -1,5 +1,7 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using AuthEngineMiddleman;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.StaticFiles;
@@ -13,6 +15,33 @@ using Portfolio.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 Console.WriteLine($"Current environment: {builder.Environment.EnvironmentName}");
+
+string authUrl = builder.Configuration["Encryption:AuthServiceURL"] ?? throw new InvalidOperationException("Authservice url is not defined");
+string publicKey;
+
+using (HttpClient client = new HttpClient())
+{
+    HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, Path.Combine(authUrl, "api", "auth", "publickey"));
+    HttpResponseMessage res = await client.SendAsync(req);
+
+    try
+    {
+        res.EnsureSuccessStatusCode();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine($"Failed to get public key for authservice.\n{e.Message}");
+        throw;
+    }
+
+    string json = await res.Content.ReadAsStringAsync();
+    publicKey = JsonDocument.Parse(json).RootElement.GetProperty("key").GetString() ?? throw new InvalidDataException("Public key from authservice is invalid");
+}
+
+RSA rsa = RSA.Create();
+
+rsa.ImportFromPem(publicKey.Replace("\\n", "\n"));
+RsaSecurityKey rsaKey = new RsaSecurityKey(rsa) { KeyId = "NexxAuth" };
 
 builder.Services.AddAuthentication(options =>
 {
@@ -30,8 +59,12 @@ builder.Services.AddAuthentication(options =>
 
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(builder.Configuration["Encryption:JWTToken"]!)),
-        RoleClaimType = ClaimTypes.Role
+
+        IssuerSigningKey = rsaKey,
+        ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
+
+        RoleClaimType = ClaimTypes.Role,
+        ClockSkew = TimeSpan.FromSeconds(30)
     };
 
     options.Events = new JwtBearerEvents
@@ -90,19 +123,12 @@ builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("E
 
 builder.Services.AddSingleton<CacheService>();
 
-if (false && builder.Environment.IsDevelopment())
+builder.Services.AddSingleton(sp =>
 {
-    builder.Services.AddScoped<IAuthenticationService, AuthenticationMockService>();
-}
-else
-{
-    builder.Services.AddSingleton(sp =>
-    {
-        var options = sp.GetRequiredService<IOptions<SecuritySettings>>();
-        return new AuthEngineMiddlemanService(options.Value.authServiceURL, options.Value.authServiceToken);
-    });
-    builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-}
+    var options = sp.GetRequiredService<IOptions<SecuritySettings>>();
+    return new AuthEngineMiddlemanService(options.Value.authServiceURL, options.Value.authServiceToken);
+});
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 builder.Services.AddHttpContextAccessor();
 

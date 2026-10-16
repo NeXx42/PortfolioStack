@@ -71,9 +71,15 @@ public class UserController : ControllerBase
     {
         try
         {
-            string token = await _authService.Login(login.email, login.password);
-            AddTokenCookie(token);
+            string? token = await _authService.Login(login.email, login.password);
 
+            if (string.IsNullOrEmpty(token))
+            {
+                return Results.BadRequest("Not found");
+            }
+
+
+            AddTokenCookie(token);
             return Results.Ok();
         }
         catch (Exception e)
